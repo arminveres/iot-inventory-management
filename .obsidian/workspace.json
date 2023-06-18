@@ -1,0 +1,177 @@
+{
+  "main": {
+    "id": "f590569df03ca0b2",
+    "type": "split",
+    "children": [
+      {
+        "id": "1943bcbe2184012e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cf92d1adb21bf3a5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "dailies/2023-06-15.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "55d84af231ad321d",
+    "type": "split",
+    "children": [
+      {
+        "id": "435cd4e8d42b4bae",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dd28928c015f537e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "0ce341bd7f9062aa",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "tag:#MicroPython",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "290c2741c46a2ec1",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "577ec27be1c2ed41",
+    "type": "split",
+    "children": [
+      {
+        "id": "b6291272031c282e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c5de571587d77abb",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "dailies/2023-06-15.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "45e29ae53d2165ae",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "dailies/2023-06-15.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "7141f25b1c6820fa",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "eb3d49fa346f5f53",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "dailies/2023-06-15.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false
+    }
+  },
+  "active": "cf92d1adb21bf3a5",
+  "lastOpenFiles": [
+    "ota-update-certify.png",
+    "dailies/2023-06-08.md",
+    "dailies/2023-06-01.md",
+    "meeting-2-milestones.md",
+    "EAP_DAA_Bootstrapping-SECURE-ENROLMENT.png",
+    "terminology.md",
+    "meeting-2-milestones.pdf",
+    "meeting2-milestones.md",
+    "Milestone for 2nd meeting.md",
+    "dailies/2023-06-07.md",
+    "2023-06-08.pdf",
+    "2023-06-04.pdf",
+    "cat",
+    "conv-pdf.sh",
+    "meeting2-milestones.pdf",
+    "dns-proposal.pdf",
+    "blockchains/Interledger_Approaches.pdf",
+    "blockchains/LCN2019-Bifrost.pdf",
+    "2023-06-07.sync-conflict-20230608-092903-XZIDPWA.md",
+    "blockchains/BC4CC-Final-Report-v4.pdf",
+    "certify-docs/WP2/ota-update-certify.png",
+    "certify-docs/EAP_DAA_Bootstrapping-SECURE ENROLMENT.drawio.png",
+    "2023-04-06_14-43.png",
+    "2023-04-06_14-42.png"
+  ]
+}

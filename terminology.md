@@ -1,0 +1,4 @@
+- PUF: Physically Unclonable Function
+- VC: Verifiable Credentials
+- CCS: Connected Cabin System
+- LRU: Line Replacable Unit
