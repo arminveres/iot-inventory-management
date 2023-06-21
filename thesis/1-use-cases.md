@@ -11,15 +11,6 @@ possibilities of enabling roaming on these devices
 - HMI: Human Machine Interface
 - Line-Replaceable Unit: modular component of airplane, designed to be replaced quickly
 
-## General Overview
-
-
-Possibly define the document as in my BA proposal: Actors, Requirements and Functionalities
-
-### 1. Onboarding
-
-### 2. Revoking/Replacing
-
 ## Domain
 
 **TODO: Explain why it makes sense to employ in this domain**
@@ -54,7 +45,7 @@ Possibly define the document as in my BA proposal: Actors, Requirements and Func
 
 - Bootstrapping and customization for specific deployment
 - Updating
-- Decommissioning of previous systems, guaranteeing a reset to a _known and fresh (wiped data) _
+- Decommissioning of previous systems, guaranteeing a reset to a _known and fresh (wiped data)_
   state.
 
 ### 2. System operation and monitoring
@@ -93,3 +84,7 @@ Possibly define the document as in my BA proposal: Actors, Requirements and Func
   destination. Needs rechecking and or re-certifying DID.
 
 #### Actors involved
+
+## Security Requirements
+
+### Technologies

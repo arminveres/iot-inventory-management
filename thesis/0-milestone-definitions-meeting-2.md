@@ -1,10 +1,17 @@
 # Milestones
 
+## Stakeholders
+
+- device manufacturer
+- consumer
+- auditor
+- authorities
+
 Need to specify what will be submitted
 
 ## Milestone 1: Definition of use cases incl. actors, requirements, and functionalities
 
-[See use-case document](./use-cases.md)
+[See use-case document](./1-use-cases.md)
 
 What would I be to do here? There are already 3 use cases. Am I to define more? Or choose one of the
 three use cases, favoring the aircraft cabin scenario, and expand upon further than current
@@ -13,6 +20,7 @@ documentation?
 ### Connected Cabin System
 
 #### Goals
+
 - Faster re-certification for devices entering/changing location.
 
 - Config A and B
