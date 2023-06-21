@@ -13,7 +13,6 @@ possibilities of enabling roaming on these devices
 
 ## General Overview
 
-![Sequence Diagram](thesis/.assets/basic-sequence-diagram.png)
 
 Possibly define the document as in my BA proposal: Actors, Requirements and Functionalities
 
