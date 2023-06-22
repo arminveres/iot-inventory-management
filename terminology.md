@@ -7,3 +7,20 @@
     showing the credential to a **verifier**.
 
 ![Trust model](./.assets/VC_triangle_of_Trust.svg.png)
+
+- Cold Cain: Low-temperature supply management, ranging from production to consumption, think of
+  vaccines or food
+
+- [MUD: Manufacturer Usage Description](https://resources.infosecinstitute.com/topic/how-to-mitigate-iot-attacks-using-manufacturer-usage-description-mud/)
+
+  - specifies what the responsibilities of the device are
+  - any device 'MUD-capable', broadcasts a MUD-file
+  - can also just be a feeder pointing to a web server where the file is located
+
+- IDS: Intrusion Detection System
+- IPS: Intrusion Prevention System
+
+- Edge Computing: Placement of storage and computing resources closer to source, where data is
+  generated
+- Fog Computing: Extension of Cloud Computing, bringing it closes to IoT edge devices as sort of
+  middle-layer

@@ -1,11 +1,34 @@
 # Functional Architecture
 
+<!--toc:start-->
+
+- [Functional Architecture](#functional-architecture)
+  - [Definitions](#definitions)
+  - [Protocols Considered](#protocols-considered)
+  - [Onboarding](#onboarding)
+  - [Inventorying](#inventorying)
+  - [Updating](#updating)
+  - [Security-Information Sharing](#security-information-sharing) - [External Stakeholders](#external-stakeholders) - [Cybersecurity Assessment](#cybersecurity-assessment) - [Security Levels](#security-levels)
+  <!--toc:end-->
+
 ## Definitions
 
 - TOE: Target of Evaluation
 - CCS: Connect Cabin System
 
+## Protocols Considered
+
+- [ARINC 827](https://standards.globalspec.com/std/14317873/ARINC%20827)
+- [ARINC 429](https://en.wikipedia.org/wiki/ARINC_429)
+  - Communication bus
+- [ARINC 717](https://en.wikipedia.org/wiki/ARINC_717)
+  - digital flight data recorder with inputs and outputs
+- Ethernet
+- WIFI
+
 ## Onboarding
+
+[Related Scenario: Installation of CCS](/thesis/1-use-cases.md#1-installation-of-connected-cabin-systems)
 
 ![Sequence Diagram](./.assets/onboarding-sequence-diagram.png)
 
@@ -16,16 +39,47 @@
     revoke the certificate if needed.
     - Verification of Certificate, whether revoked or not, possible through e.g., a **smart
       contract** based on a **cryptographic accumulator**
+- Storing of MUD file i.e. VC?
+  - Secure Encryption, SE, unit of STM is no yet available
+  - [ ] **define how storing will work!**
 
 ## Inventorying
 
 ![Inventorying Sequence Diagram](./.assets/inventorying-sequence-diagram.png)
+
+## Updating
+
+- only allow verified images
+- **Lightweight Machine-to-Machine technical specification** by Open Mobile Alliance, OMA, based on
+  transport layer security
+- Software Updates for IoT, SUIT, by IETF, focuses on definition of communication architecture and
+  information model of manifest files to describe firmware images based on recent sec. standards,
+  e.g., CBOR Object Signing and Encryption, COSE
+
+- Interledger approaches will be considered, as interoperability of multiple blockchains is
+  important
 
 ## Security-Information Sharing
 
 ![Security-Information Sharing](./.assets/security-information-sharing-sequence-diagram.png)
 
 To enable security information sharing, we will be relying on the #Hyperledger platform
+
+- Directional Information Sharing
+  - Device receives
+    - vulnerability information
+    - updates
+    - MUD files
+  - External sources:
+    - zero-day vulnerabilities
+    - patch/re-certification
+
+### External Stakeholders
+
+- certification authority
+- vulnerability database
+- manufacturer
+- etc.
 
 ### Cybersecurity Assessment
 
