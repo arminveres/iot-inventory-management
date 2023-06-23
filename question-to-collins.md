@@ -1,0 +1,1 @@
+- What hardware capabilities are foreseen?

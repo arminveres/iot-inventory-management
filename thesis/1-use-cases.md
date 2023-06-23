@@ -1,9 +1,8 @@
 # Use Case
 
-> **Disclaimer**: Content mainly taken from CERTIFY Deliverable 1.1
+> **Disclaimer**: Content used from CERTIFY Deliverable 1.1
 
 <!--toc:start-->
-
 - [Use Case](#use-case)
   - [Definitions](#definitions)
   - [Domain](#domain)
@@ -21,7 +20,6 @@
         - [Flow of Events](#flow-of-events)
       - [Post-conditions](#post-conditions)
       - [Attack Scenario (Alternative flow of Events)](#attack-scenario-alternative-flow-of-events)
-      - [Mitigation](#mitigation)
     - [2. System operation and monitoring](#2-system-operation-and-monitoring)
       - [Goals](#goals)
       - [Lifecycle stages involved](#lifecycle-stages-involved)
@@ -44,8 +42,8 @@
     - [4. Roaming?](#4-roaming)
       - [Goals](#goals)
       - [Actors involved](#actors-involved)
-      - [Mitigation](#mitigation)
-  - [Security Requirements](#security-requirements) - [Technologies](#technologies)
+  - [Security Requirements and Technologies](#security-requirements-and-technologies)
+  - [Security Risk Assessment](#security-risk-assessment)
   <!--toc:end-->
 
 Our use-case/scenario will highlight the advantages of our proposal in the environment of a
@@ -204,8 +202,6 @@ A technician may directly access the aircraft if necessary.
 - IP sensitive data can be lead by the Airplane Maintainer when retrieving system status
 - maintenance/reset/cleanup procedures integrity can be compromised
 
-#### Mitigation
-
 ### 2. System operation and monitoring
 
 #### Goals
@@ -336,7 +332,7 @@ owner) is compliant with ARINC 827 data load standard.
   the Airline for specific needs
 - CCS is registered with unique identifier and certificates are dispatched for authentication
 - For the configuration, integrity is verified and confidentiality has been preserved (for IP
-protection) in the process
+  protection) in the process
 
 #### Attack Scenario (Alternative flow of Events)
 
@@ -351,8 +347,15 @@ protection) in the process
 
 #### Actors involved
 
-#### Mitigation
+## Security Requirements and Technologies
 
-## Security Requirements
+![Desired security features for the different component parts of the CCS](./.assets/collins-sec-feat.jpg)
 
-### Technologies
+Following operation mode is inspired by ARINC 664.
+![Operation modes for an on-board device](./.assets/collins-opmodes.jpg)
+
+> Regulations are not that relevant to us right?
+
+## Security Risk Assessment
+
+![Security Scope for Collins CCS](./.assets/collins-security-scope.jpg)

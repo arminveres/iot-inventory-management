@@ -24,3 +24,8 @@
   generated
 - Fog Computing: Extension of Cloud Computing, bringing it closes to IoT edge devices as sort of
   middle-layer
+
+- TEE: Trusted Execution Environment, secure area in main processor, protected with respect to
+  Confidentiality and Integrity
+  - ARM Trust Zone
+  - RISCV-Trust Zone

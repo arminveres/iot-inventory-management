@@ -1,15 +1,32 @@
 # Functional Architecture
 
-<!--toc:start-->
+> **Disclaimer**: Content partly used from CERTIFY Deliverable 1.1
 
+<!--toc:start-->
 - [Functional Architecture](#functional-architecture)
   - [Definitions](#definitions)
   - [Protocols Considered](#protocols-considered)
+  - [Distributed Ledgers in Consideration](#distributed-ledgers-in-consideration)
+    - [[Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)](#hyperledger-arieshttpswikihyperledgerorgdisplayarieshyperledgeraries)
+      - [Possible Application](#possible-application)
+    - [[Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)](#hyperledger-besuhttpswikihyperledgerorgdisplaybesuhyperledgerbesu)
+      - [Possible Application](#possible-application)
+    - [[Hyperledger Fabric](https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric)](#hyperledger-fabrichttpswikihyperledgerorgdisplayfabrichyperledgerfabric)
+      - [Possible Application](#possible-application)
+    - [[Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)](#hyperledger-indyhttpswikihyperledgerorgdisplayindyhyperledgerindy)
+      - [Possible Application](#possible-application)
+    - [[Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)](#hyperledger-irohahttpswikihyperledgerorgdisplayirohahyperledgeriroha)
+      - [Possible Application](#possible-application)
+    - [[Hyperledger Sawtooth](https://wiki.hyperledger.org/display/sawtooth/Hyperledger+Sawtooth)](#hyperledger-sawtoothhttpswikihyperledgerorgdisplaysawtoothhyperledgersawtooth)
   - [Onboarding](#onboarding)
   - [Inventorying](#inventorying)
-  - [Updating](#updating)
-  - [Security-Information Sharing](#security-information-sharing) - [External Stakeholders](#external-stakeholders) - [Cybersecurity Assessment](#cybersecurity-assessment) - [Security Levels](#security-levels)
-  <!--toc:end-->
+  - [Day-2-Day Operations](#day-2-day-operations)
+  - [Secure Firmware Updating](#secure-firmware-updating)
+  - [Security-Information Sharing](#security-information-sharing)
+    - [External Stakeholders](#external-stakeholders)
+    - [Cybersecurity Assessment](#cybersecurity-assessment)
+    - [Security Levels](#security-levels)
+<!--toc:end-->
 
 ## Definitions
 
@@ -26,7 +43,59 @@
 - Ethernet
 - WIFI
 
+## Distributed Ledgers in Consideration
+
+### [Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)
+
+- focus on creating, transmitting and storing VCs
+- blockchain rooted, peer-to-peer interactions
+- cryptographic support by [Hyperledger Ursa](https://www.hyperledger.org/use/ursa)
+
+#### Possible Application
+
+- Identity Management, IdM, of edge nodes
+
+### [Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)
+
+- Ethereum client, private and public network use cases
+- Can be run on test networks such as [Sepolia and Goerli](https://www.alchemy.com/overviews/goerli-vs-sepolia)
+- Multiple consensus algorithms
+  - proof of stake
+  - proof of work
+  - proof of authority
+
+#### Possible Application
+
+### [Hyperledger Fabric](https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric)
+
+- Architectural 'glue', allows modular architecture, combining consensus and membership services
+
+#### Possible Application
+
+### [Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)
+
+- tools/libs/components for providing digital identities
+
+#### Possible Application
+
+### [Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)
+
+- for IoT projects requiring DLT
+- supports crash fault tolerant consensus algorithm, YAC.
+
+#### Possible Application
+
+- could be directly employed on the edge nodes and take advantage of DLT services
+- has python API
+
+### [Hyperledger Sawtooth](https://wiki.hyperledger.org/display/sawtooth/Hyperledger+Sawtooth)
+
+- various consensus algorithms, Practical Byzantine Fault Tolerance, PBFT, Proof of Elapsed Time,
+  PoET
+
 ## Onboarding
+
+> **TODO**
 
 [Related Scenario: Installation of CCS](/thesis/1-use-cases.md#1-installation-of-connected-cabin-systems)
 
@@ -42,12 +111,37 @@
 - Storing of MUD file i.e. VC?
   - Secure Encryption, SE, unit of STM is no yet available
   - [ ] **define how storing will work!**
+- Notification of deployment domain (Central/Functional controller) of
+  - ID
+  - behavioral profile
+  - security policies
+  - certificates
 
 ## Inventorying
 
-![Inventorying Sequence Diagram](./.assets/inventorying-sequence-diagram.png)
+> Emphasis 1 of thesis
 
-## Updating
+> **TODO**
+
+- DLT based Configuration and Management Database, CMDB on **Controllers**
+  - of each device, security configuration, security levels
+
+In regard to our use cases, each edge node will be inventoried by either the **Central** or the
+**Functional** Controller, depending on whether configuration **A** or **B** was chosen.
+
+<!-- ![Inventorying Sequence Diagram](./.assets/inventorying-sequence-diagram.png) -->
+
+## Day-2-Day Operations
+
+- Collection of changes and storing for sharing, which is done either at a later point, or
+  instantaneously
+- Establishment and identification of security level and required patches, if necessary
+
+## Secure Firmware Updating
+
+> Emphasis 2 of the thesis
+
+[Related Scenario: Installation of CCS](/thesis/1-use-cases.md#3-lru-replacement-and-re-purposing)
 
 - only allow verified images
 - **Lightweight Machine-to-Machine technical specification** by Open Mobile Alliance, OMA, based on
@@ -59,13 +153,16 @@
 - Interledger approaches will be considered, as interoperability of multiple blockchains is
   important
 
+![Collins OTA update v1.2](./.assets/ota-update-certify-V1.2.png)
+
 ## Security-Information Sharing
 
-![Security-Information Sharing](./.assets/security-information-sharing-sequence-diagram.png)
+<!-- ![Security-Information Sharing](./.assets/security-information-sharing-sequence-diagram.png) -->
 
 To enable security information sharing, we will be relying on the #Hyperledger platform
 
 - Directional Information Sharing
+
   - Device receives
     - vulnerability information
     - updates
@@ -73,6 +170,9 @@ To enable security information sharing, we will be relying on the #Hyperledger p
   - External sources:
     - zero-day vulnerabilities
     - patch/re-certification
+
+- How will we be communicating with deployment domain / masters?
+  - probably simple WIFI communication but since hyperledger sent, it is encrypted that way.
 
 ### External Stakeholders
 
