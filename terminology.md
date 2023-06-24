@@ -13,6 +13,7 @@
 
 - [MUD: Manufacturer Usage Description](https://resources.infosecinstitute.com/topic/how-to-mitigate-iot-attacks-using-manufacturer-usage-description-mud/)
 
+  - https://www.rfc-editor.org/rfc/rfc8520.html
   - specifies what the responsibilities of the device are
   - any device 'MUD-capable', broadcasts a MUD-file
   - can also just be a feeder pointing to a web server where the file is located

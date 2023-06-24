@@ -47,5 +47,6 @@ Explanations for different topics
 
 - find hyperledger that is able to hold smart contracts and DIDs
 - review [Hyperledger Aries](https://www.hyperledger.org/use/aries)
+  - [Tutorials for Hyperledger](https://www.hyperledger.org/use/tutorials)
 - review [Interledger UMU](https://www.researchgate.net/publication/342255539_An_Interledger_Blockchain_Platform_for_Cross-Border_Management_of_Cybersecurity_Information)
-- review [BC4CC UZH]()/[Bifrost UZH](https://gitlab.ifi.uzh.ch/scheid/bifrost)
+- review [BC4CC UZH]()/[Bifroest UZH](https://gitlab.ifi.uzh.ch/scheid/bifrost)

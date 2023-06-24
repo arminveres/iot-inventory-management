@@ -3,10 +3,15 @@
 > **Disclaimer**: Content partly used from CERTIFY Deliverable 1.1
 
 <!--toc:start-->
+
 - [Functional Architecture](#functional-architecture)
   - [Definitions](#definitions)
   - [Protocols Considered](#protocols-considered)
   - [Distributed Ledgers in Consideration](#distributed-ledgers-in-consideration)
+    - [Interledger, UMU](#interledger-umu)
+      - [Possible Application](#possible-application)
+    - [Bifröst/BC4CC, UMU](#bifröstbc4cc-umu)
+      - [Possible Application](#possible-application)
     - [[Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)](#hyperledger-arieshttpswikihyperledgerorgdisplayarieshyperledgeraries)
       - [Possible Application](#possible-application)
     - [[Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)](#hyperledger-besuhttpswikihyperledgerorgdisplaybesuhyperledgerbesu)
@@ -18,15 +23,15 @@
     - [[Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)](#hyperledger-irohahttpswikihyperledgerorgdisplayirohahyperledgeriroha)
       - [Possible Application](#possible-application)
     - [[Hyperledger Sawtooth](https://wiki.hyperledger.org/display/sawtooth/Hyperledger+Sawtooth)](#hyperledger-sawtoothhttpswikihyperledgerorgdisplaysawtoothhyperledgersawtooth)
+  - [Device Architectures](#device-architectures)
+    - [Edge Nodes](#edge-nodes)
+    - [Function and Central Controller Nodes](#function-and-central-controller-nodes)
   - [Onboarding](#onboarding)
   - [Inventorying](#inventorying)
-  - [Day-2-Day Operations](#day-2-day-operations)
+  - [Operations (Day-2-Day )](#operations-day-2-day)
   - [Secure Firmware Updating](#secure-firmware-updating)
-  - [Security-Information Sharing](#security-information-sharing)
-    - [External Stakeholders](#external-stakeholders)
-    - [Cybersecurity Assessment](#cybersecurity-assessment)
-    - [Security Levels](#security-levels)
-<!--toc:end-->
+  - [Security-Information Sharing](#security-information-sharing) - [External Stakeholders](#external-stakeholders) - [Cybersecurity Assessment](#cybersecurity-assessment) - [Security Levels](#security-levels)
+  <!--toc:end-->
 
 ## Definitions
 
@@ -45,6 +50,16 @@
 
 ## Distributed Ledgers in Consideration
 
+### Interledger, UMU
+
+https://ieeexplore.ieee.org/document/9119756?denied=
+
+#### Possible Application
+
+### Bifröst/BC4CC, UMU
+
+#### Possible Application
+
 ### [Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)
 
 - focus on creating, transmitting and storing VCs
@@ -54,6 +69,7 @@
 #### Possible Application
 
 - Identity Management, IdM, of edge nodes
+- let the manufacturer issue VCs through Aries
 
 ### [Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)
 
@@ -72,11 +88,18 @@
 
 #### Possible Application
 
+- According to [this](https://www.hyperledger.org/blog/2021/02/25/solution-brief-decentralized-id-and-access-management-diam-for-iot-networks)
+  whitepaper, there are already some architectural solutions to managing this kind of IoT
+  infrastructure
+- Application therefore possible to our infrastructure
+
 ### [Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)
 
-- tools/libs/components for providing digital identities
+- tools/libraries/components for providing digital identities
 
 #### Possible Application
+
+- use to generate DIDs for IoT devices.
 
 ### [Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)
 
@@ -93,6 +116,29 @@
 - various consensus algorithms, Practical Byzantine Fault Tolerance, PBFT, Proof of Elapsed Time,
   PoET
 
+## Device Architectures
+
+![Overview of Device Modules](./.assets/device-architecture-overview.png)
+
+### Edge Nodes
+
+<!-- ![Edge Node Architecture](./.assets/device-architecture-edge.png) -->
+
+Each edge node will store its DID, security levels, other information e.g., firmware version.
+
+DID will be created during onboarding and stored either inside a secure compartment, or be
+cryptographically hashed, so that finally only that device is able to reproduce that DID.
+
+- DID provided inside a DLT, which could be the one used by CERTIFY 'Hyperledger Aries'
+  - Gets stored inside a cryptographic vault
+  - https://identity.foundation/sidetree/spec/
+  - https://w3c.github.io/did-core/
+
+### Function and Central Controller Nodes
+
+<!-- ![Function Controller Architecture](./.assets/device-architecture-function-controller.png) -->
+<!-- ![Central Controller Architecture](./.assets/device-architecture-central-controller.png) -->
+
 ## Onboarding
 
 > **TODO**
@@ -101,8 +147,6 @@
 
 ![Sequence Diagram](./.assets/onboarding-sequence-diagram.png)
 
-- Each devices stores security level associated with it.
-- DID provided inside a DLT, which could be the one used by CERTIFY 'Hyperledger Aries'
 - VC gets created by the manufacturer and returned to the device.
   - the VC gets verified by the infrastructure and also the auditor, while the auditor is able to
     revoke the certificate if needed.
@@ -129,13 +173,15 @@
 In regard to our use cases, each edge node will be inventoried by either the **Central** or the
 **Functional** Controller, depending on whether configuration **A** or **B** was chosen.
 
-<!-- ![Inventorying Sequence Diagram](./.assets/inventorying-sequence-diagram.png) -->
+![Inventorying Sequence Diagram](./.assets/inventorying-sequence-diagram.png)
 
-## Day-2-Day Operations
+## Operations (Day-2-Day )
 
 - Collection of changes and storing for sharing, which is done either at a later point, or
   instantaneously
 - Establishment and identification of security level and required patches, if necessary
+- Constant checking whether VC were revoked. Information happens through computationally more potent
+  Central Controller
 
 ## Secure Firmware Updating
 
