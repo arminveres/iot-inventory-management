@@ -1,0 +1,89 @@
+\documentclass[12pt,a4paper,english,twoside]{book}
+\usepackage[german,english]{babel}
+\usepackage[T1]{fontenc}
+% WARN: (aver) use utf8?
+\usepackage[latin1]{inputenc}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{moreverb}
+\usepackage{rotating}
+\usepackage{enumerate}
+\usepackage{graphics, graphicx,wrapfig}
+\usepackage{fancybox}
+\usepackage{picinpar,varioref,floatflt}
+\usepackage{ae}
+\usepackage{longtable}
+\usepackage{textcomp}
+\usepackage{float}
+\usepackage{url}
+\usepackage{unizhdt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Define the language of the diploma thesis
+\selectlanguage{english}
+%\selectlanguage{german}
+
+\pagestyle{headings}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Define the author printed on the cover page
+\author{Armin Richard Veres}
+% Define the city and country of the author
+\authorcity{Zürich, Switzerland}
+% Define the student ID (Matrikelnummer)
+\studentid{20-700-118}
+% Define the title with optional subtitle
+\title{Inventorying and Secure Life-Cycles of IoT Devices}
+% Define the supervisors
+\supervisors{Dr. Eryk Schiller}
+% Define the submission date
+\submissiondate{December 1, 2023}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Make the title page
+\maketitle
+
+% Make the imprint on the back of the cover page
+\makeimprint
+
+\pagenumbering{roman}
+
+% Include the files of the diploma thesis
+%\cleardoublepage
+\input{abstract.tex}
+%\cleardoublepage
+\input{acknowledgments.tex}
+
+\tableofcontents
+
+\cleardoublepage
+\pagenumbering{arabic}
+\input{introduction.tex}
+\input{relatedwork.tex}
+\input{main.tex}
+%\input{.tex}
+%\input{.tex}
+\input{evaluation.tex}
+\input{summary.tex}
+
+\input{bibliography.tex}
+
+\input{abbreviations.tex}
+\input{glossary.tex}
+
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\input{appendix.tex}
+
+\end{document}
