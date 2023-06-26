@@ -39,12 +39,9 @@
       - [Flow of Events](#flow-of-events)
       - [Post-conditions](#post-conditions)
       - [Attack Scenario (Alternative flow of Events)](#attack-scenario-alternative-flow-of-events)
-    - [4. Roaming?](#4-roaming)
-      - [Goals](#goals)
-      - [Actors involved](#actors-involved)
   - [Security Requirements and Technologies](#security-requirements-and-technologies)
   - [Security Risk Assessment](#security-risk-assessment)
-  <!--toc:end-->
+<!--toc:end-->
 
 Our use-case/scenario will highlight the advantages of our proposal in the environment of a
 'Connected Cabin system'.
@@ -53,12 +50,6 @@ In addition to the use-cases defined in the CERTIFY documentation, we will also 
 possibilities of enabling roaming on these devices
 
 ![Collins Connected Cabin System](./.assets/collins-ccs.jpg)
-
-## Definitions
-
-- PHM: Prognostics and Health Management
-- HMI: Human Machine Interface
-- Line-Replaceable Unit: modular component of airplane, designed to be replaced quickly
 
 ## Domain
 
@@ -338,6 +329,7 @@ owner) is compliant with ARINC 827 data load standard.
 
 - Same attacks as in [new installation](#installation)
 
+<!--
 ### 4. Roaming?
 
 #### Goals
@@ -346,6 +338,7 @@ owner) is compliant with ARINC 827 data load standard.
   destination. Needs rechecking and or re-certifying DID.
 
 #### Actors involved
+-->
 
 ## Security Requirements and Technologies
 
