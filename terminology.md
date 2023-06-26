@@ -30,3 +30,9 @@
   Confidentiality and Integrity
   - ARM Trust Zone
   - RISCV-Trust Zone
+
+- Blockchain Validation
+  - permissionless
+    - anyone can become validator
+    - lack access control
+  - permissioned

@@ -5,22 +5,6 @@
 <!--toc:start-->
 - [Functional Architecture](#functional-architecture)
   - [Protocols Considered](#protocols-considered)
-  - [Distributed Ledgers in Consideration](#distributed-ledgers-in-consideration)
-    - [Interledger, UMU](#interledger-umu)
-      - [Possible Application](#possible-application)
-    - [Bifröst/BC4CC, UMU](#bifröstbc4cc-umu)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)](#hyperledger-arieshttpswikihyperledgerorgdisplayarieshyperledgeraries)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)](#hyperledger-besuhttpswikihyperledgerorgdisplaybesuhyperledgerbesu)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Fabric](https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric)](#hyperledger-fabrichttpswikihyperledgerorgdisplayfabrichyperledgerfabric)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)](#hyperledger-indyhttpswikihyperledgerorgdisplayindyhyperledgerindy)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)](#hyperledger-irohahttpswikihyperledgerorgdisplayirohahyperledgeriroha)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Sawtooth](https://wiki.hyperledger.org/display/sawtooth/Hyperledger+Sawtooth)](#hyperledger-sawtoothhttpswikihyperledgerorgdisplaysawtoothhyperledgersawtooth)
   - [Device Architectures](#device-architectures)
     - [Edge Nodes](#edge-nodes)
     - [Function and Central Controller Nodes](#function-and-central-controller-nodes)
@@ -43,74 +27,6 @@
   - digital flight data recorder with inputs and outputs
 - Ethernet
 - WIFI
-
-## Distributed Ledgers in Consideration
-
-### Interledger, UMU
-
-https://ieeexplore.ieee.org/document/9119756?denied=
-
-#### Possible Application
-
-### Bifröst/BC4CC, UMU
-
-#### Possible Application
-
-### [Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)
-
-- focus on creating, transmitting and storing VCs
-- blockchain rooted, peer-to-peer interactions
-- cryptographic support by [Hyperledger Ursa](https://www.hyperledger.org/use/ursa)
-
-#### Possible Application
-
-- Identity Management, IdM, of edge nodes
-- let the manufacturer issue VCs through Aries
-
-### [Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)
-
-- Ethereum client, private and public network use cases
-- Can be run on test networks such as [Sepolia and Goerli](https://www.alchemy.com/overviews/goerli-vs-sepolia)
-- Multiple consensus algorithms
-  - proof of stake
-  - proof of work
-  - proof of authority
-
-#### Possible Application
-
-### [Hyperledger Fabric](https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric)
-
-- Architectural 'glue', allows modular architecture, combining consensus and membership services
-
-#### Possible Application
-
-- According to [this](https://www.hyperledger.org/blog/2021/02/25/solution-brief-decentralized-id-and-access-management-diam-for-iot-networks)
-  whitepaper, there are already some architectural solutions to managing this kind of IoT
-  infrastructure
-- Application therefore possible to our infrastructure
-
-### [Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)
-
-- tools/libraries/components for providing digital identities
-
-#### Possible Application
-
-- use to generate DIDs for IoT devices.
-
-### [Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)
-
-- for IoT projects requiring DLT
-- supports crash fault tolerant consensus algorithm, YAC.
-
-#### Possible Application
-
-- could be directly employed on the edge nodes and take advantage of DLT services
-- has python API
-
-### [Hyperledger Sawtooth](https://wiki.hyperledger.org/display/sawtooth/Hyperledger+Sawtooth)
-
-- various consensus algorithms, Practical Byzantine Fault Tolerance, PBFT, Proof of Elapsed Time,
-  PoET
 
 ## Device Architectures
 
@@ -143,7 +59,7 @@ cryptographically hashed, so that finally only that device is able to reproduce 
 
 ![Sequence Diagram](./.assets/onboarding-sequence-diagram.png)
 
-- VC gets created by the manufacturer and returned to the device.
+- DID generated on IoT device and VC gets issued by the manufacturer and returned to the device.
   - the VC gets verified by the infrastructure and also the auditor, while the auditor is able to
     revoke the certificate if needed.
     - Verification of Certificate, whether revoked or not, possible through e.g., a **smart
@@ -165,6 +81,7 @@ cryptographically hashed, so that finally only that device is able to reproduce 
 
 - DLT based Configuration and Management Database, CMDB on **Controllers**
   - of each device, security configuration, security levels
+  - one example of could be [Cassandra](https://cassandra.apache.org/_/index.html)
 
 In regard to our use cases, each edge node will be inventoried by either the **Central** or the
 **Functional** Controller, depending on whether configuration **A** or **B** was chosen.
