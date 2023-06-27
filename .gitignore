@@ -2,4 +2,6 @@
 *.bkp
 *.dtmp
 *.pdf
-latex/build
+latex/build/*
+!latex/build/thesis.pdf
+indent.log

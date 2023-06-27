@@ -3,6 +3,7 @@
 > **Disclaimer**: Content partly used from CERTIFY Deliverable 1.1
 
 <!--toc:start-->
+
 - [Functional Architecture](#functional-architecture)
   - [Protocols Considered](#protocols-considered)
   - [Device Architectures](#device-architectures)
@@ -12,11 +13,8 @@
   - [Inventorying](#inventorying)
   - [Operations (Day-2-Day )](#operations-day-2-day)
   - [Secure Firmware Updating](#secure-firmware-updating)
-  - [Security-Information Sharing](#security-information-sharing)
-    - [External Stakeholders](#external-stakeholders)
-    - [Cybersecurity Assessment](#cybersecurity-assessment)
-    - [Security Levels](#security-levels)
-<!--toc:end-->
+  - [Security-Information Sharing](#security-information-sharing) - [External Stakeholders](#external-stakeholders) - [Cybersecurity Assessment](#cybersecurity-assessment) - [Security Levels](#security-levels)
+  <!--toc:end-->
 
 ## Protocols Considered
 
@@ -96,6 +94,17 @@ In regard to our use cases, each edge node will be inventoried by either the **C
 - Constant checking whether VC were revoked. Information happens through computationally more potent
   Central Controller
 
+- Device will be re-certified if a new vulnerability is discovered
+
+- Controller will have to monitor:
+  Real-time security monitoring typically relies on the definition of events taxonomies which cover
+  the detection of botnets, denial of service, brute force, port scanning, malware signatures in
+  traffic, data tampering, SQL injections, attacks against SCADA systems, SSH issues or rootkits,
+  to name but a few.
+- intrusion prevention and detection systems (IPS and IDS), honeypots, network sniffers or
+  vulnerability scanners become several of the most relevant sensors to gather security related
+  information from a system.
+
 ## Secure Firmware Updating
 
 > Emphasis 2 of the thesis
@@ -106,11 +115,21 @@ In regard to our use cases, each edge node will be inventoried by either the **C
 - **Lightweight Machine-to-Machine technical specification** by Open Mobile Alliance, OMA, based on
   transport layer security
 - Software Updates for IoT, SUIT, by IETF, focuses on definition of communication architecture and
-  information model of manifest files to describe firmware images based on recent sec. standards,
-  e.g., CBOR Object Signing and Encryption, COSE
+  information model of manifest files to describe firmware images based on recent security
+  standards, e.g., CBOR Object Signing and Encryption, [COSE](https://cose-wg.github.io/cose-spec/),
+  mainly focused on communication security aspects therefore need to combine with other mechanisms
+
+- [IETF Software Update for IoT, SUIT](https://datatracker.ietf.org/wg/suit/about/)
+
+- closer to the end devices, in such a way that the update/patching process can be carried out
+  through secure and efficient mechanisms to reduce latency and network overhead
+
+- use of Blockchains: transparent ledger to manage the different versions of software elements
+  composing an IoT device or system
 
 - Interledger approaches will be considered, as interoperability of multiple blockchains is
-  important
+  important, in case different countries and manufacturers with different restrictions and
+  vulnerabilities.
 
 ![Collins OTA update v1.2](./.assets/ota-update-certify-V1.2.png)
 
@@ -132,6 +151,10 @@ To enable security information sharing, we will be relying on the #Hyperledger p
 
 - How will we be communicating with deployment domain / masters?
   - probably simple WIFI communication but since hyperledger sent, it is encrypted that way.
+  - Actually makes more sense to just use a private network for communication with controller. Issue
+    with that is the central point of failure
+
+- CERTIFY considering [SDN/NDF](https://www.spiceworks.com/tech/networking/articles/nfv-vs-sdn/)
 
 ### External Stakeholders
 

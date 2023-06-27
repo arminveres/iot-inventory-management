@@ -28,11 +28,20 @@
 
 - TEE: Trusted Execution Environment, secure area in main processor, protected with respect to
   Confidentiality and Integrity
+
   - ARM Trust Zone
   - RISCV-Trust Zone
 
 - Blockchain Validation
+
   - permissionless
+    - Ethereum,Bitcoin
     - anyone can become validator
-    - lack access control
+    - lacks access control
   - permissioned
+    - Hyperledger Iroha/Fabric
+
+- SCADA: Supervisory control and data acquisition, control system architecture comprising computers,
+  networked data communications and graphical user interfaces for high-level supervision of machines
+  and processes. It also covers sensors and other devices, such as programmable logic controllers,
+  which interface with process plant or machinery.

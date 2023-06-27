@@ -1,7 +1,6 @@
 \documentclass[12pt,a4paper,english,twoside]{book}
-\usepackage[german,english]{babel}
+\usepackage[german,main=english]{babel}
 \usepackage[T1]{fontenc}
-% WARN: (aver) use utf8?
 \usepackage[latin1]{inputenc}
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -29,6 +28,9 @@
 
 \pagestyle{headings}
 
+% Allow paragraphs also to have numbering
+\setcounter{secnumdepth}{4}
+
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,7 +38,7 @@
 % Define the author printed on the cover page
 \author{Armin Richard Veres}
 % Define the city and country of the author
-\authorcity{Zürich, Switzerland}
+\authorcity{Zurich, Switzerland}
 % Define the student ID (Matrikelnummer)
 \studentid{20-700-118}
 % Define the title with optional subtitle
@@ -68,13 +70,16 @@
 \pagenumbering{arabic}
 \input{introduction.tex}
 \input{relatedwork.tex}
-\input{main.tex}
-%\input{.tex}
-%\input{.tex}
+% \input{main.tex}
+\input{use-case.tex}
+\input{lifecycle.tex}
 \input{evaluation.tex}
 \input{summary.tex}
 
-\input{bibliography.tex}
+% Instead of manually listing the references, use bibtex to cite
+% \input{bibliography.tex}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
 
 \input{abbreviations.tex}
 \input{glossary.tex}

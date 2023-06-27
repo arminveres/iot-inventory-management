@@ -3,7 +3,7 @@
 <!--toc:start-->
 - [Hyperledger](#hyperledger)
   - [Distributed Ledgers in Consideration](#distributed-ledgers-in-consideration)
-    - [Interledger, UMU](#interledger-umu)
+    - [[Interledger](https://ieeexplore.ieee.org/document/9119756?denied=), UMU](#interledgerhttpsieeexploreieeeorgdocument9119756denied-umu)
       - [Possible Application](#possible-application)
     - [Bifröst/BC4CC, UMU](#bifröstbc4cc-umu)
       - [Possible Application](#possible-application)
@@ -24,9 +24,10 @@ CERTIFY is targeting [Hyperledger Aries](https://www.hyperledger.org/use/aries) 
 
 ## Distributed Ledgers in Consideration
 
-### Interledger, UMU
+We will probably use permissioned blockchains, as we don't want permissionless access, therefore
+Ethereum and Bitcoin are out of the picture.
 
-https://ieeexplore.ieee.org/document/9119756?denied=
+### [Interledger](https://ieeexplore.ieee.org/document/9119756?denied=), UMU
 
 #### Possible Application
 
