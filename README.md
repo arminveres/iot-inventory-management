@@ -26,6 +26,7 @@
 
 - Using same pre-shared credential for every device is the easiest way, but not identifiable for
   each device
+  - Clonability of DID credentials
 - Most proposals based on centralized models (client-server) -> use DLT to make it more efficient,
   decentralized
 

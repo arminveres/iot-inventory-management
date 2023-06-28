@@ -6,7 +6,7 @@
 
 - Directive on measures for a high common level of cybersecurity across the Union, https://digital-strategy.ec.europa.eu/en/policies/nis2-directive. Last accessed: May 25, 2023.
 
-- Ricardo Neisse, Gary Steri, and Igor Nai-Fovino. 2017. A Blockchain-based Approach for Data Accountability and Provenance Tracking. In Proceedings of the 12th International Conference on Availability, Reliability and Security (ARES'17). Association for Computing Machinery, New York, NY, USA, Article 14, 1–10. https://doi.org/10.1145/3098954.3098958.
+- Ricardo Neisse, Gary Steri, and Igor Nai-Fovino. 2017. A Blockchain-based Approach for Data Accountability and Provenance Tracking. In Proceedings of the 12th International Conference on Availability, Reliability and Security (ARES'17). Association for Computing Machinery, New York, NY, USA, Article 14, 1–10. https://doi.org/10.1145/3098954.3098958. http://dl.acm.org/ft_gateway.cfm?id=3098958&type=pdf.
 
 - Trusted IoT Device Network-Layer Onboarding and Lifecycle Management. https://www.nccoe.nist.gov/projects/trusted-iot-device-network-layer-onboarding-and-lifecycle-management. Last accessed: May 25, 2023.
 
