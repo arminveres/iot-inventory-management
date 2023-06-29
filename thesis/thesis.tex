@@ -18,6 +18,7 @@
 \usepackage{url}
 \usepackage{unizhdt}
 \usepackage[outputdir=build]{minted}
+\usepackage{caption}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -57,6 +58,10 @@
 
 \pagenumbering{roman}
 
+% custom labels, according to the docs
+\renewcommand\listingscaption{Code}
+\renewcommand\listoflistingscaption{List of Code Snippets}
+
 % Include the files of the diploma thesis
 %\cleardoublepage
 \input{abstract.tex}
@@ -88,6 +93,8 @@
 \listoffigures
 \addcontentsline{toc}{chapter}{List of Tables}
 \listoftables
+\addcontentsline{toc}{chapter}{List of Code Snippets}
+\listoflistings
 
 \input{appendix.tex}
 
