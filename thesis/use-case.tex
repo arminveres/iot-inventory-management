@@ -22,8 +22,8 @@ We will consider following actors for our use case.
 
 \begin{itemize}
 	\item Airline:
-	      Owns the aircraft and oversees interactions and system operations.
-	\item Airplane maintainer: They could be e.g., Airplane manufacturer. Oversees maintenance of the aircraft,
+	      Owns the aircraft and oversees daily interactions and systems operations.
+	\item Airplane maintainer: They could be e.g., the airplane manufacturer. Oversees maintenance of the aircraft,
 	      including the integration of systems designed by different manufacturers and their configuration.
 	\item Product Owner: Oversees design and maintenance of systems deployed in the aircraft on assignment of the
 	      airplane maintainer.
@@ -60,13 +60,6 @@ through the airport infrastructure. A technician may directly access the aircraf
 \subsection{Installation of Connected Cabin Systems} % (fold)
 \label{sub:Installation of Connected Cabin Systems}
 
-\subsubsection{Goals}
-
-The goals of this scenario include bootstrapping and customization of devices for specific deployment, updating and
-decommissioning of previous systems, guaranteeing a reset to a known and fresh, wiped data, state.
-Table~\ref{tab:Actors involved} highlights the involved actors and Table~\ref{tab:Lifecycle stages involved} shows the
-stages involved in this scenario.
-
 \begin{table}
 	\caption{Actors involved}
 	\label{tab:Actors involved}
@@ -75,7 +68,7 @@ stages involved in this scenario.
 			\hline
 			Airline & Airplane Maintainer & Product Owner & Maintenance Operator & Passenger, Attendant, Pilot \\
 			\hline
-			X       & -                   & X             & -                    & X                           \\
+			X       & X                   & X             & X                    & X                           \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -95,6 +88,14 @@ stages involved in this scenario.
 	\end{center}
 \end{table}
 
+
+\subsubsection{Goals}
+
+The goals of this scenario include bootstrapping and customization of devices for specific deployment, updating and
+decommissioning of previous systems, guaranteeing a reset to a known and fresh, wiped data, state.
+Table~\ref{tab:Actors involved} highlights the involved actors and Table~\ref{tab:Lifecycle stages involved} shows the
+stages involved in this scenario.
+
 \subsubsection{Pre-condition}
 
 In order for this scenario to be valid, following pre-conditions need to be met:
@@ -113,7 +114,7 @@ In order for this scenario to be valid, following pre-conditions need to be met:
 	\begin{center}
 		\includegraphics[width=0.95\textwidth]{figures/collins-s1-installation.jpg}
 	\end{center}
-	\caption{Collins Scenario 1 Installation}
+	\caption{Collins Scenario 1: Device Installation}
 	\label{fig:collins-s1-installation}
 \end{figure}
 
@@ -123,7 +124,7 @@ The flow of events can be tracked in Figure~\ref{fig:collins-s1-installation} an
 
 \begin{itemize}
 	\item Airline requests installation of new component to the Airplane Maintainer also issuing an authorization
-	      request to Airport and Airplane gateways
+	      request to Airport and Airplane gateways.
 	\item The request is forwarded to the Product Owner and then to the Maintenance Operator, who oversees the
 	      physical deployment of the product.
 	\item Once connected, Central Controller registers on the Aircraft Network and receives required setup to
@@ -131,7 +132,7 @@ The flow of events can be tracked in Figure~\ref{fig:collins-s1-installation} an
 	\item Product Owner is now able to reach the CCS, push configuration and security updates to the Central
 	      Controller, as well as the Function Collector and IoT nodes.
 	\item After the update, the product is registered and the Airplane Maintainer can offer remote services to the
-	      Airline
+	      Airline.
 	\item The Airline requests a customization of the CCS. It is performed by the Airplane Maintainer by pushing an
 	      update package and/or modifying specific configurations as allowed by the Product Owner API for
 	      Maintenance.
@@ -144,18 +145,18 @@ The flow of events can be tracked in Figure~\ref{fig:collins-s1-installation} an
 	\begin{center}
 		\includegraphics[width=0.95\textwidth]{figures/collins-s1-replacement.jpg}
 	\end{center}
-	\caption{Collins Scenario 1 Replacement}
+	\caption{Collins Scenario 1: Device Replacement}
 	\label{fig:collins-s1-replacement}
 \end{figure}
 
 \paragraph{Flow of Events}
 
 \begin{itemize}
-	\item Airline requests replacement of a component to the Airplane maintainer, also issuing an authorization
-	      request to the Airport and Airplane Gateways
+	\item The Airline requests replacement of a component to the Airplane maintainer, also issuing an authorization
+	      request to the Airport and Airplane Gateways.
 	\item The Airplane Maintainer identifies the target product (location) and collects latest system status.
 	\item The Airplane Maintainer issues a decommissioning request to the Product Owner and starts the
-	      decommissioning process, which causes a reset and cleanup of all the nodes that will be replaced
+	      decommissioning process, which causes a reset and cleanup of all the nodes that will be replaced.
 	\item After remote reset and clean-up, product owner requests the Maintenance Operator to physically remove the
 	      system from the cabin.
 	\item The product is then unregistered and can be dismissed.
@@ -171,6 +172,7 @@ After completion of the Installation Scenario, following post-conditions need to
 	      and configured by the Airline for their specific needs.
 	\item Component is securely onboarded in the CCS, unique identity and certificates are dispatched for
 	      authentication.
+	\item Regarding the configurations, their integrity is verified and confidentiality has been preserved.
 \end{itemize}
 
 \subsubsection{Attack Scenario}
@@ -181,10 +183,231 @@ Figure~\ref{fig:collins-s1-installation} and Figure~\ref{fig:collins-s1-replacem
 \begin{itemize}
 	\item Attacker can inject malicious payloads in place of the intended one, (confidential) credentials provided
 	      to the Central Controller for network access and authentication ca be stolen.
-	\item IP sensitive data can be lead by the Airplane Maintainer when retrieving system status
-	\item maintenance/reset/cleanup procedures integrity can be compromised
+	\item IP sensitive data can be leaked by the Airplane Maintainer when retrieving the system status.
+	\item The integrity of maintenance/reset/cleanup procedures can be compromised.
 \end{itemize}
 
 % subsection Installation of Connected Cabin Systems (end)
 
-\subsection{System Operation and Monitoring}
+\subsection{System Operation and Monitoring} % (fold)
+\label{sub:System Operation and Monitoring}
+
+\begin{table}
+	\caption{Actors involved}
+	\label{tab:Actors involved}
+	\begin{center}
+		\begin{tabular}{ |p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}| }
+			\hline
+			Airline & Airplane Maintainer & Product Owner & Maintenance Operator & Passenger, Attendant, Pilot \\
+			\hline
+			X       & X                   & X             & -                    & X                           \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+\begin{table}
+	\caption{Lifecycle stages involved}
+	\label{tab:Lifecycle stages involved}
+	\begin{center}
+		\begin{tabular}{ |c|c|c|c|c| }
+			\hline
+			Bootstrapping & Operation & Update & Repurposing & Decommissioning \\
+			\hline
+			-             & X         & X      & -           & -               \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+\subsubsection{Goals}
+
+The goals of System Operations and Monitoring incorporate following points:
+
+\begin{itemize}
+	\item Periodic collection of data from airplane.
+	\item Data offload/upload to ground stations for performance monitoring, optimization and PHM operations.
+	\item Attendants interact with CCS through a HMI
+	\item CCS Information is collected and stored in Gateway.
+	\item A limited set of predefined reconfigurations may be performed on plane, when requested by Airline,
+	      Maintainer or product owner.
+\end{itemize}
+
+\subsubsection{Pre-conditions}
+\begin{itemize}
+	\item Maintainers have established remote secure connection with the aircraft (wireless or wired) through the
+	      airport infrastructure.
+	\item Passengers/Attendants/Pilots can interact through HMI or are connected through other devices e.g., through
+	      WiFi (possibly in the sense of bring you own device, BYOD).
+	\item Device bootstrapping, enrollment, configuration, provisioning are completed for all devices, that are
+	      (statically) part of the network.
+	\item IoT devices are equipped with sensors to collect and store data that are then forwarded to their root
+	      controller.
+	\item Devices can securely store and transmit collected data.
+\end{itemize}
+
+\subsubsection{Flow of Events}
+
+\ref{fig:collins-s2-data-collection-reconfig}
+\ref{fig:collins-s2-data-unload-remote-analysis}
+\ref{fig:collins-s2-data-load-remote-config}
+
+\begin{itemize}
+	\item IoT devices collect data during airplane operations, see Figure \ref{fig:collins-s2-data-collection-reconfig}
+	\item Data is securely stored on-board, see Figure \ref{fig:collins-s2-data-collection-reconfig}
+	\item Local computations over critical and non-critical data are executed in separate environments to reconfigure
+	      the airplane/flight, see Figure \ref{fig:collins-s2-data-collection-reconfig}
+	      \textbf{What is meant by this?}
+	\item Remote entities are authenticated and a connection is established with the aircraft network through the
+	      gateway, see Figure \ref{fig:collins-s2-data-load-remote-config}
+	      \textbf{What Gateway? We are basically in flight so shouldn't we be disconnected? Otherwise this is
+		      a scenario for Roaming}
+	\item Data is downloaded from plane to ground
+	\item In case of an Airplane fleet, Collective Analysis is performed, see Figure
+	      \ref{fig:collins-s2-data-unload-remote-analysis}
+	\item Upload new data and configurations, from ground to plane
+	\item Data authenticity and integrity are verified before updating the configurations on the plane.
+\end{itemize}
+
+% \subsubsection{Sub-Scenario 1: Data Collection and Local Reconfiguration}
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/collins-s2-data-collection-reconfig.jpg}
+	\end{center}
+	\caption{Collins Scenario 2.1: Data Collection and Local Reconfiguration}
+	\label{fig:collins-s2-data-collection-reconfig}
+\end{figure}
+
+% \subsubsection{Sub-Scenario 2: Data Unload and Remote Analysis}
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/collins-s2-data-unload-remote-analysis.jpg}
+	\end{center}
+	\caption{Collins Scenario 2.2: Data Unload and Remote Analysis}
+	\label{fig:collins-s2-data-unload-remote-analysis}
+\end{figure}
+
+% \subsubsection{Sub-Scenario 3: Data Load from Remote Config}
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/collins-s2-data-load-remote-config.jpg}
+	\end{center}
+	\caption{Collins Scenario 2.3: Data Load and Remote Reconfiguration}
+	\label{fig:collins-s2-data-load-remote-config}
+\end{figure}
+
+\subsubsection{Post-Conditions}
+
+After any of the sub-scenarios from Figures \ref{fig:collins-s2-data-collection-reconfig},
+\ref{fig:collins-s2-data-unload-remote-analysis}, \ref{fig:collins-s2-data-load-remote-config}, the following
+post-conditioned need to be met:
+
+\begin{itemize}
+	\item A new configuration, computed either locally or through the remote connection with the operations center
+	      is available.
+	\item Data from the aircraft are available for further analysis of Airline, Maintainer or Product Owner.
+	\item For the configurations, integrity is verified, and confidentiality has been preserved (as it could
+	      involve IP issues) in the process.
+	\item For the data, in addition to integrity and confidentiality, it is important to also ensure availability
+	      (to detect early sings of potential problems).
+
+\end{itemize}
+
+\subsubsection{Attack Scenario}
+
+As an alternative flow of events, where an attack might happen, the main entry point is through the WiFi access point.
+A rogue device could inject false data, configurations or software to facilitate subsequent attacks or even cause system
+unavailability or device malfunctioning.
+Alternatively in stealth mode, sensitive information could be captures and could be used to perpetrate other attacks.
+
+% subsection System Operation and Monitoring (end
+
+\subsection{LRU Replacement and Repurposing} % (fold)
+\label{sub:LRU Replacement and Repurposing}
+
+Akin to Scenario 1 in Subsection \ref{sub:Installation of Connected Cabin Systems} in this Scenario we also consider
+similar steps to replace existing devices, with the difference, that the devices that replace the broken devices were
+not exactly meant for this situation.
+
+\begin{table}
+	\caption{Actors involved}
+	\label{tab:Actors involved}
+	\begin{center}
+		\begin{tabular}{ |p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}| }
+			\hline
+			Airline & Airplane Maintainer & Product Owner & Maintenance Operator & Passenger, Attendant, Pilot \\
+			\hline
+			X       & X                   & X             & X                    & -                           \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+\begin{table}
+	\caption{Lifecycle stages involved}
+	\label{tab:Lifecycle stages involved}
+	\begin{center}
+		\begin{tabular}{ |c|c|c|c|c| }
+			\hline
+			Bootstrapping & Operation & Update & Repurposing & Decommissioning \\
+			\hline
+			-             & -         & X      & X           & X               \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+\subsubsection{Goals}
+
+The goal of this scenario is to quickly replace a malfunctioning Central or Functional Controller, but a LRU is not
+directly available. To minimize downtime, a spare LRU is retrieved from the same manufacturer and repurposed to the
+specific target system. Airline, Airplane Maintainer, Product Owner, and Maintenance Operator are all involved to take
+care of different steps in the process.
+
+\subsubsection{Pre-Conditions}
+
+Following pre-conditions must be met:
+
+\begin{itemize}
+	\item Actors involved can establish remote secure connection with aircraft.
+	\item Airport has a spare LRU, that is compatible with CCS.
+	\item The Maintenance Operator is provided access to the airplane and to the maintenance ports.
+\end{itemize}
+
+\subsubsection{Flow of Events}
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/collins-s3-lru.jpg}
+	\end{center}
+	\caption{Collins Scenario 3: LRU Replacement}
+	\label{fig:collins-s3-lru}
+\end{figure}
+
+\begin{itemize}
+	\item The Airline requests to the Airplane Maintainer the repair of a cabin system, issuing and authorization
+	      request to the Airport/Airplane gateways for following remote software update operations.
+	\item The Airplane Maintainer identifies the target product, including its location, and the failure condition
+	      then requests repair to Product Owner.
+	\item The Product Owner starts the removal process of the LRU, including reset and cleanup
+	\item Failed LRU removal executed locally by Maintenance Operator (also in charge of reset and cleanup)
+	\item Product owner informs Airplane Maintainer of the removal and receives information of available replacement
+	      LRUs.
+	\item The replacement LRU shall be available from a remote location.
+	\item The remaining flow proceeds as in Scenario 1 in Subsection \ref{sub:Installation of Connected Cabin Systems}
+
+\end{itemize}
+
+\subsubsection{Post-Conditions}
+\begin{itemize}
+	\item A new LRU  is deployed, integrated into network, updated with latest security patches and configured by
+	      the Airline for specific needs
+	\item CCS is registered with unique identifier and certificates are dispatched for authentication.
+	\item For the configuration, integrity is verified and confidentiality has been preserved (for IP protection)
+	      in the process
+\end{itemize}
+
+\subsubsection{Attack Scenario}
+
+Attacks follow same pattern as in Subsection \ref{sub:Installation of Connected Cabin Systems} from Scenario 1.
+An attacker can inject malicious software or a counterfeit LRU through the supply chain.
+% subsection LRU Replacement and Repurposing (end)
