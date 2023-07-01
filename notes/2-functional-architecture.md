@@ -3,7 +3,6 @@
 > **Disclaimer**: Content partly used from CERTIFY Deliverable 1.1
 
 <!--toc:start-->
-
 - [Functional Architecture](#functional-architecture)
   - [Protocols Considered](#protocols-considered)
   - [Device Architectures](#device-architectures)
@@ -13,8 +12,11 @@
   - [Inventorying](#inventorying)
   - [Operations (Day-2-Day )](#operations-day-2-day)
   - [Secure Firmware Updating](#secure-firmware-updating)
-  - [Security-Information Sharing](#security-information-sharing) - [External Stakeholders](#external-stakeholders) - [Cybersecurity Assessment](#cybersecurity-assessment) - [Security Levels](#security-levels)
-  <!--toc:end-->
+  - [Security-Information Sharing](#security-information-sharing)
+    - [External Stakeholders](#external-stakeholders)
+    - [Cybersecurity Assessment](#cybersecurity-assessment)
+    - [Security Levels](#security-levels)
+<!--toc:end-->
 
 ## Protocols Considered
 

@@ -7,12 +7,15 @@
 - [ ] think about conceptual blockchain stuff
 - [ ] Securing small-business and home internet of things (iot) devices: Mitigating network-based
       attacks using manufacturer usage description (mud)
-- [ ] SRaM-Based PUF Readouts
 - [ ] Trusted IoT Device Network-Layer Onboarding and Lifecycle Management
+- [ ] review [Interledger UMU](https://www.researchgate.net/publication/342255539_An_Interledger_Blockchain_Platform_for_Cross-Border_Management_of_Cybersecurity_Information)
+- [ ] review [BC4CC UZH]()/[Bifroest UZH](https://gitlab.ifi.uzh.ch/scheid/bifrost)
+- [ ] SRaM-Based PUF Readouts
+  - Do I need to develop an algorithm myself?
 
 ## Writing
 
-- [ ] Rewrite Introduction from Thesis proposal
-- [ ] Transcribe use case from markdown
+- [x] Rewrite Introduction from Thesis proposal
+- [x] Transcribe use case from markdown
 
 ## Implementation

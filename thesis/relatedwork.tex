@@ -1,38 +1,55 @@
 \chapter{Related Work}
 
-% compares, contrasts, synthesizes, and provides introspection about the available knowledge for a given topic or field
+% NOTE: compares, contrasts, synthesizes, and provides introspection about the available knowledge for
+% a given topic or field
 
 \section{CERTIFY}
+\section{CERTIFY} % (fold)
+\label{sec:CERTIFY}
 
 This thesis is carried out in conjunction with the CERTIFY project.
 
 The National Institute for Standard and Technology has a few ongoing projects and white papers on security related
 mitigation methods for IoT devices.
 
-% \section{NIST}
-% \subsection{Trusted IoT Device Network-Layer Onboarding and Lifecycle Management \cite{trusted-iot-draft}}
-% \subsection{Securing Small-Business and Home Internet of Things (IoT) Devices: Mitigating Network-Based Attacks Using
-% 	Manufacturer Usage Description (MUD) \cite{dodson2021securing}}
+% section CERTIFY (end)
 
-\section{DLT-based Asset-Tracking}
+
+\section{DLT-based Asset-Tracking} % (fold)
+\label{sec:DLT-based Asset-Tracking}
 
 Neisse et al. (2017) analyzed how blockchain-based approaches might be used for data accountability and provenance
 tracking under the then recently released GDPR legislation, highlighting challenges of scalability and considering
 sharding as a method to address it. \cite{neisse2017blockchain} Further they also mentioned issues of clonability of
 the tracked assets, which we can also correlate to the physical assets that are tracked inside blockchain.
 
-\section{Device fingerprinting}
-% possibly merge this into upper section
+% section DLT-based Asset-Tracking (end)
 
-For classification of device capabilities NIST has been considering the usage of MUDs, so that devices do not step out
-the bounds of their official and appointed capabilities. \cite{dodson2021securing}
 
-In order to be able to track IoT nodes in a blockchain, they need to be uniquely identifiable, in our case even in a
-distributed manner, using Distributed Identifiers, DIDs. Methods of creating identifiers that are unique to devices
-exist, such as SRAM-Based PUF Readouts \cite{vinagrero2023sram}.
+\section{Cybersecurity of IoT Devices} % (fold)
+\label{sec:Cybersecurity of IoT Devices}
 
-\section{Cybersecurity of IoT Devices}
 
 In order to maintain participation rights for only valid users/clients, Manufacturer Usage Descriptions, MUDs, are
 getting more and more relevant, as also the National Institute for Standards and Technology, NIST, have been considering
 their use cases. \cite{dodson2021securing}
+
+
+\subsection{SRAM-based PUF Readouts} % (fold)
+\label{sub:SRAM-based PUF Readouts}
+
+We will also be considering using SRAM-based PUF readouts in our device configurations in order to get DIDs that are
+absolutely unique for each device.
+
+\cite{vinagrero2023sram}
+
+% subsection SRAM-based PUF Readouts (end)
+
+\subsection{Device Fingerprinting} % (fold)
+\label{sub:Device Fingerprinting}
+
+For classification of device capabilities NIST has been considering the usage of MUDs, so that devices do not step out
+the bounds of their official and appointed capabilities. \cite{dodson2021securing}
+
+% subsection Device Fingerprinting (end)
+% section Cybersecurity of IoT Devices (end)

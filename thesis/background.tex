@@ -1,6 +1,10 @@
 \chapter{Background}
 
+% NOTE: (aver) Explain important topics for the reader to understand
+
 \section{Distributed Ledger Technology}
+
+% TODO: (aver) Explain DLT
 
 \section{Manufacture Usage Description}
 
@@ -28,3 +32,43 @@ specification.
 	\caption{NIST MUD Reference Architecture}
 	\label{fig:NIST MUD Reference Architecture}
 \end{figure}
+
+
+\section{Physical Unclonable Function} % (fold)
+\label{sec:Physical Unclonable Function}
+
+In order to be able to track IoT nodes in a blockchain, they need to be uniquely identifiable, in our case even in a
+distributed manner, using e.g., Distributed Identifiers, DIDs.
+Common practices are based on placing a cryptographic key into a nonvolatile electrically erasable programmable
+read-only memory (EEPROM) or battery-backed static random-access memory (SRAM) and use hardware cryptographic operations
+such as digital signatures or encryption, which is all expensive in design and power consumption. \cite{herder2014physical}
+
+PUFs are unpredictable and uncontrollable, therefore making it unclonable and an ideal security vector. They are
+dependent on random physical factors introduced during manufacturing, e.g., inequalities of SRAM cells, although factors
+such as the altering of the physical components, voltage and temperature need to be taken into account. \cite{vinagrero2023sram}
+For reasons of simplicity and because it is not the main focus of this thesis, we will neglect this aspect. 
+% TODO: Specify assumptions in another paragraph
+
+By implementing the Challenge-Response Pair, CRP, is used to evaluate the microstructure, whereas a physical challenge
+makes the device react, the response, in an unpredictable, but repeatable way.
+In order to turn this 'silicon key' into a cryptographic root key, processing algorithms need to be applied, that ensure
+that the distribution of 0s and 1s are uniform. \cite{herder2014physical}
+
+\subsubsection{SRAM-Based PUF Readouts} % (fold)
+\label{sec:SRAM-Based PUF Readouts}
+
+Methods of creating identifiers that are unique to devices exist, such as SRAM-Based Physical Unclonable Function, PUF,
+readouts. Therein PUFs are among the most cost-effective security primitives to establish hardware trust.
+\cite{holcomb2007initial}
+
+Even though the evaluation process of the characterization of guarantee over lifetime and differing operating conditions
+are still subject to research following metrics have become widespread: \textit{reliability}, the variation of bit-wise
+startup patterns; \textit{uniformity}, i.e., the repeatability and reproducibility on a given device after any amount of
+restarts; \textit{uniqueness}, the probability of other devices with same signatures; \textit{bit-aliasing}, the
+probability of specific bit position of the signature to be biased towards 0 or 1. \cite{vinagrero2023sram}
+% subsubsection SRAM-Based PUF Readouts (end)
+
+
+% TODO: (aver) challenges, vulnerabilities
+
+% section Physical Unclonable Function (end)
