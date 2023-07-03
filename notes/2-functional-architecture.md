@@ -4,29 +4,18 @@
 
 <!--toc:start-->
 - [Functional Architecture](#functional-architecture)
-  - [Protocols Considered](#protocols-considered)
   - [Device Architectures](#device-architectures)
     - [Edge Nodes](#edge-nodes)
     - [Function and Central Controller Nodes](#function-and-central-controller-nodes)
   - [Onboarding](#onboarding)
   - [Inventorying](#inventorying)
-  - [Operations (Day-2-Day )](#operations-day-2-day)
+  - [Operations (Day-2-Day)](#operations-day-2-day)
   - [Secure Firmware Updating](#secure-firmware-updating)
   - [Security-Information Sharing](#security-information-sharing)
     - [External Stakeholders](#external-stakeholders)
     - [Cybersecurity Assessment](#cybersecurity-assessment)
     - [Security Levels](#security-levels)
 <!--toc:end-->
-
-## Protocols Considered
-
-- [ARINC 827](https://standards.globalspec.com/std/14317873/ARINC%20827)
-- [ARINC 429](https://en.wikipedia.org/wiki/ARINC_429)
-  - Communication bus
-- [ARINC 717](https://en.wikipedia.org/wiki/ARINC_717)
-  - digital flight data recorder with inputs and outputs
-- Ethernet
-- WIFI
 
 ## Device Architectures
 
@@ -88,7 +77,7 @@ In regard to our use cases, each edge node will be inventoried by either the **C
 
 ![Inventorying Sequence Diagram](./.assets/inventorying-sequence-diagram.png)
 
-## Operations (Day-2-Day )
+## Operations (Day-2-Day)
 
 - Collection of changes and storing for sharing, which is done either at a later point, or
   instantaneously
@@ -152,6 +141,7 @@ To enable security information sharing, we will be relying on the #Hyperledger p
     - patch/re-certification
 
 - How will we be communicating with deployment domain / masters?
+
   - probably simple WIFI communication but since hyperledger sent, it is encrypted that way.
   - Actually makes more sense to just use a private network for communication with controller. Issue
     with that is the central point of failure

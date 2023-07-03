@@ -6,7 +6,14 @@
 
 % TODO: (aver) Explain DLT
 
-\section{Manufacture Usage Description}
+\subsection{Smart Contract} % (fold)
+\label{sec:Smart Contract}
+
+% subsection Smart Contract (end)
+
+
+\section{Manufacture Usage Description} % (fold)
+\label{sec:Manufacture Usage Description}
 
 MUD has been developed by the International Engineering Task Force, IETF, with following goals and intents in mind:
 \cite{rfc8520-mud}
@@ -32,7 +39,7 @@ specification.
 	\caption{NIST MUD Reference Architecture}
 	\label{fig:NIST MUD Reference Architecture}
 \end{figure}
-
+% section Manufacture Usage Description (end)
 
 \section{Physical Unclonable Function} % (fold)
 \label{sec:Physical Unclonable Function}
@@ -46,7 +53,7 @@ such as digital signatures or encryption, which is all expensive in design and p
 PUFs are unpredictable and uncontrollable, therefore making it unclonable and an ideal security vector. They are
 dependent on random physical factors introduced during manufacturing, e.g., inequalities of SRAM cells, although factors
 such as the altering of the physical components, voltage and temperature need to be taken into account. \cite{vinagrero2023sram}
-For reasons of simplicity and because it is not the main focus of this thesis, we will neglect this aspect. 
+For reasons of simplicity and because it is not the main focus of this thesis, we will neglect this aspect.
 % TODO: Specify assumptions in another paragraph
 
 By implementing the Challenge-Response Pair, CRP, is used to evaluate the microstructure, whereas a physical challenge
