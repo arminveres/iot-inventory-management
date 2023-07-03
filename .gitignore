@@ -3,5 +3,9 @@
 *.dtmp
 *.pdf
 **/build/*
-!**/build/thesis.pdf
 indent.log
+
+# unignore some necessary pdfs
+!**/build/thesis.pdf
+!**/uzh_logo_e.pdf
+!**/ifi_logo.pdf
