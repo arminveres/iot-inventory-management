@@ -39,7 +39,7 @@ Ethereum and Bitcoin are out of the picture.
 
 - focus on creating, transmitting and storing VCs
 - blockchain rooted, peer-to-peer interactions
-- cryptographic support by [Hyperledger Ursa](https://www.hyperledger.org/use/ursa)
+- cryptographic support by [Hyperledger Ursa](https://www.hyperledger.org/use/ursa) (deprecated)
 
 #### Possible Application
 

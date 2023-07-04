@@ -37,11 +37,15 @@ their use cases. \cite{dodson2021securing}
 \subsection{SRAM-based PUF Readouts} % (fold)
 \label{sub:SRAM-based PUF Readouts}
 
+For this thesis we will not be implementing a sophisticated Designated Accrediting Authority, DAA, leading to the
+assumption, that it will be implemented as part of another thesis. For our use-case we will refer to simple
+hardcoded authentication, with a key being provided for each device by us and trusted by us for simplicity.
+
+
+Nonetheless the topic is still relevant from a cybersecurity perspective and there have been a few attempts at creating
+secure keys out of SRAM readouts, such as \cite{vinagrero2023sram} or \cite{Niya_Jeffrey_Stiller_2020}.
 We will also be considering using SRAM-based PUF readouts in our device configurations in order to get DIDs that are
 absolutely unique for each device.
-
-\cite{vinagrero2023sram}
-
 % subsection SRAM-based PUF Readouts (end)
 
 \subsection{Device Fingerprinting} % (fold)
@@ -51,4 +55,59 @@ For classification of device capabilities NIST has been considering the usage of
 the bounds of their official and appointed capabilities. \cite{dodson2021securing}
 
 % subsection Device Fingerprinting (end)
+
+% TODO: (aver) add section on VCs, compare different IdM technologies, e.g., Aries
+
+\subsection{Verified Credentials} % (fold)
+\label{sub:Verified Credentials}
+
+\begin{table}
+	\caption{Comparison of Identity Management and Verified Credentials related Software}
+	\label{tab:Comparison of Identity Management and Verified Credentials related Software}
+	\begin{center}
+		\begin{tabular}[c]{|l|p{7cm}|l|}
+			\hline
+			\multicolumn{1}{|c|}{\textbf{Technology Name}} & Short Description                             &
+			Main Feature                                                                                     \\
+			% \multicolumn{1}{c|}{\textbf{hola}} \\ % use to add a line below or above
+			\hline
+			Hyperledger Aries \cite{hyperledger:wiki}      & creating, transmitting and storing verifiable
+			digital credentials                            & VC issuing                                      \\
+			\hline
+			Hyperledger Indy \cite{hyperledger:wiki}       & Tools/Libraries for providing digital IDs
+			rooted on Blockchains or DLTs                  & DID and Tools                                   \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+
+\subsubsection{Hyperledger Aries} % (fold)
+\label{sec:Hyperledger Aries}
+
+Hyperledger Aries is a graduated project from the Hyperledger foundation that focuses on on creating, transmitting and
+storing verifiable digital credentials, with its infrastructure aimed at blockchain-rooted peer-2-peer interactions.
+
+% subsubsection Hyperledger Aries (end)
+% subsection Verified Credentials (end)
 % section Cybersecurity of IoT Devices (end)
+
+\section{Blockchains} % (fold)
+\label{sec:Blockchains}
+\begin{table}
+	\caption{Blockchains considered}
+	\label{tab:Blockchains considered}
+	\begin{center}
+		\begin{tabular}[c]{|l|l|}
+			\hline
+			\multicolumn{1}{|c|}{\textbf{Blockchain Name}} & Key Characteristics  \\
+			\hline
+			Hyperledger Iroha \cite{hyperledger:wiki}      & Permissioned Network \\
+			\hline
+			Ethereum                                       & Permissionless       \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+% section Blockchains (end)
