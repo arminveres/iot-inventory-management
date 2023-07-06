@@ -24,10 +24,69 @@ nodes of the network, consensus algorithms are used.
 % subsection Smart Contract (end)
 % section Distributed Ledger Technology (end)
 
+\section{Verifiable Credentials and Identity Management} % (fold)
+\label{sec:Verifiable Credentials and Identity Management}
+In contrast to identification through physical means, such as passports and driver licenses, the
+\textit{Verifiable Credential, VC}, model tries to achieve similar portability, alas in a digital wallet, be it on a
+phone or other edge device. \cite{world2019verifiablecredentials}
+
+\textit{Digital Identity} is the digital reference to a person or subject \cite{Domingo_2020}, with which it/they in
+response to requests for digital identification, authentication or proofs of authentication is presented. Also of
+importance is that there is a unique identifier, that is connected to the digital identity.
+\cite{Sedlmeir_Smethurst_Rieger_Fridgen_2021}
+In general identities come with \textit{identifiers}, such as names, social security number, mobile number, date of
+birth etc. \cite{eth-decentralized-identity}.
+
+Support for verifiable credentials and digital wallets has been growing, e.g., in Canada \cite{preukschat2021self},
+where Canada's Verifiable Organizations Network, VON, permits storage of credentials inside Hyperledger Aries
+\cite{hyperledger:wiki}. VON allows the issuing of digital licenses, permits and registrations to legal entities using
+VC.
+The European Blockchain Services Infrastructure also uses VCs to issue documents from public institutions, such as
+digital diplomas and social security passes. \cite{williams2020cross}
+
+\subsection{Decentralized Identifiers} % (fold)
+\label{sec:Decentralized Identifiers}
+\textit{Decentralized Identifiers, DIDs}, not to be confused with Decentralized Identities, are often used by
+decentralized identity protocols. \cite{world2022did} They are not issued by a centralized body and are stored on DLTs
+or on peer-2-peer networks, which makes DIDs globally unique, resolvable with high quality and cryptographically
+verifiable. \cite{w3c-did-primer} For example, an Ethereum account in itself is a valid DID and one can create as many
+of them as one wishes. \cite{eth-decentralized-identity}.
+
+Two main components make DIDs possible: \cite{eth-decentralized-identity}
+\begin{itemize}
+	\item \textbf{Public Key Infrastructure (PKI)}: Using a public and private key for an entity, one can
+	      authenticate user identities e.g., in a blockchain network such ash Ethereum and prove digital ownership
+	      of assets.
+	      The private key can decrypt and or signs, while the public key verifies or encodes.
+	\item \textbf{Decentralized Datastores}: the blockchain as verifiable data registry is open, trustless and a
+	      decentralized repository of information and through the existence of public blockchains the need to store
+	      identifiers in centralized registries is eliminated.
+\end{itemize}
+% subsection Decentralized Identifiers (end)
+
+\cite{Sedlmeir_Smethurst_Rieger_Fridgen_2021} summaries how centralized threats or problems in today's environment may
+be countered by decentralized solutions. ...
+% TODO: (aver) Either relate to this table from the paper, or port it into my thesis.
+% \begin{table}
+% 	\caption{Sedlmeir et al. (2021): Centralized problems and proposed decentralized solutions}
+% 	\label{tab:Centralized problems and proposed decentralized solutions}
+% 	\begin{center}
+% 		\begin{tabular}[c]{|l|l|}
+% 			\hline
+% 			\textbf{Diagnosed Problems} & \textbf{Proposed Solutions} \\
+% 			\hline
+% 			Big-Tech and Government Surveillance & Non correlatable identifiers \\
+% 			\hline
+% 		\end{tabular}
+% 	\end{center}
+% \end{table}
+
+% section Verifiable Credentials and Identity Management (end)
+
 \section{Sovereignty} % (fold)
 \label{sec:Sovereignty}
 
-Self-sovereign Identity is compromised of 3 main pillar, blockchains, DIDs, and VCs.
+Self-sovereign Identity, SSI, is compromised of 3 main pillar, blockchains, DIDs, and VCs.
 
 % section Sovereignty (end)
 
@@ -95,11 +154,9 @@ restarts; \textit{uniqueness}, the probability of other devices with same signat
 probability of specific bit position of the signature to be biased towards 0 or 1. \cite{vinagrero2023sram}
 % subsubsection SRAM-Based PUF Readouts (end)
 
-
 % TODO: (aver) challenges, vulnerabilities
 
 % section Physical Unclonable Function (end)
-
 \section{Over the Air IoT updating} % (fold)
 \label{sec:Over the Air  IoT updating}
 In order to stray away from the classic client-server architecture for updating devices, which demonstrate a single
@@ -110,3 +167,16 @@ point of failure, we will discuss other decentralized methods to achieve Over th
 
 % subsection Distributed OTA (end)
 % section Over the Air IoT updating (end)
+
+\section{Networking} % (fold)
+\label{sec:Networking}
+\subsection{Software-Defined Networking} % (fold)
+\label{sub:Software-Defined Networking}
+
+% subsection Software-Defined Networking (end)
+
+\subsection{Network Functions Virtualization} % (fold)
+\label{sub:Network Functions Virtualization}
+
+% subsection Network Functions Virtualization (end)
+% section Networking (end)

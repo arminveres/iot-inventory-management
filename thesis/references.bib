@@ -1,4 +1,6 @@
+% =================================================================================================
 % EU directives
+% =================================================================================================
 @legislation{EU-cybersecurity-act,
     title = {The EU Cybersecurity Act},
     url = {https://digital-strategy.ec.europa.eu/en/policies/cybersecurity-act},
@@ -14,7 +16,9 @@
     date = {2023},
 }
 
+% =================================================================================================
 % DLT based stuff
+% =================================================================================================
 @inproceedings{neisse2017blockchain,
     title = {A blockchain-based approach for data accountability and provenance
              tracking},
@@ -25,7 +29,37 @@
     year = {2017},
 }
 
+@software{hyperledger:wiki,
+    title = {Hyperledger Wiki},
+    url = {https://wiki.hyperledger.org/},
+    urldate = {2023-07-04},
+    author = {Hyperledger Foundation},
+}
+
+@inproceedings{scheid2019bifrost,
+    title = {Bifr{\"o}st: a modular blockchain interoperability API},
+    author = {Scheid, Eder J and Hegnauer, Timo and Rodrigues, Bruno and Stiller
+              , Burkhard},
+    booktitle = {2019 IEEE 44th Conference on Local Computer Networks (LCN)},
+    pages = {332--339},
+    year = {2019},
+    organization = {IEEE},
+}
+
+@article{siris2019interledger,
+    title = {Interledger approaches},
+    author = {Siris, Vasilios A and Nikander, Pekka and Voulgaris, Spyros and
+              Fotiou, Nikos and Lagutin, Dmitrij and Polyzos, George C},
+    journal = {Ieee Access},
+    volume = {7},
+    pages = {89948--89966},
+    year = {2019},
+    publisher = {IEEE},
+}
+
+% =================================================================================================
 % PUF and SRAM generation
+% =================================================================================================
 @article{vinagrero2023sram,
     title = {SRaM-Based PUF Readouts},
     author = {Vinagrero, Sergio and Martin, Honorio and de Bignicourt, Alice and
@@ -95,7 +129,9 @@
 }
 
 
+% =================================================================================================
 % NIST
+% =================================================================================================
 @online{trusted-iot-draft,
     title = {Trusted IoT Device Network-Layer Onboarding and Lifecycle
              Management},
@@ -117,27 +153,6 @@
               Mark and others},
     year = {2021},
     institution = {National Institute of Standards and Technology},
-}
-
-@article{siris2019interledger,
-    title = {Interledger approaches},
-    author = {Siris, Vasilios A and Nikander, Pekka and Voulgaris, Spyros and
-              Fotiou, Nikos and Lagutin, Dmitrij and Polyzos, George C},
-    journal = {Ieee Access},
-    volume = {7},
-    pages = {89948--89966},
-    year = {2019},
-    publisher = {IEEE},
-}
-
-@inproceedings{scheid2019bifrost,
-    title = {Bifr{\"o}st: a modular blockchain interoperability API},
-    author = {Scheid, Eder J and Hegnauer, Timo and Rodrigues, Bruno and Stiller
-              , Burkhard},
-    booktitle = {2019 IEEE 44th Conference on Local Computer Networks (LCN)},
-    pages = {332--339},
-    year = {2019},
-    organization = {IEEE},
 }
 
 @misc{rfc8520-mud,
@@ -184,9 +199,119 @@
     author = {NIST},
 }
 
-@software{hyperledger:wiki,
-    title = {Hyperledger Wiki},
-    url = {https://wiki.hyperledger.org/},
-    urldate = {2023-07-04},
-    author = {Hyperledger Foundation},
+% =================================================================================================
+% VC and DID
+% =================================================================================================
+@online{world2019verifiablecredentials,
+    title = {Verifiable credentials data model 1.1: expressing verifiable
+             information on the web},
+    author = {World Wide Web Consortium and others},
+    url = {https://www.w3.org/TR/vc-data-model/},
+    year = {2022},
+    publisher = {World Wide Web Consortium (W3C)},
+}
+
+@online{world2022did,
+    title = {Decentralized Identifiers (DIDs) v1.0},
+    author = {World Wide Web Consortium and others},
+    url = {https://w3c.github.io/did-core/},
+    year = {2022},
+    publisher = {World Wide Web Consortium (W3C)},
+}
+
+@online{w3c-did-primer,
+    title = {A Primer for Decentralized Identifiers: An introduction to
+             self-administered identifiers for curious people},
+    author = {World Wide Web Consortium and others},
+    url = {https://w3c-ccg.github.io/did-primer/},
+    year = {2021},
+    publisher = {World Wide Web Consortium (W3C)},
+}
+
+
+ @article{Sedlmeir_Smethurst_Rieger_Fridgen_2021,
+    title = {Digital Identities and Verifiable Credentials},
+    volume = {63},
+    ISSN = {2363-7005, 1867-0202},
+    DOI = {10.1007/s12599-021-00722-y},
+    number = {5},
+    journal = {Business \& Information Systems Engineering},
+    author = {Sedlmeir, Johannes and Smethurst, Reilly and Rieger, Alexander and
+              Fridgen, Gilbert},
+    year = {2021},
+    month = {Oct},
+    pages = {603–613},
+    language = {en},
+}
+
+ @article{Domingo_2020,
+    title = {How eIDAS can legally support digital identity and trustworthy
+             DLT-based transactions in the Digital Single Market},
+    author = {Domingo, Dr Ignacio Alamillo},
+    year = {2020},
+    language = {en},
+}
+
+@book{preukschat2021self,
+    title = {Self-sovereign identity},
+    author = {Preukschat, Alex and Reed, Drummond},
+    year = {2021},
+    publisher = {Manning Publications},
+}
+
+@incollection{williams2020cross,
+    title = {Cross-chain blockchain networks, compatibility standards, and
+             interoperability standards: The case of european blockchain services
+             infrastructure},
+    author = {Williams, Idongesit},
+    booktitle = {Cross-Industry Use of Blockchain Technology and Opportunities
+                 for the Future},
+    pages = {150--165},
+    year = {2020},
+    publisher = {IGI global},
+}
+
+ @online{eth-decentralized-identity,
+    title = {Decentralized Identity},
+    url = {https://ethereum.org},
+    abstractNote = {What is decentralized identity, and why does it matter?},
+    journal = {ethereum.org},
+    language = {en},
+    urldate = {2023-07-06},
+    editor = {ethereum.org},
+}
+
+@inproceedings{DIAM-IoT-Fan_Chai_Xu_Guo_2020,
+    address = {Taipei Taiwan},
+    title = {DIAM-IoT: A Decentralized Identity and Access Management Framework
+             for Internet of Things},
+    ISBN = {978-1-4503-7610-5},
+    url = {https://dl.acm.org/doi/10.1145/3384943.3409436},
+    DOI = {10.1145/3384943.3409436},
+    abstractNote = {With the exorbitant growth in the number of connected
+                    devices, the lack of proper identity and access management
+                    (IAM) mechanisms has become a major concern. The traditional
+                    IAM systems, which focus solely on managing people’s digital
+                    identities, fail to accommodate billions of Internet of
+                    Things (IoT) devices. The emerging concepts such as
+                    decentralized identifiers (DIDs) and verifiable credentials
+                    (VCs) provide new perspectives on incorporating IAM
+                    capabilities into IoT ecosystems. In this paper, we present a
+                    decentralized IAM framework for IoT named DIAM-IoT, which is
+                    able to create a unified, interoperable, and tamper-proof
+                    device identity registry on top of the blockchain by
+                    introducing DIDs and VCs into the lifecycle of IoT devices,
+                    thereby breaking IoT application silos and unlocking the
+                    potential of IoT on a global scale. A proof-of-concept
+                    implementation of the DIAM-IoT framework for decentralized
+                    and user-centric data authorization demonstrates its
+                    feasibility and effectiveness in practice.},
+    booktitle = {Proceedings of the 2nd ACM International Symposium on
+                 Blockchain and Secure Critical Infrastructure},
+    publisher = {ACM},
+    author = {Fan, Xinxin and Chai, Qi and Xu, Lei and Guo, Dong},
+    year = {2020},
+    month = {Oct},
+    pages = {186–191},
+    language = {en},
 }

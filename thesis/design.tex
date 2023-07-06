@@ -74,11 +74,15 @@ All of the actors in Section~\ref{sec:Actors-design} are involved.
 
 We assume a device has been manufactured and that it is now at the desired location. In the first time setup, the device
 will be either programmed to create a DID on setup, or will be assigned/created one in the manufacturing process,
-depending on the computational and hardware facilities. Both an edge and controller node shall have their DID, since
+depending on the computational and hardware facilities. Building up on that, as mentioned in
+Section~\ref{sec:Physical Unclonable Function} the device will have unique key, but we will not be generating such a
+function and neither derive a key for further use and we assume a predefined key to be placed into the device.
+
+Both an edge and controller node shall have their DID, since
 both will be managed and or inventoried by another instance or entity.
 Necessary for this process is a valid MUD file, also issued by the manufacturer, on device fabrication or on first time
-setup. This MUD does not necessarily need to be on the device, but a URL is needed, which points to the location of such
-file, see Section~\ref{sec:Manufacture Usage Description}.
+setup. This MUD does not necessarily need to be on the device, but an URL is needed, which points to the location of
+such file, see Section~\ref{sec:Manufacture Usage Description}.
 Each device shall request and onboarding by the manufacturer, which then verifies the DID, and in case of validity
 issues a Verifiable Credential, VC, to the device.
 

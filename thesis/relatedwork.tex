@@ -28,7 +28,6 @@ the tracked assets, which we can also correlate to the physical assets that are 
 \section{Cybersecurity of IoT Devices} % (fold)
 \label{sec:Cybersecurity of IoT Devices}
 
-
 In order to maintain participation rights for only valid users/clients, Manufacturer Usage Descriptions, MUDs, are
 getting more and more relevant, as also the National Institute for Standards and Technology, NIST, have been considering
 their use cases. \cite{dodson2021securing}
@@ -56,10 +55,8 @@ the bounds of their official and appointed capabilities. \cite{dodson2021securin
 
 % subsection Device Fingerprinting (end)
 
-% TODO: (aver) add section on VCs, compare different IdM technologies, e.g., Aries
-
-\subsection{Verified Credentials} % (fold)
-\label{sub:Verified Credentials}
+\subsection{Verified Credentials and Identity Management Technologies} % (fold)
+\label{sub:Verified Credentials and Identity Management Technologies}
 
 \begin{table}
 	\caption{Comparison of Identity Management and Verified Credentials related Software}
@@ -67,47 +64,68 @@ the bounds of their official and appointed capabilities. \cite{dodson2021securin
 	\begin{center}
 		\begin{tabular}[c]{|l|p{7cm}|l|}
 			\hline
-			\multicolumn{1}{|c|}{\textbf{Technology Name}} & Short Description                             &
-			Main Feature                                                                                     \\
-			% \multicolumn{1}{c|}{\textbf{hola}} \\ % use to add a line below or above
+			\textbf{Technology Name}                  & Short Description                             & Main Feature \\
 			\hline
-			Hyperledger Aries \cite{hyperledger:wiki}      & creating, transmitting and storing verifiable
-			digital credentials                            & VC issuing                                      \\
+			Hyperledger Aries \cite{hyperledger:wiki} & creating, transmitting and storing verifiable
+			digital credentials                       & VC issuing                                                   \\
 			\hline
-			Hyperledger Indy \cite{hyperledger:wiki}       & Tools/Libraries for providing digital IDs
-			rooted on Blockchains or DLTs                  & DID and Tools                                   \\
+			Hyperledger Indy \cite{hyperledger:wiki}  & Tools/Libraries for providing digital IDs
+			rooted on Blockchains or DLTs             & DID and Tools                                                \\
 			\hline
 		\end{tabular}
 	\end{center}
 \end{table}
 
+\subsection{DIAM-IoT} % (fold)
+\label{sub:DIAM-IoT}
+Identity and Access Management, IAM, \cite{DIAM-IoT-Fan_Chai_Xu_Guo_2020}
+% subsection DIAM-IoT (end)
 
-\subsubsection{Hyperledger Aries} % (fold)
+\subsubsection{Hyperledger Aries and Indy} % (fold)
 \label{sec:Hyperledger Aries}
 
 Hyperledger Aries is a graduated project from the Hyperledger foundation that focuses on on creating, transmitting and
 storing verifiable digital credentials, with its infrastructure aimed at blockchain-rooted peer-2-peer interactions.
 
+As mentioned in Section~\ref{sec:Verifiable Credentials and Identity Management}, Aries is already used to manage VCs
+through compatible wallets in larger organizations such as the EU.
+
 % subsubsection Hyperledger Aries (end)
-% subsection Verified Credentials (end)
+% subsection Verified Credentials and Identity Management Technologies (end)
 % section Cybersecurity of IoT Devices (end)
 
 \section{Blockchains} % (fold)
 \label{sec:Blockchains}
 \begin{table}
-	\caption{Blockchains considered}
-	\label{tab:Blockchains considered}
+	\caption{Considered Blockchains}
+	\label{tab:Considered Blockchains}
 	\begin{center}
 		\begin{tabular}[c]{|l|l|}
 			\hline
-			\multicolumn{1}{|c|}{\textbf{Blockchain Name}} & Key Characteristics  \\
+			\textbf{Blockchain Name}                  & Key Characteristics  \\
 			\hline
-			Hyperledger Iroha \cite{hyperledger:wiki}      & Permissioned Network \\
+			Hyperledger Iroha \cite{hyperledger:wiki} & Permissioned Network \\
 			\hline
-			Ethereum                                       & Permissionless       \\
+			Ethereum                                  & Permissionless       \\
 			\hline
 		\end{tabular}
 	\end{center}
 \end{table}
+
+\subsection{Ethereum} % (fold)
+\label{sec:Ethereum}
+
+Ethereum is a widely known and used blockchain.
+
+There is the Ethereum Virtual Machine...
+
+% subsection Ethereum (end)
+
+\subsection{Hyperledger Iroha} % (fold)
+\label{sub:Hyperledger Iroha}
+
+Hyperledger Iroha is a relatively new and unknown blockchain from the Hyperledger Foundation \cite{hyperledger:wiki}.
+
+% subsection Hyperledger Iroha (end)
 
 % section Blockchains (end)

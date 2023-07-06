@@ -22,4 +22,6 @@
 - [ ] Background: updating
 - [ ] Related Work: VC comparison and highlighting
 
+- [ ] Search all abbreviations and only define the first one!
+
 ## Implementation
