@@ -10,17 +10,30 @@ Distributed Ledger Technology, DLT, refers to the technology of the decentralize
 the development of data between various entities through a peer-2-peer network. In order to achieve synchronicity across
 nodes of the network, consensus algorithms are used.
 
-% TODO: (aver) Explain DLT
-% also the difference between BC vs DLT.
-
 \subsection{Blockchains} % (fold)
 \label{sub:Blockchains}
+% TODO: (aver) look for further definition and sources
+As defined by \cite{diam-iot-2020} a blockchain is a distributed data structuring organizing a growing list of
+transaction records into a chronologically linked sequence of data blocks, which is achieved by a decentralized
+peer-2-peer network, consisting of a cluster of participating nodes. Blocks are continuously appended to the blockchain
+through the \textit{mining} process, executed by distrustful peers. The mining process includes the verification of
+broadcast transactions to specific nodes in the peer-2-peer network. Through a consensus mechanism the blocks are
+conjoined to the blockchain. The result is a chain of blocks that ensures the integrity of existing blocks, leading to a
+DLT without a need for a central authority.
 
+On that note a blockchain is a subset of the DLT. \cite{diam-iot-2020}
 % subsection Blockchains (end)
 
 \subsection{Smart Contract} % (fold)
 \label{sec:Smart Contract}
-
+% TODO: (aver) look for further definition and sources
+Further defined by \cite{diam-iot-2020} a smart contract specifies a computer transaction protocol which is based on the
+execution of terms of the contract upon fulfillment of some pre-conceived condition(s).
+Relating back to blockchains, the smart contract is a part of some block, that is stored and verified there in the form
+of code until execution. Its state consists of the contracts balance and an internal storage, that is updated on each
+invocation of the contract. A user can send a transaction to the contract address, which triggers the state transition
+of the contract and the data being written to the internal storage. A smart contract may perform a predefined logic and
+also interact with other accounts by sending messages or transferring funds.
 % subsection Smart Contract (end)
 % section Distributed Ledger Technology (end)
 
@@ -28,7 +41,7 @@ nodes of the network, consensus algorithms are used.
 \label{sec:Verifiable Credentials and Identity Management}
 In contrast to identification through physical means, such as passports and driver licenses, the
 \textit{Verifiable Credential, VC}, model tries to achieve similar portability, alas in a digital wallet, be it on a
-phone or other edge device. \cite{world2019verifiablecredentials}
+phone or other edge device. \cite{w3c2019verifiablecredentials}
 
 \textit{Digital Identity} is the digital reference to a person or subject \cite{Domingo_2020}, with which it/they in
 response to requests for digital identification, authentication or proofs of authentication is presented. Also of
@@ -47,7 +60,7 @@ digital diplomas and social security passes. \cite{williams2020cross}
 \subsection{Decentralized Identifiers} % (fold)
 \label{sec:Decentralized Identifiers}
 \textit{Decentralized Identifiers, DIDs}, not to be confused with Decentralized Identities, are often used by
-decentralized identity protocols. \cite{world2022did} They are not issued by a centralized body and are stored on DLTs
+decentralized identity protocols. \cite{w3c2022did} They are not issued by a centralized body and are stored on DLTs
 or on peer-2-peer networks, which makes DIDs globally unique, resolvable with high quality and cryptographically
 verifiable. \cite{w3c-did-primer} For example, an Ethereum account in itself is a valid DID and one can create as many
 of them as one wishes. \cite{eth-decentralized-identity}.
@@ -62,11 +75,15 @@ Two main components make DIDs possible: \cite{eth-decentralized-identity}
 	      decentralized repository of information and through the existence of public blockchains the need to store
 	      identifiers in centralized registries is eliminated.
 \end{itemize}
+
+Although DIDs are integral to managing decentralized identities, they are not enough on their own, as they do not
+provide meaningful identity attributes. In order to establish a trust-relationship between DID entities, the above
+mentioned VCs prove useful. \cite{w3c2019verifiablecredentials}
 % subsection Decentralized Identifiers (end)
 
-\cite{Sedlmeir_Smethurst_Rieger_Fridgen_2021} summaries how centralized threats or problems in today's environment may
-be countered by decentralized solutions. ...
 % TODO: (aver) Either relate to this table from the paper, or port it into my thesis.
+% \cite{Sedlmeir_Smethurst_Rieger_Fridgen_2021} summaries how centralized threats or problems in today's environment may
+% be countered by decentralized solutions. ...
 % \begin{table}
 % 	\caption{Sedlmeir et al. (2021): Centralized problems and proposed decentralized solutions}
 % 	\label{tab:Centralized problems and proposed decentralized solutions}
