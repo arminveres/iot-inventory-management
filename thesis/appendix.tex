@@ -6,6 +6,8 @@
 
 \chapter{Code Snippets and Examples}
 
+\captionof{listing}{Example MUD file \cite{mudexample}}
+\label{code:mud-example}
 \begin{minted}{json}
 {
   "ietf-mud:mud": {
@@ -126,6 +128,65 @@
   }
 }
 \end{minted}
-% TODO: (aver) add source
-\captionof{listing}{Example MUD file \cite{mudexample}}
-\label{code:mud}
+
+
+\captionof{listing}{Example VC Document\cite{w3c2019verifiablecredentials}}
+\label{code:vc-doc}
+\begin{minted}{json}
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://www.w3.org/ns/credentials/examples/v2"
+  ],
+  "id": "http://university.example/credentials/1872",
+  "type": ["VerifiableCredential", "ExampleAlumniCredential"],
+  "issuer": "https://university.example/issuers/565049",
+  "validFrom": "2010-01-01T19:23:24Z",
+  "credentialSubject": {
+    "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+    "alumniOf": {
+      "id": "did:example:c276e12ec21ebfeb1f712ebc6f1",
+      "name": "Example University"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-2022",
+    "created": "2023-06-18T21:19:10Z",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "https://university.example/issuers/565049#key-123",
+    "proofValue": "zQeVbY4oey5q2M3XKaxup3tmzN4DRFTLVqpLMweBrSxMY2xHX5XTYV8nQApmEcqaqA3Q1gVHMrXFkXJeV6doDwLWx"
+  }
+}
+\end{minted}
+
+\captionof{listing}{Example DID Document\cite{w3c2022did}}
+\label{code:did-doc}
+\begin{minted}{json}
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
+  "id": "did:example:123456789abcdefghi",
+  "authentication": [{
+    "id": "did:example:123456789abcdefghi#keys-1",
+    "type": "Ed25519VerificationKey2020",
+    "controller": "did:example:123456789abcdefghi",
+    "publicKeyMultibase": "zH3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+  }],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2020-04-22T10:37:22Z",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:example:456#key-1",
+    "jws": "eyJjcml0IjpbImI2NCJdLCJiNjQiOmZhbHNlLCJhbGciOiJFZERTQSJ9..BhWew0x-txcroGjgdtK-yBCqoetg9DD9SgV4245TmXJi-PmqFzux6Cwaph0r-mbqzlE17yLebjfqbRT275U1AA"
+  },
+  "created": "2020-04-22T10:37:22Z",
+  "updated": "2020-04-23T10:37:22Z",
+  "service": [{
+    "id":"did:example:123#linked-domain",
+    "type": "LinkedDomains",
+    "serviceEndpoint": "https://bar.example.com"
+  }]
+}
+\end{minted}

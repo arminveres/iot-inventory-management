@@ -21,6 +21,7 @@ broadcast transactions to specific nodes in the peer-2-peer network. Through a c
 conjoined to the blockchain. The result is a chain of blocks that ensures the integrity of existing blocks, leading to a
 DLT without a need for a central authority.
 
+% TODO: (aver) add further explanation and highlight difference to DLT
 On that note a blockchain is a subset of the DLT. \cite{diam-iot-2020}
 % subsection Blockchains (end)
 
@@ -39,6 +40,9 @@ also interact with other accounts by sending messages or transferring funds.
 
 \section{Verifiable Credentials and Identity Management} % (fold)
 \label{sec:Verifiable Credentials and Identity Management}
+
+\subsection{Verified Credentials} % (fold)
+\label{sub:Verified Credentials}
 In contrast to identification through physical means, such as passports and driver licenses, the
 \textit{Verifiable Credential, VC}, model tries to achieve similar portability, alas in a digital wallet, be it on a
 phone or other edge device. \cite{w3c2019verifiablecredentials}
@@ -56,6 +60,9 @@ where Canada's Verifiable Organizations Network, VON, permits storage of credent
 VC.
 The European Blockchain Services Infrastructure also uses VCs to issue documents from public institutions, such as
 digital diplomas and social security passes. \cite{williams2020cross}
+
+An example VC Document can be seen in Code Listing~\ref{code:vc-doc}.
+% subsection Verified Credentials (end)
 
 \subsection{Decentralized Identifiers} % (fold)
 \label{sec:Decentralized Identifiers}
@@ -75,6 +82,28 @@ Two main components make DIDs possible: \cite{eth-decentralized-identity}
 	      decentralized repository of information and through the existence of public blockchains the need to store
 	      identifiers in centralized registries is eliminated.
 \end{itemize}
+
+Each DID is made up of three elements separated by colons as seen below \cite{w3c2022did}:
+% \underbrace{\vphantom{\text{j}}\text{did}}_{\text{scheme}} :
+\begin{align*}
+	\underbrace{\text{did}}_{\text{Scheme}} :
+	\underbrace{\text{method}}_{\text{Method}} :
+	\underbrace{\text{1234567890abcdefg}}_{\text{Method-Specific Identifier}}
+\end{align*}
+
+The scheme is fixed to be DID, while the method summaries and describes how the DID works with a specific blockchain
+and the specifications of DID deployment. Finally the method-specific identifier guarantees to be unique within the
+context of the DID method.
+
+A DID document can be of format JSON or JSON-LD, which is a JSON based format to represented linked data \cite{w3c2022did}.
+An example can be seen in Code Listing~\ref{code:did-doc}. There are further optional identifiers and keys in such a
+document explained in depth in the W3C specification \cite{w3c2022did}. Mainly it consists out of the identifiers, the
+DID, which is required, a \textbf{controller} that may dispose over it and aliases through \textbf{alsoKnownAs}.
+The next section entails \textbf{Verification Methods}, which may list multiple ways of verifying interactions with the
+DID and other associated parties. The third Section \textbf{Verification Relationships} describes the relationship
+between a DID and its verification method(s).
+Finally the \textbf{Services} part describes what endpoints there are for the DID to interact or advertise, including
+decentralized identity management services for further discovery, authentication, authorization, or interaction.
 
 Although DIDs are integral to managing decentralized identities, they are not enough on their own, as they do not
 provide meaningful identity attributes. In order to establish a trust-relationship between DID entities, the above
@@ -100,12 +129,11 @@ mentioned VCs prove useful. \cite{w3c2019verifiablecredentials}
 
 % section Verifiable Credentials and Identity Management (end)
 
-\section{Sovereignty} % (fold)
-\label{sec:Sovereignty}
-
-Self-sovereign Identity, SSI, is compromised of 3 main pillar, blockchains, DIDs, and VCs.
-
-% section Sovereignty (end)
+% TODO: (aver) explain Sovereignty
+% \section{Sovereignty} % (fold)
+% \label{sec:Sovereignty}
+% Self-sovereign Identity, SSI, is compromised of 3 main pillar, blockchains, DIDs, and VCs.
+% % section Sovereignty (end)
 
 
 \section{Manufacture Usage Description} % (fold)

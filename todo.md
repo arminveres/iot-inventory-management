@@ -21,6 +21,7 @@
 - [ ] Background: DLT
 - [ ] Background: updating
 - [ ] Related Work: VC comparison and highlighting
+- [ ] Related Work: Further in-depth research ETH, IoTeX, Iroha
 
 - [ ] Search all abbreviations and only define the first one!
 
