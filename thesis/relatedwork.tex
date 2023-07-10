@@ -120,13 +120,36 @@ through compatible wallets in larger organizations such as the EU.
 \label{sec:IoTeX}
 IoTeX is a blockchain based framework focusing on decentralized application and IoT devices.
 It provides functionalities such as blockchain, interconnections of decentralized applications, Dapps, using DIDs.
+Architecturally is is quite similar to Ethereum, with a focus on IoT devices and also collaborating with Ethereum,
+making it Ethereum Virtual Machine, EVM, compatible. Further DIDs are used to as on-chain identity framework that
+enables users and devices to own their data, identity, and credentials. Further Real World Data Oracles convert real
+world phenomena into verifiable and blockchain-ready data for use in the IoTeX Dapps.
+IoTeX also supports Trusted Execution Environment, TEE, which is important for this thesis, i.e., for secure storage and
+execution of certain applications and transactions.
 
 Transactions are managed through the \textit{IOTX} token, e.g., to stake smart contracts as mentioned in
 Section~\ref{sub:Decentralized Identity and Access Management for IoT}.
 
 An advantage in using IoTeX would be, that it has already been used in IoT related projects, proving performance in the
 area.
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/iotex-platform-stack.png}
+	\end{center}
+	\caption{IoTeX Platform Overview}
+	\label{fig:iotex-platform-stack}
+\end{figure}
 % section IoTeX (end)
+
+\section{Further non-DLT based IdM Frameworks} % (fold)
+\label{sec:Further non-DLT based IdM Frameworks}
+% https://identity.foundation/
+% https://www.dock.io/post/decentralized-identity
+% https://www.devicehive.com/#open+source
+% https://docs.devicehive.com/docs
+
+% section Further non-DLT based IdM Frameworks (end)
 
 % section Verified Credentials and Identity Management Technologies (end)
 
@@ -144,7 +167,7 @@ area.
 			\hline
 			Ethereum                                  & Permissionless       \\
 			\hline
-			IoTeX \cite{iotex-bc-platform}            & did                  \\
+			IoTeX \cite{iotex-bc-platform}            & Permissionless       \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -166,9 +189,21 @@ There is the Ethereum Virtual Machine...
 Hyperledger Iroha is a relatively new and unknown blockchain from the Hyperledger Foundation \cite{hyperledger:wiki}.
 % subsection Hyperledger Iroha (end)
 
-\section{IoTeX} % (fold)
-\label{sec:IoTeX}
-IoTeX is a blockchain based  framework focusing on decentralized application and IoT devices.
-% section IoTeX (end)
+\subsection{IoTeX (Blockchain)} % (fold)
+\label{sec:IoTeX-Blockchain}
+See Section~\ref{sec:IoTeX}.
+% subsection IoTeX (Blockchain) (end)
 
 % section Blockchains (end)
+
+\section{Real-Time Operating Systems} % (fold)
+\label{sec:Real-Time Operating Systems}
+
+\subsection{TockOS} % (fold)
+\label{sub:TockOS}
+
+The CERTIFY project considers using TockOS for their implementation on the IoT devices.
+Tock is a secure Real-Time Operating System, RTOS, designed to run on ARM and RISC-V based devices.
+
+% subsection TockOS (end)
+% section Real-Time Operating Systems (end)

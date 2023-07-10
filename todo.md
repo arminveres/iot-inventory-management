@@ -26,3 +26,5 @@
 - [ ] Search all abbreviations and only define the first one!
 
 ## Implementation
+
+- [ ] get hardware details to be able to start implementation

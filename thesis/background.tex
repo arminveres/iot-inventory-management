@@ -10,9 +10,18 @@ Distributed Ledger Technology, DLT, refers to the technology of the decentralize
 the development of data between various entities through a peer-2-peer network. In order to achieve synchronicity across
 nodes of the network, consensus algorithms are used.
 
+% TODO: (aver) look for further definition and sources
 \subsection{Blockchains} % (fold)
 \label{sub:Blockchains}
-% TODO: (aver) look for further definition and sources
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=0.95\textwidth]{figures/hyperledger-aries-blockchain-type-matrix.png}
+	\end{center}
+	\caption{Blockchain Types Matrix \cite{hyperledger:aries-rfc}}
+	\label{fig:hyperledger-aries-blockchain-type-matrix}
+\end{figure}
+
 As defined by \cite{diam-iot-2020} a blockchain is a distributed data structuring organizing a growing list of
 transaction records into a chronologically linked sequence of data blocks, which is achieved by a decentralized
 peer-2-peer network, consisting of a cluster of participating nodes. Blocks are continuously appended to the blockchain
@@ -20,6 +29,10 @@ through the \textit{mining} process, executed by distrustful peers. The mining p
 broadcast transactions to specific nodes in the peer-2-peer network. Through a consensus mechanism the blocks are
 conjoined to the blockchain. The result is a chain of blocks that ensures the integrity of existing blocks, leading to a
 DLT without a need for a central authority.
+
+There is a major distinction between permissioned and permissionless blockchains. Everybody may join a permissionless
+blockchain, given they fulfill certain requirements, such as a stake worth enough, while with permissioned blockchains
+only approved members may join. \cite{hyperledger:aries-rfc}
 
 % TODO: (aver) add further explanation and highlight difference to DLT
 On that note a blockchain is a subset of the DLT. \cite{diam-iot-2020}
@@ -72,7 +85,7 @@ or on peer-2-peer networks, which makes DIDs globally unique, resolvable with hi
 verifiable. \cite{w3c-did-primer} For example, an Ethereum account in itself is a valid DID and one can create as many
 of them as one wishes. \cite{eth-decentralized-identity}.
 
-Two main components make DIDs possible: \cite{eth-decentralized-identity}
+According to \cite{eth-decentralized-identity} two main components make DIDs possible:
 \begin{itemize}
 	\item \textbf{Public Key Infrastructure (PKI)}: Using a public and private key for an entity, one can
 	      authenticate user identities e.g., in a blockchain network such ash Ethereum and prove digital ownership
@@ -185,7 +198,7 @@ makes the device react, the response, in an unpredictable, but repeatable way.
 In order to turn this 'silicon key' into a cryptographic root key, processing algorithms need to be applied, that ensure
 that the distribution of 0s and 1s are uniform. \cite{herder2014physical}
 
-\subsubsection{SRAM-Based PUF Readouts} % (fold)
+\subsection{SRAM-Based PUF Readouts} % (fold)
 \label{sec:SRAM-Based PUF Readouts}
 
 Methods of creating identifiers that are unique to devices exist, such as SRAM-Based Physical Unclonable Function, PUF,
@@ -197,7 +210,7 @@ are still subject to research following metrics have become widespread: \textit{
 startup patterns; \textit{uniformity}, i.e., the repeatability and reproducibility on a given device after any amount of
 restarts; \textit{uniqueness}, the probability of other devices with same signatures; \textit{bit-aliasing}, the
 probability of specific bit position of the signature to be biased towards 0 or 1. \cite{vinagrero2023sram}
-% subsubsection SRAM-Based PUF Readouts (end)
+% subsection SRAM-Based PUF Readouts (end)
 
 % TODO: (aver) challenges, vulnerabilities
 
