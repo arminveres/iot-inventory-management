@@ -13,15 +13,6 @@ nodes of the network, consensus algorithms are used.
 % TODO: (aver) look for further definition and sources
 \subsection{Blockchains} % (fold)
 \label{sub:Blockchains}
-
-\begin{figure}
-	\begin{center}
-		\includegraphics[width=0.95\textwidth]{figures/hyperledger-aries-blockchain-type-matrix.png}
-	\end{center}
-	\caption{Blockchain Types Matrix \cite{hyperledger:aries-rfc}}
-	\label{fig:hyperledger-aries-blockchain-type-matrix}
-\end{figure}
-
 As defined by \cite{diam-iot-2020} a blockchain is a distributed data structuring organizing a growing list of
 transaction records into a chronologically linked sequence of data blocks, which is achieved by a decentralized
 peer-2-peer network, consisting of a cluster of participating nodes. Blocks are continuously appended to the blockchain
@@ -30,11 +21,20 @@ broadcast transactions to specific nodes in the peer-2-peer network. Through a c
 conjoined to the blockchain. The result is a chain of blocks that ensures the integrity of existing blocks, leading to a
 DLT without a need for a central authority.
 
-There is a major distinction between permissioned and permissionless blockchains. Everybody may join a permissionless
-blockchain, given they fulfill certain requirements, such as a stake worth enough, while with permissioned blockchains
-only approved members may join. \cite{hyperledger:aries-rfc}
+There is a major distinction between \textit{permissioned} and \textit{permissionless} blockchains.
+Everyone may join a permissionless blockchain, given in some cases they fulfill certain requirements, in contrast to
+permissioned blockchains, where only approved members may join. \cite{hyperledger:aries-rfc} This requires a central
+authority to fulfill this step, but given some environments, such as enterprise, it is necessary, see
+Section~\ref{sec:Hyperledger Fabric}.
 
-% TODO: (aver) add further explanation and highlight difference to DLT
+Permissioned networks boast improved performance over permissionless on on e.g., transaction verification, as only
+approved members are in the network. To offset the absence of trust, in permissionless blockchains, typically mined
+cryptocurrencies and or transaction fees. Therefore in permissioned the cost of using a fault-tolerant consensus
+mechanism.
+
+% TODO: (aver)
+% - add further explanation and highlight difference to DLT
+% - possibly explain privacy/confidentiality and PoW/PoC concepts
 On that note a blockchain is a subset of the DLT. \cite{diam-iot-2020}
 % subsection Blockchains (end)
 
@@ -48,7 +48,18 @@ of code until execution. Its state consists of the contracts balance and an inte
 invocation of the contract. A user can send a transaction to the contract address, which triggers the state transition
 of the contract and the data being written to the internal storage. A smart contract may perform a predefined logic and
 also interact with other accounts by sending messages or transferring funds.
+
+Most smart contracts apply the \textit{order-and-execute} architecture, in which the consensus protocol first validates
+and orders transactions, then propagates it to its peer nodes and finally each peer executes the transaction
+sequentially. The order-and-execute architecture requires deterministic execution, otherwise no consensus consensus can
+be reached. To address non-determinism usually a Domain Specific Language, DSL, is used, such as \textit{Solidity}.
 % subsection Smart Contract (end)
+
+\subsection{Consensus Protocols} % (fold)
+\label{sub:Consensus Protocols}
+\textbf{\textit{TODO}}
+CFT (crash fault-tolerant) or BFT (byzantine fault-tolerant)
+% subsection Consensus Protocols (end)
 % section Distributed Ledger Technology (end)
 
 \section{Verifiable Credentials and Identity Management} % (fold)
@@ -121,6 +132,11 @@ decentralized identity management services for further discovery, authentication
 Although DIDs are integral to managing decentralized identities, they are not enough on their own, as they do not
 provide meaningful identity attributes. In order to establish a trust-relationship between DID entities, the above
 mentioned VCs prove useful. \cite{w3c2019verifiablecredentials}
+
+\subsubsection{DIDComm} % (fold)
+\label{sec:DIDComm}
+\textbf{\textit{TODO}}
+% subsubsection DIDComm (end)
 % subsection Decentralized Identifiers (end)
 
 % TODO: (aver) Either relate to this table from the paper, or port it into my thesis.
@@ -222,19 +238,20 @@ point of failure, we will discuss other decentralized methods to achieve Over th
 
 \subsection{Distributed OTA} % (fold)
 \label{sub:Distributed OTA}
-
+\textbf{\textit{TODO}}
 % subsection Distributed OTA (end)
 % section Over the Air IoT updating (end)
 
 \section{Networking} % (fold)
 \label{sec:Networking}
+\textbf{\textit{TODO}}
 \subsection{Software-Defined Networking} % (fold)
 \label{sub:Software-Defined Networking}
-
+\textbf{\textit{TODO}}
 % subsection Software-Defined Networking (end)
 
 \subsection{Network Functions Virtualization} % (fold)
 \label{sub:Network Functions Virtualization}
-
+\textbf{\textit{TODO}}
 % subsection Network Functions Virtualization (end)
 % section Networking (end)
