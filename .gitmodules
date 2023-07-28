@@ -1,3 +1,7 @@
 [submodule "impl/hyperledger-indy/indy-sdk"]
 	path = impl/hyperledger-indy/indy-sdk
 	url = https://github.com/hyperledger/indy-sdk.git
+[submodule "impl/iroha"]
+	path = impl/iroha
+	url = https://github.com/hyperledger/iroha.git
+	branch = iroha2-lts
