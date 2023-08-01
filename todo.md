@@ -18,13 +18,22 @@
 
 - [x] Rewrite Introduction from Thesis proposal
 - [x] Transcribe use case from markdown
-- [ ] Background: DLT
+- [ ] Background: DLT 
+  - (on it)
 - [ ] Background: updating
+  - (on it)
 - [ ] Related Work: VC comparison and highlighting
+  - (on it)
 - [ ] Related Work: Further in-depth research ETH, IoTeX, Iroha
+  - (on it)
 
 - [ ] Search all abbreviations and only define the first one!
 
 ## Implementation
 
 - [ ] get hardware details to be able to start implementation
+- [ ] run [OpenAPI Aries demo](https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/AriesOpenAPIDemo.md) (added 2023-07-31)
+- [ ] run Indy network
+  - not working, some compilation error through nodejs
+- [ ] run Sawtooth network
+- [ ] run Fabric network

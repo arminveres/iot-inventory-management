@@ -67,7 +67,8 @@ and applications with modules to fit out needs, which why there may be many opti
 			Main Feature                                                                              \\
 			\hline
 			Hyperledger Aries \cite{hyperledger:wiki}                                               &
-			creating, transmitting and storing verifiable digital credentials                       &
+			creating, transmitting and storing verifiable digital credentials, (uses Indy per default,
+			should be pluggable though)                                                             &
 			VC issuing, Blockchain-agnostic                                                           \\
 			\hline
 			Hyperledger Indy \cite{hyperledger:wiki}                                                &
@@ -219,13 +220,18 @@ thesis.
 	\begin{center}
 		\begin{tabular}[c]{|l|l|}
 			\hline
-			\textbf{Blockchain Name}                  & Key Characteristics  \\
+			\textbf{Blockchain Name}                     & \textbf{Key Characteristics}                             \\
 			\hline
-			Hyperledger Iroha \cite{hyperledger:wiki} & Permissioned Network \\
+			Hyperledger Iroha \cite{hyperledger:wiki}    & Permissioned Network                                     \\
 			\hline
-			Ethereum                                  & Permissionless       \\
+			Hyperledger Sawtooth \cite{hyperledger:wiki} & Permissioned Network, private, (aimed at enterprise use,
+			scalable)                                                                                               \\
 			\hline
-			IoTeX \cite{iotex-bc-platform}            & Permissionless       \\
+			Ethereum                                     & Permissionless                                           \\
+			\hline
+			IoTeX \cite{iotex-bc-platform}               & Permissionless                                           \\
+			\hline
+			IBM Blockchain                               & \textbf{\textit{TODO}}                                   \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -251,6 +257,12 @@ Hyperledger Iroha is a relatively new and unknown blockchain from the Hyperledge
 \label{sub:IoTeX-Blockchain}
 See Section~\ref{sec:IoTeX}.
 % subsection IoTeX (Blockchain) (end)
+
+\subsection{IBM Blockchain} % (fold)
+\label{sub:IBM-Blockchain}
+We will not consider IBM Blockchain, as it is proprietary and builds up on Hyperledger products anyway.
+% subsection IoTeX (Blockchain) (end)
+
 
 % section Blockchains (end)
 
