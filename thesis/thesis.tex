@@ -8,6 +8,7 @@
 \usepackage{moreverb}
 \usepackage{rotating}
 \usepackage{enumerate}
+\usepackage{enumitem}
 \usepackage{graphics, graphicx,wrapfig}
 \usepackage{fancybox}
 \usepackage{picinpar,varioref,floatflt}
@@ -62,6 +63,8 @@
 % custom labels, according to the docs
 \renewcommand\listingscaption{Code}
 \renewcommand\listoflistingscaption{List of Code Snippets and Examples}
+
+\newenvironment{tableitemize} {\begin{itemize}[leftmargin=4mm]} {\end{itemize}}
 
 % Include the files of the diploma thesis
 %\cleardoublepage

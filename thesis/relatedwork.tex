@@ -60,32 +60,45 @@ and applications with modules to fit out needs, which why there may be many opti
 	\caption{Comparison of Identity Management and Verified Credentials related Software}
 	\label{tab:Comparison of Identity Management and Verified Credentials related Software}
 	\begin{center}
-		\begin{tabular}[c]{|l|p{6cm}|p{6cm}|}
+		\begin{tabular}[c]{|p{3cm}|p{6.5cm}|p{5.5cm}|}
 			\hline
-			\textbf{Technology Name}                                                                &
-			Short Description                                                                       &
-			Main Feature                                                                              \\
+			\textbf{Technology Name}                                                &
+			Short Description                                                       &
+			Main Features                                                             \\
 			\hline
-			Hyperledger Aries \cite{hyperledger:wiki}                                               &
+			Hyperledger Aries \cite{hyperledger:wiki}                               &
 			creating, transmitting and storing verifiable digital credentials, (uses Indy per default,
-			should be pluggable though)                                                             &
-			VC issuing, Blockchain-agnostic                                                           \\
+			should be pluggable though)                                             &
+			\begin{tableitemize}
+				\item VC issuing
+				\item Blockchain-agnostic
+			\end{tableitemize}                                                  \\
 			\hline
-			Hyperledger Indy \cite{hyperledger:wiki}                                                &
-			Tools/Libraries for providing digital IDs rooted on Blockchains or DLTs                 &
-			DID and Tools                                                                             \\
+			Hyperledger Indy \cite{hyperledger:wiki}                                &
+			Tools/Libraries for providing digital IDs rooted on Blockchains or DLTs &
+			\begin{tableitemize}
+				\item public read access
+				\item Distributed Ledger for DID Management
+			\end{tableitemize}                                \\
 			\hline
-			Hyperledger Fabric \cite{hyperledger:fabric:docs}                                       &
-			Framework to glue together blockchain, IdM and other DLT services to manage IoT devices &
-			Distributed (Blockchain) OS                                                               \\
+			Hyperledger Fabric \cite{hyperledger:fabric:docs}                       &
+			Framework to glue together blockchain, IdM and other DLT services to manage IoT devices, also
+			supporting smart contracts; permissioned access                         &
+			\begin{tableitemize}
+				\item Distributed (Blockchain) OS
+			\end{tableitemize}                                          \\
 			\hline
-			IoTeX \cite{iotex-bc-platform}                                                          &
-			Framework including blockchain to manage IoT devices                                    &
-			Does not fit our needs as it is permissionless                                            \\
+			IoTeX \cite{iotex-bc-platform}                                          &
+			Framework including blockchain to manage IoT devices                    &
+			Does not fit our needs as it is permissionless                            \\
 			\hline
-			Sovrin                                                                                  &
-			\textbf{\textit{TODO}}                                                                  &
-			\textbf{\textit{TODO}}                                                                    \\
+			Sovrin                                                                  &
+			\textbf{\textit{TODO}}                                                  &
+			\textbf{\textit{TODO}}                                                    \\
+			\hline
+			IBM Platform                                                            &
+			\textbf{\textit{TODO}}, works on top of Hyperledger Fabric              &
+			\textbf{\textit{TODO}}                                                    \\
 			\hline
 		\end{tabular}
 	\end{center}
