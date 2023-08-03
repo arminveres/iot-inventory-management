@@ -15,8 +15,7 @@
 In our architecture there will be a few actors, that play various roles, outlined in the below sections.
 
 There will be a summarized device entity, that will be split up into two devices, as seen below in
-Section~\ref{sec:Physical Components}, and further explained in Chapter~\ref{chap:Use Case Definition - Connected Cabin
-	System}.
+Section~\ref{sec:Physical Components}, and further explained in Chapter~\ref{chap:Use Case Definition - Connected Cabin System}.
 There will be a Manufacturer, that is responsible for the fabrication of said devices, as well as the creation of
 Certificates and credentials, that will later be used by the devices and other entities for verification.
 Further there shall be an auditor, that inspects said credentials and verifies them, or the necessary cases also
@@ -121,7 +120,8 @@ Getting to the first emphasis of our thesis, we will explore, how we can safely 
 inventory of our devices.
 
 For this we will rely on a DLT, in which any action will be saved as a block. The DLT used shall be permissioned and
-possibly private, so that only those permissioned may be a part of this blockchain.
+possibly private, so that only those permissioned may be a part of this blockchain. We don't see the need for the chain
+to be publicly accessible, \textbf{although whether public read-access is out of the question is yet to be determined}.
 The DLT will work as a decentralized Configuration and Management Database, CMDB, as seen in
 Figure~\ref{fig:dlt-architecture}. Transaction will be fulfilled by the controller node as indicated in
 Figure~\ref{fig:device-architecture-overview}.

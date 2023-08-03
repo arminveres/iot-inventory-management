@@ -1,25 +1,5 @@
 # Hyperledger
 
-<!--toc:start-->
-- [Hyperledger](#hyperledger)
-  - [Distributed Ledgers in Consideration](#distributed-ledgers-in-consideration)
-    - [[Interledger](https://ieeexplore.ieee.org/document/9119756?denied=), UMU](#interledgerhttpsieeexploreieeeorgdocument9119756denied-umu)
-      - [Possible Application](#possible-application)
-    - [Bifröst/BC4CC, UMU](#bifröstbc4cc-umu)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)](#hyperledger-arieshttpswikihyperledgerorgdisplayarieshyperledgeraries)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)](#hyperledger-besuhttpswikihyperledgerorgdisplaybesuhyperledgerbesu)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Fabric](https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric)](#hyperledger-fabrichttpswikihyperledgerorgdisplayfabrichyperledgerfabric)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)](#hyperledger-indyhttpswikihyperledgerorgdisplayindyhyperledgerindy)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)](#hyperledger-irohahttpswikihyperledgerorgdisplayirohahyperledgeriroha)
-      - [Possible Application](#possible-application)
-    - [[Hyperledger Sawtooth](https://wiki.hyperledger.org/display/sawtooth/Hyperledger+Sawtooth)](#hyperledger-sawtoothhttpswikihyperledgerorgdisplaysawtoothhyperledgersawtooth)
-<!--toc:end-->
-
 CERTIFY is targeting [Hyperledger Aries](https://www.hyperledger.org/use/aries) as a DLT and also the identity management.
 
 ## Distributed Ledgers in Consideration
@@ -33,6 +13,8 @@ Ethereum and Bitcoin are out of the picture.
 
 ### Bifröst/BC4CC, UMU
 
+- I don't see a good reason to use such a blockchain while there exist others like Hyperledger.
+
 #### Possible Application
 
 ### [Hyperledger Aries](https://wiki.hyperledger.org/display/ARIES/Hyperledger+Aries)
@@ -45,6 +27,8 @@ Ethereum and Bitcoin are out of the picture.
 
 - Identity Management, IdM, of edge nodes
 - let the manufacturer issue VCs through Aries
+- using Aries in combination with Indy, we wouldn't be able to use Smart Contracts, but we could
+  simply retain the logic for REST APIs and then check on conditions, maybe not the fastest way.
 
 ### [Hyperledger Besu](https://wiki.hyperledger.org/display/BESU/Hyperledger+Besu)
 
@@ -68,6 +52,7 @@ Ethereum and Bitcoin are out of the picture.
   whitepaper, there are already some architectural solutions to managing this kind of IoT
   infrastructure
 - Application therefore possible to our infrastructure
+- Java, Go or JavaScript as applicable language
 
 ### [Hyperledger Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy)
 
@@ -76,6 +61,7 @@ Ethereum and Bitcoin are out of the picture.
 #### Possible Application
 
 - use to generate DIDs for IoT devices.
+- as it is a DLT its working in the background for other stuff like Aries!
 
 ### [Hyperledger Iroha](https://wiki.hyperledger.org/display/iroha/Hyperledger+Iroha)
 
@@ -91,3 +77,4 @@ Ethereum and Bitcoin are out of the picture.
 
 - various consensus algorithms, Practical Byzantine Fault Tolerance, PBFT, Proof of Elapsed Time,
   PoET
+- Can use Smart Contracts on Chain with `Sawtooth Sabre` and on Ethereum through `Sawtooth Seth`

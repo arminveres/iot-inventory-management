@@ -45,3 +45,5 @@ Contains daily notes a la Zettelkasten
 Explanations for different topics
 
 ### [todo.md](./todo.md)
+
+### [Presentation Slides](https://docs.google.com/presentation/d/1dhrsWy_iDS3d3HnWNr0E9MciqOHN4IZfDC7f3xYNjKo/edit?usp=sharing)
