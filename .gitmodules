@@ -17,3 +17,6 @@
 [submodule "impl/sawtooth/rust-sdk"]
 	path = impl/sawtooth/rust-sdk
 	url = https://github.com/hyperledger/sawtooth-sdk-rust
+[submodule "impl/von-network"]
+	path = impl/von-network
+	url = https://github.com/bcgov/von-network
