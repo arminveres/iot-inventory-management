@@ -11,3 +11,9 @@
 [submodule "impl/fabric/fabric-samples"]
 	path = impl/fabric/fabric-samples
 	url = https://github.com/hyperledger/fabric-samples
+[submodule "impl/sawtooth/sawtooth-core"]
+	path = impl/sawtooth/sawtooth-core
+	url = https://github.com/hyperledger/sawtooth-core.git
+[submodule "impl/sawtooth/rust-sdk"]
+	path = impl/sawtooth/rust-sdk
+	url = https://github.com/hyperledger/sawtooth-sdk-rust
