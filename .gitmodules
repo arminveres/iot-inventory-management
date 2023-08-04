@@ -20,3 +20,6 @@
 [submodule "impl/von-network"]
 	path = impl/von-network
 	url = https://github.com/bcgov/von-network
+[submodule "impl/aries-rust-test"]
+	path = impl/aries-rust-test
+	url = git@github.com:arminveres/aries-rust-test.git
