@@ -3,7 +3,7 @@
 	url = https://github.com/hyperledger/indy-sdk
 [submodule "impl/iroha"]
 	path = impl/iroha
-	url = https://github.com/hyperledger/iroha.git
+	url = git@github.com:arminveres/iroha.git
 	branch = iroha2-lts
 [submodule "impl/aries-capy"]
 	path = impl/aries-capy

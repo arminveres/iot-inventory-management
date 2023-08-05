@@ -9,3 +9,6 @@ indent.log
 !**/build/thesis.pdf
 !**/uzh_logo_e.pdf
 !**/ifi_logo.pdf
+
+impl/iroha-example/target
+impl/iroha-example/Cargo.lock
