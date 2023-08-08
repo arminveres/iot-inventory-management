@@ -12,6 +12,7 @@ iroha_crypto = { path = "../iroha/crypto" }
 iroha_config = { path = "../iroha/config" }
 iroha_core = { path = "../iroha/core" }
 iroha_primitives = { path = "../iroha/primitives" }
+
 serde = "1.0.181"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1.37"

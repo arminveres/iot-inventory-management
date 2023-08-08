@@ -1,8 +1,11 @@
 use iroha_client::client::Client;
 use iroha_core::prelude::*;
 use iroha_data_model::{
-    account, metadata::UnlimitedMetadata, prelude::*, transaction::Executable::Instructions,
-    Value
+    account::AccountId,
+    isi::{InstructionBox, MintBox},
+    metadata::UnlimitedMetadata,
+    prelude::*,
+    transaction::Executable::Instructions,
 };
 
 use serde_json;
@@ -10,40 +13,41 @@ use std::{fs::File, str::FromStr};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Either read in config from json file
     let config_loc = "./config.json";
     let file = File::open(config_loc).expect("Config file is loading normally.");
-    // .wrap_err("Unable to load the configuration file at `.....`")
-
     let config = serde_json::from_reader(file).unwrap();
-    // .wrap_err("Failed to parse `../configs/client_cli/config.json`")
-    // .expect("Verified in tests");
-    println!("{:?}", config);
 
     // Create an Iroha client
     let client = Client::new(&config)?;
 
-    // let kp = KeyPair::new(
-    //     PublicKey::from_str(
-    //         r#"ed01207233bfc89dcbd68c19fde6ce6158225298ec1131b6a130d1aeb454c1ab5183c0"#,
-    //     )?,
-    //     PrivateKey::from_hex(
-    //         Algorithm::Ed25519,
-    //         "9ac47abf59b356e0bd7dcbbbb4dec080e302156a48ca907e47cb6aea1d32719e7233bfc89dcbd68c19fde6ce6158225298ec1131b6a130d1aeb454c1ab5183c0"
-    //             .into(),
-    //     )?
-    // )?;
+    /*
+    // or give it manually
+    let kp = KeyPair::new(
+        PublicKey::from_str(
+            r#"ed01207233bfc89dcbd68c19fde6ce6158225298ec1131b6a130d1aeb454c1ab5183c0"#,
+        )?,
+        PrivateKey::from_hex(
+            Algorithm::Ed25519,
+            "9ac47abf59b356e0bd7dcbbbb4dec080e302156a48ca907e47cb6aea1d32719e7233bfc89dcbd68c19fde6ce6158225298ec1131b6a130d1aeb454c1ab5183c0"
+                .into(),
+        )?
+    )?;
 
-    // let (pub_key, priv_key) = kp.clone().into();
-    // let account_id: AccountId = "alice@wonderland".parse()?;
-    // let config = ConfigurationProxy {
-    //     public_key: Some(pub_key),
-    //     private_key: Some(priv_key),
-    //     account_id: Some(account_id),
-    //     torii_api_url: Some(SmallStr::from_string(
-    //         iroha_config::torii::uri::DEFAULT_API_URL.to_owned(),
-    //     )),
-    //     ..ConfigurationProxy::default()
-    // };
+    let (pub_key, priv_key) = kp.clone().into();
+    let account_id: AccountId = "alice@wonderland".parse()?;
+    let config = ConfigurationProxy {
+        public_key: Some(pub_key),
+        private_key: Some(priv_key),
+        account_id: Some(account_id),
+        torii_api_url: Some(SmallStr::from_string(
+            iroha_config::torii::uri::DEFAULT_API_URL.to_owned(),
+        )),
+        ..ConfigurationProxy::default()
+    };
+
+    let client = Client::new(&config)?;
+    */
 
     // ============================================================================================
     // Registering a Domain
@@ -53,27 +57,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let looking_glass: DomainId = "looking_glass".parse()?;
     // Create an ISI (Iroha Instruction)
     let create_looking_glass = RegisterBox::new(Domain::new(looking_glass));
-    // prepare a transaction
-    let metadata = UnlimitedMetadata::default();
-    let instructions: Vec<Instruction> = vec![create_looking_glass.into()];
-    let tx = client
-        .build_transaction(Instructions(instructions), metadata)
-        .unwrap();
-    // .build_transaction(instructions, metadata)
-    // .wrap_err("Error building a domain registration transaction")?;
+    // client.submit(create_looking_glass);
+    client.submit_with_metadata(create_looking_glass, UnlimitedMetadata::default())?;
 
-    client.submit_transaction(tx).unwrap();
+    // prepare a transaction by building it
+    // let metadata = UnlimitedMetadata::default();
+    // let instructions = vec![create_looking_glass.into()];
+    // let tx = client
+    //     .build_transaction(Instructions(instructions), metadata)
+    //     .unwrap();
+
+    // client.submit_transaction(&tx).unwrap();
 
     // ============================================================================================
     // Registering an Account
     // ============================================================================================
 
-    let longhand_account_id = account::Id {
+    let longhand_account_id = AccountId {
         name: "white_rabbit".parse()?,
         domain_id: "looking_glass".parse()?,
     };
-    let account_id: AccountId = "white_rabbit@looking_glass"
-        .parse::<account::Id>()
+    let account_id = "white_rabbit@looking_glass"
+        .parse::<AccountId>()
         .expect("Valid, no whitespaces and single @ char");
 
     assert_eq!(account_id, longhand_account_id);
@@ -85,11 +90,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let create_account = RegisterBox::new(idbox);
     let create_account = RegisterBox::new(account);
 
-    let instructions: Vec<Instruction> = vec![create_account.into()];
+    let instructions: Vec<InstructionBox> = vec![create_account.into()];
     let tx = client
         .build_transaction(Instructions(instructions), UnlimitedMetadata::default())
         .unwrap();
-    client.submit_transaction(tx).expect("Account created");
+    client.submit_transaction(&tx).expect("Account created");
 
     // or just do it directly
     // client.submit(create_account)?;
@@ -115,7 +120,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Submit a minting transaction
-    client.submit_all([mint.into()])?;
+    client.submit_all([<MintBox as Into<InstructionBox>>::into(mint)])?;
 
     Ok(())
 }
