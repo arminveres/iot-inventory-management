@@ -2,17 +2,20 @@ use iroha_client::client::Client;
 use iroha_core::prelude::*;
 use iroha_data_model::{
     account::AccountId,
+    events::{pipeline::PipelineEventFilter, FilterBox},
     isi::{InstructionBox, MintBox},
     metadata::UnlimitedMetadata,
     prelude::*,
     transaction::Executable::Instructions,
+    IdBox,
 };
 
 use serde_json;
 use std::{fs::File, str::FromStr};
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+// #[tokio::main]
+// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Either read in config from json file
     let config_loc = "./config.json";
     let file = File::open(config_loc).expect("Config file is loading normally.");
@@ -121,6 +124,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Submit a minting transaction
     client.submit_all([<MintBox as Into<InstructionBox>>::into(mint)])?;
+
+    let roses = AssetDefinitionId::from_str("rose#wonderland")
+        .expect("Valid, because the string contains no whitespace, has a single '#' character and is not empty after");
+    let alice: AccountId = "alice@wonderland".parse()
+        .expect("Valid, because the string contains no whitespace, has a single '@' character and is not empty after");
+
+    let mint_roses = MintBox::new(
+        42_u32.to_value(),
+        IdBox::AssetId(AssetId::new(roses.clone(), alice.clone())),
+    );
+    client
+        .submit(mint_roses)
+        .expect("Failed to submit transaction");
+
+    // burn roses
+    let burn_roses = BurnBox::new(
+        10_u32.to_value(),
+        IdBox::AssetId(AssetId::new(roses.clone(), alice.clone())),
+    );
+    client.submit(burn_roses)?;
+
+    // ============================================================================================
+    // Visualize output and events
+    // ============================================================================================
+    let filter = FilterBox::Pipeline(PipelineEventFilter::new());
+    for event in client.listen_for_events(filter)? {
+        match event {
+            Ok(event) => println!("Success: {:#?}", event),
+            Err(err) => println!("Error: {:#?}", err),
+        }
+    }
 
     Ok(())
 }
