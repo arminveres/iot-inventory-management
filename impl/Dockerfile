@@ -36,6 +36,8 @@ RUN apt-get install -y \
     stow \
     pkg-config \
     tmux \
+    zip \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # =================================================================================================
@@ -43,15 +45,26 @@ RUN apt-get install -y \
 # =================================================================================================
 USER $USERNAME
 
-ENV XDG_DATA_HOME="/home/$USERNAME/.local/share"
-ENV XDG_CONFIG_HOME="/home/$USERNAME/.config"
-ENV XDG_STATE_HOME="/home/$USERNAME/.local/state"
-ENV XDG_CACHE_HOME="/home/$USERNAME/.cache"
+ENV HOME="/home/${USERNAME}"
+ENV XDG_DATA_HOME="${HOME}/.local/share"
+ENV XDG_CONFIG_HOME="${HOME}/.config"
+ENV XDG_STATE_HOME="${HOME}/.local/state"
+ENV XDG_CACHE_HOME="${HOME}/.cache"
 
+# Set ENV so that cargo is downloaded to correct path
 ENV RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 ENV CARGO_HOME="$XDG_DATA_HOME/cargo"
+
+# get rustup without modifying the path, as we have that in our dotfiles already
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 
+# add toolchains for Hyperledger Iroha
+RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2022-12-22-x86_64-unknown-linux-gnu
+RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2023-06-25-x86_64-unknown-linux-gnu
+RUN ${CARGO_HOME}/bin/rustup component add rust-src --toolchain nightly-2023-06-25-x86_64-unknown-linux-gnu
+
+# TODO: (aver) create separate dockerfile for my own config in order to have one for the supervisors
+RUN ${CARGO_HOME}/bin/rustup default stable
 # run separate install for better caching
 RUN ${CARGO_HOME}/bin/cargo install cargo-watch
 RUN ${CARGO_HOME}/bin/cargo install cargo-update
@@ -60,13 +73,15 @@ RUN ${CARGO_HOME}/bin/cargo install zoxide
 RUN ${CARGO_HOME}/bin/cargo install exa
 RUN ${CARGO_HOME}/bin/cargo install bat
 RUN ${CARGO_HOME}/bin/cargo install bob-nvim
+RUN ${CARGO_HOME}/bin/cargo install ripgrep
+RUN ${CARGO_HOME}/bin/cargo install fd-find
 
 # get current neovim version
 RUN ${CARGO_HOME}/bin/bob use nightly
 
 # Don't forget to run recursive pull inside container
 RUN git clone --depth 1 --recursive --branch=dev-env https://github.com/arminveres/dotfiles ~/dotfiles
-WORKDIR /home/${USERNAME}/dotfiles
+WORKDIR ${HOME}/dotfiles
 RUN stow -vt ~ \
     zsh \
     nvim \
@@ -76,11 +91,6 @@ RUN stow -vt ~ \
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
     sudo apt-get install -y nodejs && \
     sudo rm -rf /var/lib/apt/lists/*
-
-# add toolchains for Hyperledger Iroha
-RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2022-12-22-x86_64-unknown-linux-gnu
-RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2023-06-25-x86_64-unknown-linux-gnu
-RUN ${CARGO_HOME}/bin/rustup component add rust-src --toolchain nightly-2023-06-25-x86_64-unknown-linux-gnu
 
 # =================================================================================================
 # Finalization
@@ -93,6 +103,14 @@ RUN sudo chsh -s /usr/bin/zsh ${USERNAME}
 
 # run zsh once to download fzf
 RUN zsh
+# update nvim folder
+WORKDIR ${XDG_CONFIG_HOME}/nvim
+RUN git switch -f main && git pull --rebase --force
+# update nvim
+RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless +qa
+RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless "+Lazy! sync" +qa
+RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless "+MasonInstall rust-analyzer" +qa
 
-WORKDIR /home/${USERNAME}
-CMD ["zsh", "-i", "-l"]
+WORKDIR ${HOME}
+
+CMD ["/usr/bin/zsh", "-i", "-l"]

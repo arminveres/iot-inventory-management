@@ -1,10 +1,12 @@
-.PHONY: run-env build
+.PHONY: container-run container-build
 
 IMAGE_NAME:="ba-dev-env"
 
-run:
+container-run:
 	docker container run --rm --name dev-env -it \
 		-v .:/home/arminveres/ba-thesis-implementation \
+		--net=host \
 		${IMAGE_NAME}
-build:
+
+container-build:
 	docker build -t ${IMAGE_NAME} .

@@ -53,6 +53,10 @@
     run by `./manage start --logs`, then run demo `./run_demo faber/alice`
 - [ ] create standalone example without Faber/Alice demo
 
+### Iroha
+
+- examples build but cannot submit to network anymore -> version mismatch according to developers
+
 ## Meetings
 
 - [ ] Prepare slides for Bruno/next supervisor to explain current status
