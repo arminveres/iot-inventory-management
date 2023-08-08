@@ -50,7 +50,7 @@
 - [x] run Aries [OpenAPI demo](https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/AriesOpenAPIDemo.md) (added 2023-07-31)
 - [ ] find out where credentials are stored
 - [ ] made local version with [von-network](https://github.com/bcgov/von-network)
-    run by `./manage start --logs`, then run demo `./run_demo faber/alice`
+      run by `./manage start --logs`, then run demo `./run_demo faber/alice`
 - [ ] create standalone example without Faber/Alice demo
 
 ### Iroha
