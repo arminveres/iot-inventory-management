@@ -28,6 +28,18 @@ unit, MCU, able to run CircuitPython, as well as simple bare-metal software.
 	\label{fig:cmdb-iroha-architecture}
 \end{figure}
 
+In order to manage a fleet of devices, which consist of different layers, as mentioned in Section~\ref{sec:System Components},
+we will rely on a Configuration / Management Database and for the sake of decentralization, it will entail using a DLT.
+
+The (current) choice falls upon Hyperledger Iroha, more specifically version 2, which is a rewrite from the original.
+As explained in Section~\ref{sec:Blockchains}, Iroha is permissioned and allows creation of domains, accounts, as well
+as the minting and burning of assets.
+We tried to avoid having a permissionless blockchain, as well a one, that relied on cryptocurrencies for transactions,
+such as Ethereum, as we do not aim to discourage unnecessary writes to the blockchain, as every write will be fulfilled
+by a recognized member of a registered domain.
+
+Figure~\ref{fig:cmdb-iroha-architecture} gives a high-level overview over the CMDB architecture.
+
 % section Configuration and Management Database (end)
 
 \section{Device onboarding} % (fold)

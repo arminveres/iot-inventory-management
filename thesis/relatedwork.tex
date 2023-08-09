@@ -30,6 +30,22 @@ In order to maintain participation rights for only valid users/clients, Manufact
 getting more and more relevant, as also the National Institute for Standards and Technology, NIST, have been considering
 their use cases. \cite{dodson2021securing}
 
+\subsection{An Interledger Blockchain Platform for Cross-Border Management of Cybersecurity Information} % (fold)
+\label{sub:An Interledger Blockchain Platform for Cross-Border Management of Cybersecurity Information}
+A paper on management of cybersecurity information using blockchain and interledger technologies has already been
+published back in 2020. \cite{skarmeta-interledger-management-2020} They identified two main challenges, the first being
+a need to manage firmware and security patches and how it affected recertification.
+They designed the framework in cooperation with the EU Cybersecurity Chain, worked as a main chain, while at lower
+levels, national ledgers could be considered as side chains.
+While periodically synchronizing with the main chain, there would be multiple side chains on the national level, one for
+Information and Communication Technology, ICT, one as a Certification Chain and one as a Vulnerability chain.
+Larger Information would be stored off-chain in a database.
+% WARN: adjust later on
+The composition of this framework agrees a lot with our design seen in Chapter~\ref{chap:Architecture and Design}.
+Furthermore their use of the vulnerability chain to keep track of vulnerabilities, which can be announces and issued by
+the manufacturers also is alike to our design.
+% subsection An Interledger Blockchain Platform for Cross-Border Management of Cybersecurity Information (end)
+
 \subsection{SRAM-based PUF Readouts} % (fold)
 \label{sub:SRAM-based PUF Readouts}
 For this thesis we will not be implementing a sophisticated Designated Accrediting Authority, DAA, leading to the
