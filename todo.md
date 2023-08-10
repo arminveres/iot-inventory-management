@@ -1,5 +1,6 @@
 # TODO
 
+- [ ] create detailed diagram for infrastructure
 ## Research/Reading
 
 - [ ] read hyperledger fabric doc
@@ -59,4 +60,4 @@
 
 ## Meetings
 
-- [ ] Prepare slides for Bruno/next supervisor to explain current status
+- [x] Prepare slides for Bruno/next supervisor to explain current status
