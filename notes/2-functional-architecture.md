@@ -2,21 +2,6 @@
 
 > **Disclaimer**: Content partly used from CERTIFY Deliverable 1.1
 
-<!--toc:start-->
-- [Functional Architecture](#functional-architecture)
-  - [Device Architectures](#device-architectures)
-    - [Edge Nodes](#edge-nodes)
-    - [Function and Central Controller Nodes](#function-and-central-controller-nodes)
-  - [Onboarding](#onboarding)
-  - [Inventorying](#inventorying)
-  - [Operations (Day-2-Day)](#operations-day-2-day)
-  - [Secure Firmware Updating](#secure-firmware-updating)
-  - [Security-Information Sharing](#security-information-sharing)
-    - [External Stakeholders](#external-stakeholders)
-    - [Cybersecurity Assessment](#cybersecurity-assessment)
-    - [Security Levels](#security-levels)
-<!--toc:end-->
-
 ## Device Architectures
 
 ![Overview of Device Modules](./.assets/device-architecture-overview.png)
