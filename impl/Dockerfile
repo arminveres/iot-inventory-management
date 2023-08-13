@@ -1,4 +1,6 @@
-FROM ubuntu:latest
+# FROM ubuntu:latest
+# Debian uses 3 GB less
+FROM debian:bookworm-slim
 LABEL maintainer="Armin Veres <armin.veres@hotmail.com>"
 
 # Set timezone
@@ -25,8 +27,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
 # Install apt packages
-RUN apt-get update && apt-get upgrade --yes
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
     build-essential \
     libssl-dev \
     git \
@@ -59,9 +61,9 @@ ENV CARGO_HOME="$XDG_DATA_HOME/cargo"
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 
 # add toolchains for Hyperledger Iroha
-RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2022-12-22-x86_64-unknown-linux-gnu
-RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2023-06-25-x86_64-unknown-linux-gnu
-RUN ${CARGO_HOME}/bin/rustup component add rust-src --toolchain nightly-2023-06-25-x86_64-unknown-linux-gnu
+# RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2022-12-22-x86_64-unknown-linux-gnu
+# RUN ${CARGO_HOME}/bin/rustup toolchain install nightly-2023-06-25-x86_64-unknown-linux-gnu
+# RUN ${CARGO_HOME}/bin/rustup component add rust-src --toolchain nightly-2023-06-25-x86_64-unknown-linux-gnu
 
 # TODO: (aver) create separate dockerfile for my own config in order to have one for the supervisors
 RUN ${CARGO_HOME}/bin/rustup default stable
