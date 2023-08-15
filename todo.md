@@ -1,6 +1,6 @@
 # TODOs
 
-- [ ] (2023-08-11) create architecture for CMDB
+- [x] (2023-08-11) create architecture for CMDB
 - [ ] (2023-08-11) create Orion demo
 - [ ] (2023-08-11) investigate Aries agents, who owns what, and where is data stored (indy, indy-vdr etc.)
 

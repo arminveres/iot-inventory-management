@@ -1,0 +1,12 @@
+[package]
+name = "aries-standalone"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aries-vcx-agent = { path = "../aries-vcx/agents/rust/aries-vcx-agent" }
+tokio = { version = "1.31.0", features = ["full"] }
+# aries-vcx = { tag = "0.57.1", git = "https://github.com/hyperledger/aries-vcx" }
+url = { version = "2.3.1", features = ["serde"] }
