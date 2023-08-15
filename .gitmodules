@@ -1,10 +1,3 @@
-[submodule "impl/indy-sdk"]
-	path = impl/indy-sdk
-	url = https://github.com/hyperledger/indy-sdk
-[submodule "impl/iroha"]
-	path = impl/iroha
-	url = git@github.com:arminveres/iroha.git
-	branch = iroha2-stable
 [submodule "impl/aries-capy"]
 	path = impl/aries-capy
 	url = https://github.com/hyperledger/aries-cloudagent-python/
