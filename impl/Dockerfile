@@ -67,16 +67,19 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no
 
 # TODO: (aver) create separate dockerfile for my own config in order to have one for the supervisors
 RUN ${CARGO_HOME}/bin/rustup default stable
+
 # run separate install for better caching
-RUN ${CARGO_HOME}/bin/cargo install cargo-watch
-RUN ${CARGO_HOME}/bin/cargo install cargo-update
-RUN ${CARGO_HOME}/bin/cargo install cargo-cache
-RUN ${CARGO_HOME}/bin/cargo install zoxide
-RUN ${CARGO_HOME}/bin/cargo install exa
-RUN ${CARGO_HOME}/bin/cargo install bat
-RUN ${CARGO_HOME}/bin/cargo install bob-nvim
-RUN ${CARGO_HOME}/bin/cargo install ripgrep
-RUN ${CARGO_HOME}/bin/cargo install fd-find
+RUN ${CARGO_HOME}/bin/cargo install \
+    cargo-watch \
+    cargo-update \
+    cargo-cache \
+    zoxide \
+    exa \
+    bat \
+    bob-nvim \
+    ripgrep \
+    fd-find \
+    && ${CARGO_HOME}/bin/cargo cache --autoclean-expensive
 
 # get current neovim version
 RUN ${CARGO_HOME}/bin/bob use nightly
@@ -97,9 +100,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
 # =================================================================================================
 # Finalization
 # =================================================================================================
-# run cleanup of cargo cache
-RUN ${CARGO_HOME}/bin/cargo cache -a
-
 # set zsh as default shell
 RUN sudo chsh -s /usr/bin/zsh ${USERNAME}
 
@@ -109,9 +109,9 @@ RUN zsh
 WORKDIR ${XDG_CONFIG_HOME}/nvim
 RUN git switch -f main && git pull --rebase --force
 # update nvim
-RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless +qa
 RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless "+Lazy! sync" +qa
-RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless "+MasonInstall rust-analyzer" +qa
+RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless "+TSUpdateSync" +qa
+# RUN ${XDG_DATA_HOME}/bob/nvim-bin/nvim --headless "+MasonInstall rust-analyzer" +qa
 
 WORKDIR ${HOME}
 
