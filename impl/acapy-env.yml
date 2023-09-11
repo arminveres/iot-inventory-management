@@ -1,0 +1,8 @@
+name: aries
+
+channel_priority: strict
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.10
