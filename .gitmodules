@@ -1,9 +1,6 @@
 [submodule "impl/aries-capy"]
 	path = impl/aries-capy
 	url = https://github.com/hyperledger/aries-cloudagent-python/
-[submodule "impl/fabric/fabric-samples"]
-	path = impl/fabric/fabric-samples
-	url = https://github.com/hyperledger/fabric-samples
 [submodule "impl/von-network"]
 	path = impl/von-network
 	url = https://github.com/bcgov/von-network

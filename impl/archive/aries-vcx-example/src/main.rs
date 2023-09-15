@@ -15,7 +15,7 @@ async fn main() {
 
     let wallet_init = WalletInitConfig {
         wallet_name: "armins-wallet".to_string(),
-        wallet_key: "1003038880223929101928".to_string(),
+        wallet_key: "6BC3E23D262CAB2D992A5CDC0405FE38D1763402BC45B00BF0C426AC12D1B49C".to_string(),
         wallet_kdf: "ARGON2I_INT".to_string(),
     };
 
