@@ -30,6 +30,7 @@ class AuthorityAgent(AriesAgent):
 async def main(args):
     # First setup all the agent related stuff
     node_agent = await create_agent_with_args(args, ident="authority_node")
+    node_agent.seed = "Autho_00000000000000000000000000"
     agent = AuthorityAgent(
         "authority.agent",
         node_agent.start_port,
@@ -55,11 +56,15 @@ async def main(args):
     invite = response["invitation"]
 
     # Say we have the DID from a DATABASE
-    node_did = "did:sov:TMmqycDZquFUg1gyFnvreF"
+    # WARN: fixed seed for DIDs
+    node_did = "did:sov:6waAP2mqZ4fiDk1rvxwhWb"
     response = await node_agent.admin_GET(f"/resolver/resolve/{node_did}")
     # print(json.dumps(response, indent=4))
     # print(response["did_document"]["service"][0]["serviceEndpoint"])
+
     node_url = response["did_document"]["service"][0]["serviceEndpoint"]
+
+    # TODO: find better way to post
     # fix url to admin point
     node_url = node_url[:-1] + "1"
     print(node_url)

@@ -27,6 +27,8 @@ class NodeAgent(AriesAgent):
 async def main(args):
     # First setup all the agent related stuff
     node_agent = await create_agent_with_args(args, ident="test_node")
+    node_agent.seed = "Node1_00000000000000000000000000"
+
     agent = NodeAgent(
         "node.agent",
         node_agent.start_port,
