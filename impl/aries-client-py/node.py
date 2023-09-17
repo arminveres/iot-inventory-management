@@ -8,10 +8,20 @@ from agent_container import AriesAgent, arg_parser, create_agent_with_args  # no
 
 
 class NodeAgent(AriesAgent):
+    """
+    A NodeAgent represents an end target, that will hold credentials.
+    """
+
     def __init__(self, ident: str, http_port: int, admin_port: int, **kwargs):
         super().__init__(
             ident=ident, http_port=http_port, admin_port=admin_port, **kwargs
         )
+        self.connection_id = None
+        self._connection_ready = None
+        self.cred_state = {}
+        # TODO define a dict to hold credential attributes
+        # based on cred_def_id
+        self.cred_attrs = {}
 
 
 async def main(args):

@@ -11,7 +11,12 @@ portrange="$2-$((port + 9))"
 
 docker build -t aries-my-agent . || exit 1
 docker container run --rm -it \
+    --network=host \
     -p 0.0.0.0:"$portrange":"$portrange" \
     -e LEDGER_URL="$LEDGER_URL" \
     -e GENESIS_URL="$GENESIS_URL" \
-    aries-my-agent "$agent_name" --wallet-type askar --port "$port"
+    aries-my-agent "$agent_name" \
+    --wallet-type askar \
+    --port "$port" \
+    --did-exchange \
+    --reuse-connections
