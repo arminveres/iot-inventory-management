@@ -10,10 +10,8 @@ RUN pip install --no-cache-dir aries-cloudagent
 ADD ./requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# copy files over
 ADD . .
 
-# WARN: need to fix this in the code and not hardcode it
-ENV LEDGER_URL "http://172.17.0.1:9000"
-ENV GENESIS_URL "http://172.17.0.1:9000/genesis"
-
-ENTRYPOINT ["python3", "-m", "my_agent", "--wallet-type", "askar"]
+# enable supplication of arguments
+ENTRYPOINT ["bash", "-c", "python3 -m \"$@\"", "--"]

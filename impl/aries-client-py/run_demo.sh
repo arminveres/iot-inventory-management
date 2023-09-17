@@ -1,8 +1,17 @@
 #!/bin/env bash
 set -e
 
+LEDGER_URL="http://172.17.0.1:9000"
+GENESIS_URL="$LEDGER_URL/genesis"
+
+agent_name=$1
+port=$2
+portrange="$2-$((port + 9))"
+# echo "$portrange"
+
 docker build -t aries-my-agent . || exit 1
 docker container run --rm -it \
-    -p 0.0.0.0:8000:8010 \
-    -e GENESIS_URL="http://172.17.0.1:9000/genesis" \
-    aries-my-agent || exit 1
+    -p 0.0.0.0:"$portrange":"$portrange" \
+    -e LEDGER_URL="$LEDGER_URL" \
+    -e GENESIS_URL="$GENESIS_URL" \
+    aries-my-agent "$agent_name" --wallet-type askar --port "$port"

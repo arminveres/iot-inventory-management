@@ -38,7 +38,7 @@ async def main(args):
 
 
 if __name__ == "__main__":
-    parser = arg_parser(ident="test_node", port=8000)
+    parser = arg_parser(ident="test_node")
     args = parser.parse_args()
 
     # execute main
