@@ -1,7 +1,8 @@
 #!/bin/env bash
 set -e
 
-LEDGER_URL="http://172.17.0.1:9000"
+HOST_IP=$(./scripts/getDockerHost.sh)
+LEDGER_URL="http://$HOST_IP:9000"
 GENESIS_URL="$LEDGER_URL/genesis"
 
 agent_name=$1
