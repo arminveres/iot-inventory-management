@@ -9,12 +9,12 @@ from urllib.parse import urlparse
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from runners.agent_container import (  # noqa:E402
+from agent_container import (  # noqa:E402
     arg_parser,
     create_agent_with_args,
     AriesAgent,
 )
-from runners.support.utils import (  # noqa:E402
+from support.utils import (  # noqa:E402
     check_requires,
     log_msg,
     log_status,

@@ -753,6 +753,9 @@ class AgentContainer:
             self.agent = the_agent
 
         await self.agent.listen_webhooks(self.start_port + 2)
+        # asyncio.get_event_loop().create_task(
+        #     self.agent.listen_webhooks(self.start_port + 2)
+        # )
 
         # create public DID ... UNLESS we are an author ...
         if (not self.endorser_role) or (self.endorser_role == "endorser"):

@@ -11,7 +11,7 @@ ADD ./requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # copy files over
-ADD . .
+ADD src .
 
 # enable supplication of arguments
 ENTRYPOINT ["bash", "-c", "python3 -m \"$@\"", "--"]
