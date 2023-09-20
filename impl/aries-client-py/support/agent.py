@@ -762,7 +762,7 @@ class DemoAgent:
             future = loop.run_in_executor(self.thread_pool_executor, self._terminate)
             result = await asyncio.wait_for(future, 10, loop=loop)
 
-    async def listen_webhooks(self, webhook_port):
+    async def listen_webhooks(self, webhook_port: int):
         self.webhook_port = webhook_port
         if RUN_MODE == "pwd":
             self.webhook_url = f"http://localhost:{str(webhook_port)}/webhooks"

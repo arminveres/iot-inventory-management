@@ -23,30 +23,42 @@ class NodeAgent(AriesAgent):
         # based on cred_def_id
         self.cred_attrs = {}
 
+    # async def handle_basicmessages(self, message):
+    #     self.log("Received message:", message["content"])
+    #     print("\n\ngot\n\n", message)
+
 
 async def main(args):
     # First setup all the agent related stuff
     node_agent = await create_agent_with_args(args, ident="test_node")
     node_agent.seed = "Node1_00000000000000000000000000"
 
-    agent = NodeAgent(
-        "node.agent",
-        node_agent.start_port,
-        node_agent.start_port + 1,
-        genesis_data=node_agent.genesis_txns,
-        genesis_txn_list=node_agent.genesis_txn_list,
-        no_auto=node_agent.no_auto,
-        tails_server_base_url=node_agent.tails_server_base_url,
-        revocation=node_agent.revocation,
-        timing=node_agent.show_timing,
-        multitenant=node_agent.multitenant,
-        mediation=node_agent.mediation,
-        wallet_type=node_agent.wallet_type,
-        aip=node_agent.aip,
-        endorser_role=node_agent.endorser_role,
-        seed=node_agent.seed,
-    )
-    await node_agent.initialize(the_agent=agent)
+    try:
+        agent = NodeAgent(
+            "node.agent",
+            node_agent.start_port,
+            node_agent.start_port + 1,
+            genesis_data=node_agent.genesis_txns,
+            genesis_txn_list=node_agent.genesis_txn_list,
+            no_auto=node_agent.no_auto,
+            tails_server_base_url=node_agent.tails_server_base_url,
+            revocation=node_agent.revocation,
+            timing=node_agent.show_timing,
+            multitenant=node_agent.multitenant,
+            mediation=node_agent.mediation,
+            wallet_type=node_agent.wallet_type,
+            aip=node_agent.aip,
+            endorser_role=node_agent.endorser_role,
+            seed=node_agent.seed,
+        )
+        await node_agent.initialize(the_agent=agent)
+
+        while True:
+            # pass
+            await asyncio.sleep(0.1)
+
+    finally:
+        await node_agent.terminate()
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
+import asyncio
 import json
 import os
-import asyncio
 
 from agent_container import AriesAgent, arg_parser, create_agent_with_args
-from support.utils import log_json, log_msg  # noqa:E402
+from support.utils import log_json  # noqa:E402
 
 
 class AuthorityAgent(AriesAgent):
@@ -31,48 +31,82 @@ async def main(args):
     # First setup all the agent related stuff
     node_agent = await create_agent_with_args(args, ident="authority_node")
     node_agent.seed = "Autho_00000000000000000000000000"
-    agent = AuthorityAgent(
-        "authority.agent",
-        node_agent.start_port,
-        node_agent.start_port + 1,
-        genesis_data=node_agent.genesis_txns,
-        genesis_txn_list=node_agent.genesis_txn_list,
-        no_auto=node_agent.no_auto,
-        tails_server_base_url=node_agent.tails_server_base_url,
-        revocation=node_agent.revocation,
-        timing=node_agent.show_timing,
-        multitenant=node_agent.multitenant,
-        mediation=node_agent.mediation,
-        wallet_type=node_agent.wallet_type,
-        aip=node_agent.aip,
-        endorser_role=node_agent.endorser_role,
-        seed=node_agent.seed,
-    )
-    await node_agent.initialize(the_agent=agent)
+    try:
+        agent = AuthorityAgent(
+            "authority.agent",
+            node_agent.start_port,
+            node_agent.start_port + 1,
+            genesis_data=node_agent.genesis_txns,
+            genesis_txn_list=node_agent.genesis_txn_list,
+            no_auto=node_agent.no_auto,
+            tails_server_base_url=node_agent.tails_server_base_url,
+            revocation=node_agent.revocation,
+            timing=node_agent.show_timing,
+            multitenant=node_agent.multitenant,
+            mediation=node_agent.mediation,
+            wallet_type=node_agent.wallet_type,
+            aip=node_agent.aip,
+            endorser_role=node_agent.endorser_role,
+            seed=node_agent.seed,
+        )
+        await node_agent.initialize(the_agent=agent)
 
-    response = await node_agent.generate_invitation(
-        reuse_connections=node_agent.reuse_connections
-    )
-    invite = response["invitation"]
+        # response = await node_agent.generate_invitation(
+        # reuse_connections=node_agent.reuse_connections
+        # )
+        response = await node_agent.admin_POST("/connections/create-invitation", {})
+        print(json.dumps(response, indent=4))
+        invite = response["invitation"]
 
-    # Say we have the DID from a DATABASE
-    # WARN: fixed seed for DIDs
-    node_did = "did:sov:6waAP2mqZ4fiDk1rvxwhWb"
-    response = await node_agent.admin_GET(f"/resolver/resolve/{node_did}")
-    # print(json.dumps(response, indent=4))
-    # print(response["did_document"]["service"][0]["serviceEndpoint"])
+        # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
+        # invitation requests, that then can be passed to the agent to be accepted.
+        # Flow:
+        #   1. Authority/Issuer creates invitation
+        #   2. Targeted Agent receives and accepts
 
-    node_url = response["did_document"]["service"][0]["serviceEndpoint"]
+        # Take public DID from a DATABASE
 
-    # TODO: find better way to post
-    # fix url to admin point
-    node_url = node_url[:-1] + "1"
-    print(node_url)
-    response = await agent.client_session.post(
-        url=f"{node_url}/out-of-band/receive-invitation", json=invite
-    )
-    # log_msg(response)
-    print(response)
+        # WARN: fixed seed for DIDs
+        node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
+
+        # resolve did for did_document
+        response = await node_agent.admin_GET(f"/resolver/resolve/{node_did}")
+        print(json.dumps(response, indent=4))
+        node_url = response["did_document"]["service"][0]["serviceEndpoint"]
+        node_url = node_url[:-1] + "1"  # fix url to admin point, BAD fix
+        print(node_url)
+
+        response = await agent.client_session.post(
+            url=f"{node_url}/connections/receive-invitation",
+            json=invite,
+        )
+
+        resp = await response.json()
+        log_json(resp)
+
+        # send test message
+        response = await node_agent.admin_GET("/connections")
+        conn_id = response["results"][0]["connection_id"]
+
+        # =========================================================================================
+        # Event Loop
+        # =========================================================================================
+        # NOTE: (aver) What I found out, is that there needs to be an 'event loop' for the hooks to
+        # be activated...
+        while True:
+            message = {"content": "hello there amore!"}
+            response = await node_agent.admin_POST(
+                path=f"/connections/{conn_id}/send-message", data=message
+            )
+            print(json.dumps(response, indent=4))
+
+            await asyncio.sleep(1)
+        # =========================================================================================
+        # END Event Loop
+        # =========================================================================================
+
+    finally:
+        await node_agent.terminate()
 
 
 if __name__ == "__main__":
