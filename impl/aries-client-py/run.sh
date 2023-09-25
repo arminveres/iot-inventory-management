@@ -25,4 +25,5 @@ docker container run --rm -it \
     --wallet-type askar \
     --port "$port" \
     --did-exchange \
-    --reuse-connections
+    --reuse-connections \
+    --revocation

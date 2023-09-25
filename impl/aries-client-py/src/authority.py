@@ -150,7 +150,6 @@ async def main(args):
         # =========================================================================================
         # Set up schema and initialize
         # =========================================================================================
-
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
 
@@ -170,8 +169,8 @@ async def main(args):
 
         # Publish schema
         with log_timer("Publish Schema and cred def duration:"):
-            # version = f"{random.randint(1,101)}.{random.randint(1,101)}.{random.randint(1,101)}"
-            version = "0.1.0"
+            version = f"{random.randint(1,101)}.{random.randint(1,101)}.{random.randint(1,101)}"
+            # version = "0.0.1"
             (
                 schema_id,
                 cred_def_id,
@@ -181,7 +180,7 @@ async def main(args):
                 schema_attributes,
                 # WARN: to support revocation, we need to have a tails server running a revocation
                 # registry
-                support_revocation=False,
+                support_revocation=True,
                 revocation_registry_size=TAILS_FILE_COUNT,
             )
 

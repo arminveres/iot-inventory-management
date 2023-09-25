@@ -13,3 +13,6 @@
 [submodule "impl/orion-sdk-go"]
 	path = impl/orion-sdk-go
 	url = https://github.com/hyperledger-labs/orion-sdk-go.git
+[submodule "impl/indy-tails-server"]
+	path = impl/indy-tails-server
+	url = https://github.com/bcgov/indy-tails-server.git
