@@ -829,6 +829,7 @@ class DemoAgent:
         if topic != "webhook":  # would recurse
             handler = f"handle_{topic}"
             wallet_id = headers.get("x-wallet-id")
+            # NOTE: (aver) This is where a method gets pythonically assigned to a handle!!
             method = getattr(self, handler, None)
             if method:
                 EVENT_LOGGER.debug(

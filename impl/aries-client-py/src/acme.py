@@ -9,12 +9,12 @@ from uuid import uuid4
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa
 
-from runners.agent_container import (  # noqa:E402
+from agent_container import (  # noqa:E402
     AriesAgent,
     arg_parser,
     create_agent_with_args,
 )
-from runners.support.utils import (  # noqa:E402
+from support.utils import (  # noqa:E402
     check_requires,
     log_msg,
     log_status,

@@ -1,8 +1,9 @@
 import os
 import asyncio
+import sys
 
-# import sys
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# add the source directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa
 
 from agent_container import AriesAgent, arg_parser, create_agent_with_args  # noqa:E402
 
