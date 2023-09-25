@@ -8,6 +8,7 @@ from uuid import uuid4
 from agent_container import (
     CRED_PREVIEW_TYPE,
     TAILS_FILE_COUNT,
+    AgentContainer,
     AriesAgent,
     arg_parser,
     create_agent_with_args,
@@ -117,29 +118,35 @@ async def send_message(agent: AriesAgent):
     )
 
 
-async def main(args):
+async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
     node_agent = await create_agent_with_args(args, ident="authority_node")
     node_agent.seed = "Autho_00000000000000000000000000"
-    try:
-        agent = AuthorityAgent(
-            "authority.agent",
-            node_agent.start_port,
-            node_agent.start_port + 1,
-            genesis_data=node_agent.genesis_txns,
-            genesis_txn_list=node_agent.genesis_txn_list,
-            no_auto=node_agent.no_auto,
-            tails_server_base_url=node_agent.tails_server_base_url,
-            revocation=node_agent.revocation,
-            timing=node_agent.show_timing,
-            multitenant=node_agent.multitenant,
-            mediation=node_agent.mediation,
-            wallet_type=node_agent.wallet_type,
-            aip=node_agent.aip,
-            endorser_role=node_agent.endorser_role,
-            seed=node_agent.seed,
-        )
+    agent = AuthorityAgent(
+        "authority.agent",
+        node_agent.start_port,
+        node_agent.start_port + 1,
+        genesis_data=node_agent.genesis_txns,
+        genesis_txn_list=node_agent.genesis_txn_list,
+        no_auto=node_agent.no_auto,
+        tails_server_base_url=node_agent.tails_server_base_url,
+        revocation=node_agent.revocation,
+        timing=node_agent.show_timing,
+        multitenant=node_agent.multitenant,
+        mediation=node_agent.mediation,
+        wallet_type=node_agent.wallet_type,
+        aip=node_agent.aip,
+        endorser_role=node_agent.endorser_role,
+        seed=node_agent.seed,
+    )
+    await node_agent.initialize(
+        the_agent=agent,
+    )
+    return node_agent
 
+
+async def main(args):
+    try:
         # =========================================================================================
         # Set up schema and initialize
         # =========================================================================================
@@ -147,18 +154,28 @@ async def main(args):
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
 
-        await node_agent.initialize(
-            the_agent=agent,
-            # we need to set the schema to the wallet as well
-            schema_name=schema_name,
-            schema_attrs=schema_attributes,
+        node_agent = await create_agent_container(args)
+
+        # WARN: we either create the schema on init or do it later below before registering it
+        # await node_agent.initialize(
+        #     the_agent=agent,
+        #     # we need to set the schema to the wallet as well
+        #     schema_name=schema_name,
+        #     schema_attrs=schema_attributes,
+        # )
+
+        node_agent.cred_def_id = await node_agent.create_schema_and_cred_def(
+            schema_name, schema_attributes
         )
 
-        # publish schema
-
+        # Publish schema
         with log_timer("Publish Schema and cred def duration:"):
-            version = f"{random.randint(1,101)}.{random.randint(1,101)}.{random.randint(1,101)}"
-            (schema_id, cred_def_id) = await agent.register_schema_and_creddef(
+            # version = f"{random.randint(1,101)}.{random.randint(1,101)}.{random.randint(1,101)}"
+            version = "0.1.0"
+            (
+                schema_id,
+                cred_def_id,
+            ) = await node_agent.agent.register_schema_and_creddef(
                 schema_name,
                 version,
                 schema_attributes,
@@ -167,10 +184,6 @@ async def main(args):
                 support_revocation=False,
                 revocation_registry_size=TAILS_FILE_COUNT,
             )
-
-        # =========================================================================================
-        # END Set up schema and initialize
-        # =========================================================================================
 
         # =========================================================================================
         # Create invitation
@@ -203,7 +216,7 @@ async def main(args):
         node_url = node_url[:-1] + "1"  # fix url to admin point, BAD fix
         print(node_url)
 
-        response = await agent.client_session.post(
+        response = await node_agent.agent.client_session.post(
             url=f"{node_url}/connections/receive-invitation",
             json=invite,
         )
@@ -215,14 +228,14 @@ async def main(args):
         response = await node_agent.admin_GET("/connections")
         log_json(response)
         conn_id = response["results"][0]["connection_id"]
-        agent._connection_ready = asyncio.Future()
+        node_agent.agent._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
-        await agent.detect_connection()
+        await node_agent.agent.detect_connection()
 
         log_status("#13 Issue credential offer to X")
         # TODO credential offers
         # WARN: this could be better handled for general usecases, here it is just for Alice
-        agent.cred_attrs[cred_def_id] = {
+        node_agent.agent.cred_attrs[cred_def_id] = {
             "controller_id": "node0001",
             "date": date.isoformat(date.today()),
             "status": "valid",
@@ -231,7 +244,7 @@ async def main(args):
             "@type": CRED_PREVIEW_TYPE,
             "attributes": [
                 {"name": n, "value": v}
-                for (n, v) in agent.cred_attrs[cred_def_id].items()
+                for (n, v) in node_agent.agent.cred_attrs[cred_def_id].items()
             ],
         }
         offer_request = {
@@ -247,7 +260,7 @@ async def main(args):
         # send proof request
         request_attributes = [
             {"name": n, "restrictions": [{"schema_name": "controller id schema"}]}
-            for n, _ in agent.cred_attrs[cred_def_id].items()
+            for n, _ in node_agent.agent.cred_attrs[cred_def_id].items()
         ]
         indy_proof_request = {
             "name": "Proof of controller id",
@@ -260,7 +273,7 @@ async def main(args):
             "requested_predicates": {},
         }
         proof_request_web_request = {
-            "connection_id": agent.connection_id,
+            "connection_id": node_agent.agent.connection_id,
             "presentation_request": {"indy": indy_proof_request},
         }
 
