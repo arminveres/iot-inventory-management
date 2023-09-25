@@ -1,8 +1,9 @@
 import asyncio
 import json
 import os
-from datetime import date
 import random
+from datetime import date
+from uuid import uuid4
 
 from agent_container import (
     CRED_PREVIEW_TYPE,
@@ -11,7 +12,7 @@ from agent_container import (
     arg_parser,
     create_agent_with_args,
 )
-from support.utils import log_msg, log_json, log_status, log_timer  # noqa:E402
+from support.utils import log_json, log_msg, log_status, log_timer  # noqa:E402
 
 
 class AuthorityAgent(AriesAgent):
@@ -107,6 +108,13 @@ class AuthorityAgent(AriesAgent):
                 self.log(f"schema_id: {id_spec['schema_id']}")
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
+
+
+async def send_message(agent: AriesAgent):
+    message = {"content": "hello there amore!"}
+    await agent.admin_POST(
+        path=f"/connections/{agent.agent.connection_id}/send-message", data=message
+    )
 
 
 async def main(args):
@@ -232,24 +240,47 @@ async def main(args):
             "credential_preview": cred_preview,
             "filter": {"indy": {"cred_def_id": cred_def_id}},
         }
-        await agent.admin_POST("/issue-credential-2.0/send-offer", offer_request)
+        await node_agent.admin_POST("/issue-credential-2.0/send-offer", offer_request)
+
+        # await send_message(node_agent)
+
+        # send proof request
+        request_attributes = [
+            {"name": n, "restrictions": [{"schema_name": "controller id schema"}]}
+            for n, _ in agent.cred_attrs[cred_def_id].items()
+        ]
+        indy_proof_request = {
+            "name": "Proof of controller id",
+            "version": "1.0",
+            "nonce": str(uuid4().int),
+            "requested_attributes": {
+                f"0_{req_atrb['name']}_uuid": req_atrb
+                for req_atrb in request_attributes
+            },
+            "requested_predicates": {},
+        }
+        proof_request_web_request = {
+            "connection_id": agent.connection_id,
+            "presentation_request": {"indy": indy_proof_request},
+        }
+
+        # Send request to agent and forward it to alice, based on connection_id
+        await node_agent.admin_POST(
+            "/present-proof-2.0/send-request", proof_request_web_request
+        )
 
         # =========================================================================================
         # Event Loop
         # =========================================================================================
-        # NOTE: (aver) What I found out, is that there needs to be an 'event loop' for the hooks to
-        # be activated...
+        # This event loop is needed so that coroutines still can be run in the background, as well
+        # as webhooks received.
+        # Alternatively something like `asyncio.Event` could be used and be waited upon
         while True:
-            message = {"content": "hello there amore!"}
-            response = await node_agent.admin_POST(
-                path=f"/connections/{conn_id}/send-message", data=message
-            )
+            await send_message(node_agent)
             await asyncio.sleep(1)
-        # =========================================================================================
-        # END Event Loop
-        # =========================================================================================
 
     finally:
+        # Shut down the agent gracefully
         await node_agent.terminate()
 
 
