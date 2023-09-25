@@ -9,8 +9,8 @@ DOCKER_NETWORK="bridge" # bridge or host
 
 agent_name=$1
 port=$2
+# We define a portrange of +9 for each agent
 portrange="$2-$((port + 9))"
-# echo "$portrange"
 
 docker build -t aries-my-agent . || exit 1
 docker container run --rm -it \
@@ -20,6 +20,7 @@ docker container run --rm -it \
     -e GENESIS_URL="$GENESIS_URL" \
     -e RUNMODE="$RUN_MODE" \
     -e DOCKERHOST="$DOCKERHOST" \
+    -e POSTGRES=1 \
     aries-my-agent "$agent_name" \
     --wallet-type askar \
     --port "$port" \
