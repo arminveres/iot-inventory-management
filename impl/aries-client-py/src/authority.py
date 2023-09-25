@@ -1,9 +1,17 @@
 import asyncio
 import json
 import os
+from datetime import date
+import random
 
-from agent_container import AriesAgent, arg_parser, create_agent_with_args
-from support.utils import log_json  # noqa:E402
+from agent_container import (
+    CRED_PREVIEW_TYPE,
+    TAILS_FILE_COUNT,
+    AriesAgent,
+    arg_parser,
+    create_agent_with_args,
+)
+from support.utils import log_msg, log_json, log_status, log_timer  # noqa:E402
 
 
 class AuthorityAgent(AriesAgent):
@@ -17,14 +25,88 @@ class AuthorityAgent(AriesAgent):
         )
         self.connection_id = None
         self._connection_ready = None
+        # TODO define a dict to hold credential attributes based on cred_def_id
         self.cred_state = {}
-        # TODO define a dict to hold credential attributes
-        # based on cred_def_id
         self.cred_attrs = {}
+
+    async def handle_connections(self, message):
+        print(
+            self.ident, "handle_connections", message["state"], message["rfc23_state"]
+        )
+        conn_id = message["connection_id"]
+        if (not self.connection_id) and message["rfc23_state"] == "invitation-sent":
+            print(self.ident, "set connection id", conn_id)
+            self.connection_id = conn_id
+        if (
+            message["connection_id"] == self.connection_id
+            and message["rfc23_state"] == "completed"
+            and (self._connection_ready and not self._connection_ready.done())
+        ):
+            self.log("Connected")
+            self._connection_ready.set_result(True)
 
     async def handle_out_of_band(self, message):
         print("handle_out_of_band()")
         log_json(message)
+
+    async def handle_issue_credential_v2_0(self, message):
+        state = message["state"]
+        cred_ex_id = message["cred_ex_id"]
+        prev_state = self.cred_state.get(cred_ex_id)
+
+        if prev_state == state:
+            return  # ignore
+
+        self.cred_state[cred_ex_id] = state
+
+        self.log(f"Credential: state = {state}, cred_ex_id = {cred_ex_id}")
+
+        if state == "request-received":
+            # TODO issue credentials based on offer preview in cred ex record
+            if not message.get("auto_issue"):
+                await self.admin_POST(
+                    f"/issue-credential-2.0/records/{cred_ex_id}/issue",
+                    {"comment": f"Issuing credential, exchange {cred_ex_id}"},
+                )
+
+    async def handle_present_proof_v2_0(self, message):
+        state = message["state"]
+        pres_ex_id = message["pres_ex_id"]
+        self.log(f"Presentation: state = {state}, pres_ex_id = {pres_ex_id}")
+
+        if state == "presentation-received":
+            # TODO handle received presentations
+            log_status("#27 Process the proof provided by X")
+            log_status("#28 Check if proof is valid")
+            proof = await self.admin_POST(
+                f"/present-proof-2.0/records/{pres_ex_id}/verify-presentation"
+            )
+            self.log("Proof = ", proof["verified"])
+
+            # if presentation is a degree schema (proof of education), check values received
+            pres_req = message["by_format"]["pres_request"]["indy"]
+            pres = message["by_format"]["pres"]["indy"]
+            is_proof_of_education = pres_req["name"] == "Proof of Education"
+
+            if not is_proof_of_education:
+                # in case there are any other kinds of proofs received
+                self.log("#28.1 Received ", pres_req["name"])
+                return
+
+            log_status("#28.1 Received proof of education, check claims")
+            for referent, attr_spec in pres_req["requested_attributes"].items():
+                if referent in pres["requested_proof"]["revealed_attrs"]:
+                    self.log(
+                        f"{attr_spec['name']}: "
+                        f"{pres['requested_proof']['revealed_attrs'][referent]['raw']}"
+                    )
+                else:
+                    self.log(f"{attr_spec['name']}: " "(attribute not revealed)")
+            for id_spec in pres["identifiers"]:
+                # just print out the schema/cred def id's of presented claims
+                self.log(f"schema_id: {id_spec['schema_id']}")
+                self.log(f"cred_def_id {id_spec['cred_def_id']}")
+            # TODO placeholder for the next step
 
 
 async def main(args):
@@ -49,14 +131,51 @@ async def main(args):
             endorser_role=node_agent.endorser_role,
             seed=node_agent.seed,
         )
-        await node_agent.initialize(the_agent=agent)
 
+        # =========================================================================================
+        # Set up schema and initialize
+        # =========================================================================================
+
+        schema_name = "controller id schema"
+        schema_attributes = ["controller_id", "date", "status"]
+
+        await node_agent.initialize(
+            the_agent=agent,
+            # we need to set the schema to the wallet as well
+            schema_name=schema_name,
+            schema_attrs=schema_attributes,
+        )
+
+        # publish schema
+
+        with log_timer("Publish Schema and cred def duration:"):
+            version = f"{random.randint(1,101)}.{random.randint(1,101)}.{random.randint(1,101)}"
+            (schema_id, cred_def_id) = await agent.register_schema_and_creddef(
+                schema_name,
+                version,
+                schema_attributes,
+                # WARN: to support revocation, we need to have a tails server running a revocation
+                # registry
+                support_revocation=False,
+                revocation_registry_size=TAILS_FILE_COUNT,
+            )
+
+        # =========================================================================================
+        # END Set up schema and initialize
+        # =========================================================================================
+
+        # =========================================================================================
+        # Create invitation
+        # =========================================================================================
         # response = await node_agent.generate_invitation(
         # reuse_connections=node_agent.reuse_connections
         # )
         response = await node_agent.admin_POST("/connections/create-invitation", {})
         print(json.dumps(response, indent=4))
         invite = response["invitation"]
+        # =========================================================================================
+        # END Create invitation
+        # =========================================================================================
 
         # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
         # invitation requests, that then can be passed to the agent to be accepted.
@@ -86,7 +205,34 @@ async def main(args):
 
         # send test message
         response = await node_agent.admin_GET("/connections")
+        log_json(response)
         conn_id = response["results"][0]["connection_id"]
+        agent._connection_ready = asyncio.Future()
+        log_msg("Waiting for connection...")
+        await agent.detect_connection()
+
+        log_status("#13 Issue credential offer to X")
+        # TODO credential offers
+        # WARN: this could be better handled for general usecases, here it is just for Alice
+        agent.cred_attrs[cred_def_id] = {
+            "controller_id": "node0001",
+            "date": date.isoformat(date.today()),
+            "status": "valid",
+        }
+        cred_preview = {
+            "@type": CRED_PREVIEW_TYPE,
+            "attributes": [
+                {"name": n, "value": v}
+                for (n, v) in agent.cred_attrs[cred_def_id].items()
+            ],
+        }
+        offer_request = {
+            "connection_id": conn_id,
+            "comment": f"Offer on cred def id {cred_def_id}",
+            "credential_preview": cred_preview,
+            "filter": {"indy": {"cred_def_id": cred_def_id}},
+        }
+        await agent.admin_POST("/issue-credential-2.0/send-offer", offer_request)
 
         # =========================================================================================
         # Event Loop
@@ -98,8 +244,6 @@ async def main(args):
             response = await node_agent.admin_POST(
                 path=f"/connections/{conn_id}/send-message", data=message
             )
-            print(json.dumps(response, indent=4))
-
             await asyncio.sleep(1)
         # =========================================================================================
         # END Event Loop
