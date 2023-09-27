@@ -1,11 +1,9 @@
 import asyncio
 import os
-import random
 from datetime import date
 
 from agent_container import (
     CRED_PREVIEW_TYPE,
-    TAILS_FILE_COUNT,
     AgentContainer,
     AriesAgent,
     arg_parser,
@@ -15,7 +13,6 @@ from support.utils import (
     log_json,
     log_msg,
     log_status,
-    log_timer,
 )  # noqa:E402
 
 
@@ -153,39 +150,16 @@ async def main(args):
         # =========================================================================================
         # Set up schema and initialize
         # =========================================================================================
-        schema_name = "controller id schema"
-        schema_attributes = ["controller_id", "date", "status"]
 
         node_agent = await create_agent_container(args)
 
-        # WARN: we either create the schema on init or do it later below before registering it
-        # await node_agent.initialize(
-        #     the_agent=agent,
-        #     # we need to set the schema to the wallet as well
-        #     schema_name=schema_name,
-        #     schema_attrs=schema_attributes,
-        # )
+        schema_name = "controller id schema"
+        schema_attributes = ["controller_id", "date", "status"]
+        version = "0.0.1"
 
         node_agent.cred_def_id = await node_agent.create_schema_and_cred_def(
-            schema_name, schema_attributes
+            schema_name, schema_attributes, version
         )
-
-        # Publish schema
-        with log_timer("Publish Schema and cred def duration:"):
-            version = f"{random.randint(1,101)}.{random.randint(1,101)}.{random.randint(1,101)}"
-            # version = "0.0.1"
-            (
-                schema_id,
-                cred_def_id,
-            ) = await node_agent.agent.register_schema_and_creddef(
-                schema_name,
-                version,
-                schema_attributes,
-                # WARN: to support revocation, we need to have a tails server running a revocation
-                # registry
-                support_revocation=True,
-                revocation_registry_size=TAILS_FILE_COUNT,
-            )
 
         # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
         # invitation requests, that then can be passed to the agent to be accepted.
@@ -210,7 +184,7 @@ async def main(args):
         log_status("#13 Issue credential offer to X")
         # TODO credential offers
         # WARN: this could be better handled for general usecases, here it is just for Alice
-        node_agent.agent.cred_attrs[cred_def_id] = {
+        node_agent.agent.cred_attrs[node_agent.cred_def_id] = {
             "controller_id": "node0001",
             "date": date.isoformat(date.today()),
             "status": "valid",
@@ -219,14 +193,16 @@ async def main(args):
             "@type": CRED_PREVIEW_TYPE,
             "attributes": [
                 {"name": n, "value": v}
-                for (n, v) in node_agent.agent.cred_attrs[cred_def_id].items()
+                for (n, v) in node_agent.agent.cred_attrs[
+                    node_agent.cred_def_id
+                ].items()
             ],
         }
         offer_request = {
             "connection_id": conn_id,
-            "comment": f"Offer on cred def id {cred_def_id}",
+            "comment": f"Offer on cred def id {node_agent.cred_def_id}",
             "credential_preview": cred_preview,
-            "filter": {"indy": {"cred_def_id": cred_def_id}},
+            "filter": {"indy": {"cred_def_id": node_agent.cred_def_id}},
         }
         await node_agent.admin_POST("/issue-credential-2.0/send-offer", offer_request)
 
