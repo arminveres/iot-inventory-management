@@ -16,7 +16,7 @@ from agent_container import (
 from support.utils import log_json, log_msg, log_status, log_timer  # noqa:E402
 
 
-class AuthorityAgent(AriesAgent):
+class IssuerAgent(AriesAgent):
     """
     This agent will be a credential issuer from the maintainer/manufacturer point of view.
     """
@@ -112,7 +112,7 @@ class AuthorityAgent(AriesAgent):
 
 
 async def send_message(agent: AriesAgent):
-    message = {"content": "hello there amore!"}
+    message = {"content": f"hello from {agent.ident}!"}
     await agent.admin_POST(
         path=f"/connections/{agent.agent.connection_id}/send-message", data=message
     )
@@ -120,10 +120,10 @@ async def send_message(agent: AriesAgent):
 
 async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
-    node_agent = await create_agent_with_args(args, ident="authority_node")
+    node_agent = await create_agent_with_args(args, ident="issuer_node")
     node_agent.seed = "Autho_00000000000000000000000000"
-    agent = AuthorityAgent(
-        "authority.agent",
+    agent = IssuerAgent(
+        "issuer.agent",
         node_agent.start_port,
         node_agent.start_port + 1,
         genesis_data=node_agent.genesis_txns,
@@ -254,33 +254,6 @@ async def main(args):
         }
         await node_agent.admin_POST("/issue-credential-2.0/send-offer", offer_request)
 
-        # await send_message(node_agent)
-
-        # send proof request
-        request_attributes = [
-            {"name": n, "restrictions": [{"schema_name": "controller id schema"}]}
-            for n, _ in node_agent.agent.cred_attrs[cred_def_id].items()
-        ]
-        indy_proof_request = {
-            "name": "Proof of controller id",
-            "version": "1.0",
-            "nonce": str(uuid4().int),
-            "requested_attributes": {
-                f"0_{req_atrb['name']}_uuid": req_atrb
-                for req_atrb in request_attributes
-            },
-            "requested_predicates": {},
-        }
-        proof_request_web_request = {
-            "connection_id": node_agent.agent.connection_id,
-            "presentation_request": {"indy": indy_proof_request},
-        }
-
-        # Send request to agent and forward it to alice, based on connection_id
-        await node_agent.admin_POST(
-            "/present-proof-2.0/send-request", proof_request_web_request
-        )
-
         # =========================================================================================
         # Event Loop
         # =========================================================================================
@@ -297,7 +270,7 @@ async def main(args):
 
 
 if __name__ == "__main__":
-    parser = arg_parser(ident="authority_node")
+    parser = arg_parser(ident="issuer_node")
     args = parser.parse_args()
 
     # execute main
