@@ -1,19 +1,14 @@
 import asyncio
-import json
 import os
-import random
-from datetime import date
 from uuid import uuid4
 
 from agent_container import (
-    CRED_PREVIEW_TYPE,
-    TAILS_FILE_COUNT,
     AgentContainer,
     AriesAgent,
     arg_parser,
     create_agent_with_args,
 )
-from support.utils import log_json, log_msg, log_status, log_timer  # noqa:E402
+from support.utils import log_json, log_msg, log_status  # noqa:E402
 
 
 class VerifierAgent(AriesAgent):
@@ -149,19 +144,6 @@ async def main(args):
     try:
         node_agent = await create_agent_container(args)
 
-        # =========================================================================================
-        # Create invitation
-        # =========================================================================================
-        # response = await node_agent.generate_invitation(
-        # reuse_connections=node_agent.reuse_connections
-        # )
-        response = await node_agent.admin_POST("/connections/create-invitation", {})
-        print(json.dumps(response, indent=4))
-        invite = response["invitation"]
-        # =========================================================================================
-        # END Create invitation
-        # =========================================================================================
-
         # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
         # invitation requests, that then can be passed to the agent to be accepted.
         # Flow:
@@ -172,43 +154,23 @@ async def main(args):
 
         # WARN: fixed seed for DIDs
         node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
-
-        # resolve did for did_document
-        response = await node_agent.admin_GET(f"/resolver/resolve/{node_did}")
-        print(json.dumps(response, indent=4))
-        node_url = response["did_document"]["service"][0]["serviceEndpoint"]
-        node_url = node_url[:-1] + "1"  # fix url to admin point, BAD fix
-        print(node_url)
-
-        response = await node_agent.agent.client_session.post(
-            url=f"{node_url}/connections/receive-invitation",
-            json=invite,
-        )
-
-        resp = await response.json()
-        log_json(resp)
+        await node_agent.agent.send_invitation(node_did)
 
         # send test message
         response = await node_agent.admin_GET("/connections")
         log_json(response)
-        conn_id = response["results"][0]["connection_id"]
+        node_agent.agent.connection_id = response["results"][0]["connection_id"]
         node_agent.agent._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
         await node_agent.agent.detect_connection()
 
         # send proof request
-        schema_name = "controller id schema"
+        # schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
-
-        test = [
-            ["controller_id", "node0001"],
-            ["date", "2023-09-27"],
-            ["status", "valid"],
-        ]
 
         request_attributes = [
             {"name": n, "restrictions": [{"schema_name": "controller id schema"}]}
-            for n, _ in test
+            for n in schema_attributes
         ]
         indy_proof_request = {
             "name": "Proof of controller id",

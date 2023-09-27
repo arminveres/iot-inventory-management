@@ -1286,6 +1286,36 @@ class DemoAgent:
         self.connection_id = connection["connection_id"]
         return connection
 
+    async def send_invitation(self, did: str):
+        # TODO: (aver) move this into DemoAgent
+
+        # =========================================================================================
+        # Create invitation
+        # =========================================================================================
+        # response = await node_agent.generate_invitation(
+        # reuse_connections=node_agent.reuse_connections
+        # )
+        response = await self.admin_POST("/connections/create-invitation", {})
+        log_json(response)
+        invite = response["invitation"]
+
+        # resolve did for did_document
+        response = await self.admin_GET(f"/resolver/resolve/{did}")
+        log_json(response)
+        node_url = response["did_document"]["service"][0]["serviceEndpoint"]
+        node_url = node_url[:-1] + "1"  # fix url to admin point, BAD fix
+        # print(node_url)
+
+        # =========================================================================================
+        # Send invitation
+        # =========================================================================================
+        response = await self.client_session.post(
+            url=f"{node_url}/connections/receive-invitation",
+            json=invite,
+        )
+        resp = await response.json()
+        log_json(resp)
+
 
 class MediatorAgent(DemoAgent):
     def __init__(self, http_port: int, admin_port: int, **kwargs):

@@ -24,9 +24,12 @@ class NodeAgent(AriesAgent):
         # based on cred_def_id
         self.cred_attrs = {}
 
-    # async def handle_basicmessages(self, message):
-    #     self.log("Received message:", message["content"])
-    #     print("\n\ngot\n\n", message)
+    async def handle_invitation(self, message):
+        """
+        Handle invitation received for connections
+        """
+        self.log("Received invitation:", message["content"])
+        print("\n\ngot\n\n", message)
 
 
 async def main(args):

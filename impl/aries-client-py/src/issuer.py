@@ -1,9 +1,7 @@
 import asyncio
-import json
 import os
 import random
 from datetime import date
-from uuid import uuid4
 
 from agent_container import (
     CRED_PREVIEW_TYPE,
@@ -13,7 +11,12 @@ from agent_container import (
     arg_parser,
     create_agent_with_args,
 )
-from support.utils import log_json, log_msg, log_status, log_timer  # noqa:E402
+from support.utils import (
+    log_json,
+    log_msg,
+    log_status,
+    log_timer,
+)  # noqa:E402
 
 
 class IssuerAgent(AriesAgent):
@@ -184,19 +187,6 @@ async def main(args):
                 revocation_registry_size=TAILS_FILE_COUNT,
             )
 
-        # =========================================================================================
-        # Create invitation
-        # =========================================================================================
-        # response = await node_agent.generate_invitation(
-        # reuse_connections=node_agent.reuse_connections
-        # )
-        response = await node_agent.admin_POST("/connections/create-invitation", {})
-        print(json.dumps(response, indent=4))
-        invite = response["invitation"]
-        # =========================================================================================
-        # END Create invitation
-        # =========================================================================================
-
         # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
         # invitation requests, that then can be passed to the agent to be accepted.
         # Flow:
@@ -207,21 +197,7 @@ async def main(args):
 
         # WARN: fixed seed for DIDs
         node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
-
-        # resolve did for did_document
-        response = await node_agent.admin_GET(f"/resolver/resolve/{node_did}")
-        print(json.dumps(response, indent=4))
-        node_url = response["did_document"]["service"][0]["serviceEndpoint"]
-        node_url = node_url[:-1] + "1"  # fix url to admin point, BAD fix
-        print(node_url)
-
-        response = await node_agent.agent.client_session.post(
-            url=f"{node_url}/connections/receive-invitation",
-            json=invite,
-        )
-
-        resp = await response.json()
-        log_json(resp)
+        await node_agent.agent.send_invitation(node_did)
 
         # send test message
         response = await node_agent.admin_GET("/connections")
