@@ -2,4 +2,4 @@
 - cloning attack
 - gray hole attacks
 - replay attacks
-- ddos
+- DDoS attacks

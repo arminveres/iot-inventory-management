@@ -1,6 +1,8 @@
 import asyncio
+import json
 import os
 from datetime import date
+from uuid import uuid4
 
 from agent_container import (
     CRED_PREVIEW_TYPE,
@@ -9,22 +11,35 @@ from agent_container import (
     arg_parser,
     create_agent_with_args,
 )
-from support.utils import (
-    log_json,
-    log_msg,
-    log_status,
-)  # noqa:E402
+from support.agent import DEFAULT_INTERNAL_HOST
+from support.database import sign_transaction
+from support.utils import log_json, log_msg, log_status, run_executable  # noqa:E402
 
 
+# TODO: (aver) What about making this an administrative instance of the maintainer environment?
+# could serve as
 class IssuerAgent(AriesAgent):
     """
     This agent will be a credential issuer from the maintainer/manufacturer point of view.
     """
 
-    def __init__(self, ident: str, http_port: int, admin_port: int, **kwargs):
+    def __init__(
+        self,
+        ident: str,
+        http_port: int,
+        admin_port: int,
+        orion_db_url=f"http://{DEFAULT_INTERNAL_HOST}:6001",
+        **kwargs,
+    ):
         super().__init__(
             ident=ident, http_port=http_port, admin_port=admin_port, **kwargs
         )
+
+        # TODO: (aver) find a better way to manage keys
+        self.orion_db_url = orion_db_url
+        self._db_user_id = "admin"
+        self._db_privatekey = "crypto/admin/admin.key"
+
         self.connection_id = None
         self._connection_ready = None
         # TODO define a dict to hold credential attributes based on cred_def_id
@@ -110,6 +125,23 @@ class IssuerAgent(AriesAgent):
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
 
+    async def create_database(self):
+        """
+        TODO: (aver) create database with orion
+        """
+        payload = {
+            "user_id": self._db_user_id,
+            "tx_id": str(uuid4()),
+            "create_dbs": ["db1", "db2"],
+        }
+        signature = sign_transaction(payload, self._db_privatekey)
+        data = {"payload": payload, "signature": signature}
+        response = await self.client_session.post(
+            url=f"{self.orion_db_url}/db/tx", json=data, headers={"TxTimeout": "2s"}
+        )
+        response = await response.json()
+        log_json(response)
+
 
 async def send_message(agent: AriesAgent):
     message = {"content": f"hello from {agent.ident}!"}
@@ -153,6 +185,9 @@ async def main(args):
 
         node_agent = await create_agent_container(args)
 
+        await node_agent.agent.create_database()
+
+        exit(0)
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
         version = "0.0.1"

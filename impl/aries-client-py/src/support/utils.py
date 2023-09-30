@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from timeit import default_timer
+import subprocess
 
 import prompt_toolkit
 from prompt_toolkit.application import run_in_terminal
@@ -265,3 +266,9 @@ def check_requires(args):
         except OSError:
             print("askar shared library could not be loaded")
             sys.exit(1)
+
+
+def run_executable(args: tuple[str]):
+    popen = subprocess.Popen(args, stdout=subprocess.PIPE)
+    popen.wait()
+    return popen.stdout.read().decode("utf-8")
