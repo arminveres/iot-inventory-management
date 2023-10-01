@@ -125,14 +125,14 @@ class IssuerAgent(AriesAgent):
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
 
-    async def create_database(self):
+    async def create_database(self, database_name: str):
         """
         TODO: (aver) create database with orion
         """
         payload = {
             "user_id": self._db_user_id,
             "tx_id": str(uuid4()),
-            "create_dbs": ["db1", "db2"],
+            "create_dbs": [database_name],
         }
         signature = sign_transaction(payload, self._db_privatekey)
         data = {"payload": payload, "signature": signature}
@@ -185,7 +185,7 @@ async def main(args):
 
         node_agent = await create_agent_container(args)
 
-        await node_agent.agent.create_database()
+        await node_agent.agent.create_database("db1")
 
         exit(0)
         schema_name = "controller id schema"

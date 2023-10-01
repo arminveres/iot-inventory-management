@@ -6,11 +6,12 @@ from support.utils import run_executable
 
 
 def sign_transaction(data, privatekey):
-    print(f"'{json.dumps(data)}'")
+    prepped_data = json.dumps(data).replace(" ", "")
+    print(prepped_data)
     signature = run_executable(
         (
             "./bin/signer",
-            f"-data='{json.dumps(data)}'",
+            f"-data={prepped_data}",
             f"-privatekey={privatekey}",
         )
     )
