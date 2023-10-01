@@ -12,7 +12,7 @@ from agent_container import (
     create_agent_with_args,
 )
 from support.agent import DEFAULT_INTERNAL_HOST
-from support.database import sign_transaction
+from support.database import encode_data, sign_transaction
 from support.utils import log_json, log_msg, log_status, run_executable  # noqa:E402
 
 
@@ -126,6 +126,9 @@ class IssuerAgent(AriesAgent):
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
 
+    def _db_glue_payload(self, payload: dict, signature: str):
+        return {"payload": payload, "signature": signature}
+
     async def check_db(self, db_name: str):
         """
         Check existence of a database with given name
@@ -152,6 +155,8 @@ class IssuerAgent(AriesAgent):
 
         if await self.check_db(db_name):
             log_status(f"{db_name}: Already exists")
+            if db_name not in self.databases:
+                self.databases.append(db_name)
             return
 
         payload = {
@@ -171,6 +176,40 @@ class IssuerAgent(AriesAgent):
             self.databases.append(db_name)
         else:
             print("\n\nERRROR HAPPENED\n\n")
+
+    async def record_db_key(self, key_name: str, value: dict):
+        encoded_value = encode_data(value)
+        payload = {
+            "must_sign_user_ids": [self._db_user_id],
+            "tx_id": str(uuid4()),
+            "db_operations": [
+                {
+                    "db_name": self.databases[0],
+                    "data_writes": [
+                        {
+                            "key": key_name,
+                            "value": encoded_value,
+                            "acl": {"read_write_users": {self._db_user_id: True}},
+                        },
+                    ],
+                }
+            ],
+        }
+        signature = sign_transaction(payload, self._db_privatekey)
+        # data = self._db_glue_payload(payload, signature)
+        data = {"payload": payload, "signatures": {self._db_user_id: signature}}
+
+        response = await self.client_session.post(
+            url=f"{self.orion_db_url}/data/tx", json=data, headers={"TxTimeout": "2s"}
+        )
+        if response.ok:
+            log_status(f"Returned with {response.status}")
+            response = await response.json()
+            log_json(response)
+        else:
+            response = await response.json()
+            print("\n\nERRROR HAPPENED\n\n")
+            log_json(response)
 
 
 async def send_message(agent: AriesAgent):
@@ -216,10 +255,20 @@ async def main(args):
         node_agent = await create_agent_container(args)
 
         await node_agent.agent.create_database("db1")
-        # exit(0)
+
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
         version = "0.0.1"
+
+        controller_1_cred = {
+            "controller_id": "node0001",
+            "date": date.isoformat(date.today()),
+            "status": "valid",
+        }
+
+        await node_agent.agent.record_db_key("Controller_1", controller_1_cred)
+
+        exit(0)
 
         node_agent.cred_def_id = await node_agent.create_schema_and_cred_def(
             schema_name, schema_attributes, version
@@ -248,11 +297,7 @@ async def main(args):
         log_status("#13 Issue credential offer to X")
         # TODO credential offers
         # WARN: this could be better handled for general usecases, here it is just for Alice
-        node_agent.agent.cred_attrs[node_agent.cred_def_id] = {
-            "controller_id": "node0001",
-            "date": date.isoformat(date.today()),
-            "status": "valid",
-        }
+        node_agent.agent.cred_attrs[node_agent.cred_def_id] = controller_1_cred
         cred_preview = {
             "@type": CRED_PREVIEW_TYPE,
             "attributes": [
