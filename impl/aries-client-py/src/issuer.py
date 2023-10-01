@@ -39,6 +39,7 @@ class IssuerAgent(AriesAgent):
         self.orion_db_url = orion_db_url
         self._db_user_id = "admin"
         self._db_privatekey = "crypto/admin/admin.key"
+        self.databases = []
 
         self.connection_id = None
         self._connection_ready = None
@@ -125,22 +126,51 @@ class IssuerAgent(AriesAgent):
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
 
-    async def create_database(self, database_name: str):
+    async def check_db(self, db_name: str):
         """
-        TODO: (aver) create database with orion
+        Check existence of a database with given name
         """
+        payload = {"user_id": self._db_user_id, "db_name": db_name}
+        signature = sign_transaction(payload, self._db_privatekey)
+        response = await self.client_session.get(
+            url=f"{self.orion_db_url}/db/{db_name}",
+            headers={"UserID": self._db_user_id, "Signature": signature},
+        )
+        if response.ok:
+            log_msg(f"Returned with {response.status}")
+            response = await response.json()
+            log_json(response)
+            return response["response"]["exist"]
+        else:
+            print("\n\nERRROR HAPPENED\n\n")
+            return False
+
+    async def create_database(self, db_name: str):
+        """
+        Creates a database with given name, but checks first whether it exists
+        """
+
+        if await self.check_db(db_name):
+            log_status(f"{db_name}: Already exists")
+            return
+
         payload = {
             "user_id": self._db_user_id,
             "tx_id": str(uuid4()),
-            "create_dbs": [database_name],
+            "create_dbs": [db_name],
         }
         signature = sign_transaction(payload, self._db_privatekey)
         data = {"payload": payload, "signature": signature}
         response = await self.client_session.post(
             url=f"{self.orion_db_url}/db/tx", json=data, headers={"TxTimeout": "2s"}
         )
-        response = await response.json()
-        log_json(response)
+        if response.ok:
+            log_status(f"Returned with {response.status}")
+            response = await response.json()
+            log_json(response)
+            self.databases.append(db_name)
+        else:
+            print("\n\nERRROR HAPPENED\n\n")
 
 
 async def send_message(agent: AriesAgent):
@@ -186,8 +216,7 @@ async def main(args):
         node_agent = await create_agent_container(args)
 
         await node_agent.agent.create_database("db1")
-
-        exit(0)
+        # exit(0)
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
         version = "0.0.1"

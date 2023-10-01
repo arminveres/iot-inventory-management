@@ -2,12 +2,18 @@
 Contains a host of helper functions for managing the Orion database
 """
 import json
-from support.utils import run_executable
+from support.utils import log_msg, run_executable
 
 
-def sign_transaction(data, privatekey):
+def sign_transaction(data: json, privatekey: str):
+    """
+    Sign a transaction for Hyperledger Orion
+    params:
+        data: data in json to be signed
+        privatekey: location to private key
+    """
     prepped_data = json.dumps(data).replace(" ", "")
-    print(prepped_data)
+    log_msg("Data to be signed:", prepped_data)
     signature = run_executable(
         (
             "./bin/signer",
