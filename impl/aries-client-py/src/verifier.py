@@ -115,29 +115,29 @@ async def send_message(agent: AriesAgent):
 
 async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
-    node_agent = await create_agent_with_args(args, ident="verifier_node")
-    node_agent.seed = "Autho_00000000000000000000000000"
+    agent_container = await create_agent_with_args(args, ident="verifier_node")
+    agent_container.seed = "Autho_00000000000000000000000000"
     agent = VerifierAgent(
         "verifier.agent",
-        node_agent.start_port,
-        node_agent.start_port + 1,
-        genesis_data=node_agent.genesis_txns,
-        genesis_txn_list=node_agent.genesis_txn_list,
-        no_auto=node_agent.no_auto,
-        tails_server_base_url=node_agent.tails_server_base_url,
-        revocation=node_agent.revocation,
-        timing=node_agent.show_timing,
-        multitenant=node_agent.multitenant,
-        mediation=node_agent.mediation,
-        wallet_type=node_agent.wallet_type,
-        aip=node_agent.aip,
-        endorser_role=node_agent.endorser_role,
-        seed=node_agent.seed,
+        agent_container.start_port,
+        agent_container.start_port + 1,
+        genesis_data=agent_container.genesis_txns,
+        genesis_txn_list=agent_container.genesis_txn_list,
+        no_auto=agent_container.no_auto,
+        tails_server_base_url=agent_container.tails_server_base_url,
+        revocation=agent_container.revocation,
+        timing=agent_container.show_timing,
+        multitenant=agent_container.multitenant,
+        mediation=agent_container.mediation,
+        wallet_type=agent_container.wallet_type,
+        aip=agent_container.aip,
+        endorser_role=agent_container.endorser_role,
+        seed=agent_container.seed,
     )
-    await node_agent.initialize(
+    await agent_container.initialize(
         the_agent=agent,
     )
-    return node_agent
+    return agent_container
 
 
 async def main(args):

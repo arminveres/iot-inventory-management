@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 from datetime import date
 from uuid import uuid4
@@ -13,7 +12,7 @@ from agent_container import (
 )
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import encode_data, sign_transaction
-from support.utils import log_json, log_msg, log_status, run_executable  # noqa:E402
+from support.utils import log_json, log_msg, log_status  # noqa:E402
 
 
 # TODO: (aver) What about making this an administrative instance of the maintainer environment?
@@ -221,56 +220,57 @@ async def send_message(agent: AriesAgent):
 
 async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
-    node_agent = await create_agent_with_args(args, ident="issuer_node")
-    node_agent.seed = "Autho_00000000000000000000000000"
+    agent_container = await create_agent_with_args(args, ident="issuer_node")
+    agent_container.seed = "Autho_00000000000000000000000000"
     agent = IssuerAgent(
         "issuer.agent",
-        node_agent.start_port,
-        node_agent.start_port + 1,
-        genesis_data=node_agent.genesis_txns,
-        genesis_txn_list=node_agent.genesis_txn_list,
-        no_auto=node_agent.no_auto,
-        tails_server_base_url=node_agent.tails_server_base_url,
-        revocation=node_agent.revocation,
-        timing=node_agent.show_timing,
-        multitenant=node_agent.multitenant,
-        mediation=node_agent.mediation,
-        wallet_type=node_agent.wallet_type,
-        aip=node_agent.aip,
-        endorser_role=node_agent.endorser_role,
-        seed=node_agent.seed,
+        agent_container.start_port,
+        agent_container.start_port + 1,
+        genesis_data=agent_container.genesis_txns,
+        genesis_txn_list=agent_container.genesis_txn_list,
+        no_auto=agent_container.no_auto,
+        tails_server_base_url=agent_container.tails_server_base_url,
+        revocation=agent_container.revocation,
+        timing=agent_container.show_timing,
+        multitenant=agent_container.multitenant,
+        mediation=agent_container.mediation,
+        wallet_type=agent_container.wallet_type,
+        aip=agent_container.aip,
+        endorser_role=agent_container.endorser_role,
+        seed=agent_container.seed,
     )
-    await node_agent.initialize(
+    await agent_container.initialize(
         the_agent=agent,
     )
-    return node_agent
+    return agent_container
 
 
 async def main(args):
+    agent_container = await create_agent_container(args)
+
     try:
         # =========================================================================================
         # Set up schema and initialize
         # =========================================================================================
 
-        node_agent = await create_agent_container(args)
-
-        await node_agent.agent.create_database("db1")
+        await agent_container.agent.create_database("db1")
 
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
         version = "0.0.1"
 
+        # Currently the credential is of the same format as the entry to the database
         controller_1_cred = {
             "controller_id": "node0001",
             "date": date.isoformat(date.today()),
             "status": "valid",
         }
 
-        await node_agent.agent.record_db_key("Controller_1", controller_1_cred)
+        await agent_container.agent.record_db_key("Controller_1", controller_1_cred)
 
         exit(0)
 
-        node_agent.cred_def_id = await node_agent.create_schema_and_cred_def(
+        agent_container.cred_def_id = await agent_container.create_schema_and_cred_def(
             schema_name, schema_attributes, version
         )
 
@@ -284,36 +284,40 @@ async def main(args):
 
         # WARN: fixed seed for DIDs
         node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
-        await node_agent.agent.send_invitation(node_did)
+        await agent_container.agent.send_invitation(node_did)
 
         # send test message
-        response = await node_agent.admin_GET("/connections")
+        response = await agent_container.admin_GET("/connections")
         log_json(response)
         conn_id = response["results"][0]["connection_id"]
-        node_agent.agent._connection_ready = asyncio.Future()
+        agent_container.agent._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
-        await node_agent.agent.detect_connection()
+        await agent_container.agent.detect_connection()
 
         log_status("#13 Issue credential offer to X")
         # TODO credential offers
         # WARN: this could be better handled for general usecases, here it is just for Alice
-        node_agent.agent.cred_attrs[node_agent.cred_def_id] = controller_1_cred
+        agent_container.agent.cred_attrs[
+            agent_container.cred_def_id
+        ] = controller_1_cred
         cred_preview = {
             "@type": CRED_PREVIEW_TYPE,
             "attributes": [
                 {"name": n, "value": v}
-                for (n, v) in node_agent.agent.cred_attrs[
-                    node_agent.cred_def_id
+                for (n, v) in agent_container.agent.cred_attrs[
+                    agent_container.cred_def_id
                 ].items()
             ],
         }
         offer_request = {
             "connection_id": conn_id,
-            "comment": f"Offer on cred def id {node_agent.cred_def_id}",
+            "comment": f"Offer on cred def id {agent_container.cred_def_id}",
             "credential_preview": cred_preview,
-            "filter": {"indy": {"cred_def_id": node_agent.cred_def_id}},
+            "filter": {"indy": {"cred_def_id": agent_container.cred_def_id}},
         }
-        await node_agent.admin_POST("/issue-credential-2.0/send-offer", offer_request)
+        await agent_container.admin_POST(
+            "/issue-credential-2.0/send-offer", offer_request
+        )
 
         # =========================================================================================
         # Event Loop
@@ -322,12 +326,12 @@ async def main(args):
         # as webhooks received.
         # Alternatively something like `asyncio.Event` could be used and be waited upon
         while True:
-            await send_message(node_agent)
+            await send_message(agent_container)
             await asyncio.sleep(1)
 
     finally:
         # Shut down the agent gracefully
-        await node_agent.terminate()
+        await agent_container.terminate()
 
 
 if __name__ == "__main__":

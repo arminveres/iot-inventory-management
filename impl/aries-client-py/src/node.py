@@ -1,5 +1,5 @@
-import os
 import asyncio
+import os
 import sys
 
 # add the source directory to path
@@ -8,9 +8,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 
 from agent_container import AriesAgent, arg_parser, create_agent_with_args  # noqa:E402
 
 
+# class NodeAgent:
 class NodeAgent(AriesAgent):
     """
     A NodeAgent represents an end target, that will hold credentials.
+    TODO: Further differentiate between controller, function, edge nodes.
     """
 
     def __init__(self, ident: str, http_port: int, admin_port: int, **kwargs):
@@ -34,35 +36,35 @@ class NodeAgent(AriesAgent):
 
 async def main(args):
     # First setup all the agent related stuff
-    node_agent = await create_agent_with_args(args, ident="test_node")
-    node_agent.seed = "Node1_00000000000000000000000000"
+    agent_container = await create_agent_with_args(args, ident="test_node")
+    agent_container.seed = "Node1_00000000000000000000000000"
 
     try:
         agent = NodeAgent(
             "node.agent",
-            node_agent.start_port,
-            node_agent.start_port + 1,
-            genesis_data=node_agent.genesis_txns,
-            genesis_txn_list=node_agent.genesis_txn_list,
-            no_auto=node_agent.no_auto,
-            tails_server_base_url=node_agent.tails_server_base_url,
-            revocation=node_agent.revocation,
-            timing=node_agent.show_timing,
-            multitenant=node_agent.multitenant,
-            mediation=node_agent.mediation,
-            wallet_type=node_agent.wallet_type,
-            aip=node_agent.aip,
-            endorser_role=node_agent.endorser_role,
-            seed=node_agent.seed,
+            agent_container.start_port,
+            agent_container.start_port + 1,
+            genesis_data=agent_container.genesis_txns,
+            genesis_txn_list=agent_container.genesis_txn_list,
+            no_auto=agent_container.no_auto,
+            tails_server_base_url=agent_container.tails_server_base_url,
+            revocation=agent_container.revocation,
+            timing=agent_container.show_timing,
+            multitenant=agent_container.multitenant,
+            mediation=agent_container.mediation,
+            wallet_type=agent_container.wallet_type,
+            aip=agent_container.aip,
+            endorser_role=agent_container.endorser_role,
+            seed=agent_container.seed,
         )
-        await node_agent.initialize(the_agent=agent)
+        await agent_container.initialize(the_agent=agent)
 
         while True:
             # pass
             await asyncio.sleep(0.1)
 
     finally:
-        await node_agent.terminate()
+        await agent_container.terminate()
 
 
 if __name__ == "__main__":
