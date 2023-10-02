@@ -343,7 +343,7 @@ async def main(args):
 
 
 if __name__ == "__main__":
-    parser = arg_parser(ident="issuer_node")
+    parser = arg_parser()
     args = parser.parse_args()
 
     # execute main

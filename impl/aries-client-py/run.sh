@@ -22,6 +22,7 @@ docker container run --rm -it \
     -e DOCKERHOST="$DOCKERHOST" \
     -e POSTGRES=1 \
     aries-my-agent "$agent_name" \
+    --ident="$agent_name" \
     --wallet-type askar \
     --port "$port" \
     --did-exchange \
