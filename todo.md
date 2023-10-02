@@ -17,7 +17,7 @@
 
 ### Done
 
-- [x] SRAM-Based PUF Readouts
+- SRAM-Based PUF Readouts
   - Do I need to develop an algorithm myself?
     - nope, not doing it, simplify with hardcoded credential/key
 

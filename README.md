@@ -30,15 +30,27 @@
 - Most proposals based on centralized models (client-server) -> use DLT to make it more efficient,
   decentralized
 
+## Setup
+
+The full repo including submodules needs to be cloned:
+
+`git clone --recursive https://github.com/bachelor-thesis-23`
+
+In order to run the demo network `docker` is needed. (add other requirements)
+
 ## Structure
 
-### ./thesis
+### ./thesis/
 
 Contains markdown documents for thesis content
 
-### ./dailies
+### ./notes/
 
-Contains daily notes a la Zettelkasten
+Contains notes
+
+### ./impl/
+
+Contains the implementation and its dependencies
 
 ### [terminology.md](./terminology.md)
 
