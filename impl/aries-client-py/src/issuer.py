@@ -138,13 +138,18 @@ class IssuerAgent(AriesAgent):
             url=f"{self.orion_db_url}/db/{db_name}",
             headers={"UserID": self._db_user_id, "Signature": signature},
         )
-        if response.ok:
-            log_msg(f"Returned with {response.status}")
-            response = await response.json()
-            log_json(response)
-            return response["response"]["exist"]
-        else:
+
+        # TODO: (aver) improve error handling
+        if not response.ok:
             print("\n\nERRROR HAPPENED\n\n")
+            return False
+
+        log_msg(f"Returned with {response.status}")
+        response = await response.json()
+        log_json(response)
+        try:
+            return response["response"]["exist"]
+        except KeyError:
             return False
 
     async def create_database(self, db_name: str):
@@ -168,13 +173,16 @@ class IssuerAgent(AriesAgent):
         response = await self.client_session.post(
             url=f"{self.orion_db_url}/db/tx", json=data, headers={"TxTimeout": "2s"}
         )
-        if response.ok:
-            log_status(f"Returned with {response.status}")
-            response = await response.json()
-            log_json(response)
-            self.databases.append(db_name)
-        else:
+
+        # TODO: (aver) improve error handling
+        if not response.ok:
             print("\n\nERRROR HAPPENED\n\n")
+            return
+
+        log_status(f"Returned with {response.status}")
+        response = await response.json()
+        log_json(response)
+        self.databases.append(db_name)
 
     async def record_db_key(self, key_name: str, value: dict):
         encoded_value = encode_data(value)
