@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+cmd=$1
+
+if [[ $cmd == "start" ]]; then
+    ./setup_infrastructure.sh
+elif [[ $cmd == "clean" ]]; then
+    printf "Cleaning Docker ...\n\n"
+    docker system prune
+elif [[ $cmd == "stop" ]]; then
+    echo hi
+fi
