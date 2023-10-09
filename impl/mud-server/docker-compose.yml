@@ -1,0 +1,9 @@
+services:
+  mud-debian:
+    container_name: mud-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8181:8181
+      - 6653:6653/tcp
