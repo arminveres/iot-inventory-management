@@ -1,0 +1,149 @@
+
+{
+  "ietf-mud:mud": {
+    "mud-version": 1,
+    "mud-url": "https://otherman.nist.local/nistmud2",
+    "mud-signature": "https://otherman.nist.local/nistmud2/mudfile-otherman.p7s",
+    "last-update": "2019-07-05T17:14:08+00:00",
+    "cache-validity": 48,
+    "is-supported": true,
+    "systeminfo": "Demo sensor",
+    "mfg-name": "NIST",
+    "documentation": "https://www.nist.gov",
+    "model-name": "nistmud2",
+    "from-device-policy": {
+      "access-lists": {
+        "access-list": [
+          {
+            "name": "mud-69096-v4fr"
+          }
+        ]
+      }
+    },
+    "to-device-policy": {
+      "access-lists": {
+        "access-list": [
+          {
+            "name": "mud-69096-v4to"
+          }
+        ]
+      }
+    }
+  },
+  "ietf-access-control-list:acls": {
+    "acl": [
+      {
+        "name": "mud-69096-v4to",
+        "type": "ipv4-acl-type",
+        "aces": {
+          "ace": [
+            {
+              "name": "cl0-todev",
+              "matches": {
+                "ipv4": {
+                  "ietf-acldns:src-dnsname": "www.antd.local",
+                  "protocol": 6
+                },
+                "tcp": {
+                  "source-port": {
+                    "operator": "eq",
+                    "port": 80
+                  }
+                }
+              },
+              "actions": {
+                "forwarding": "accept"
+              }
+            },
+            {
+              "name": "cl1-todev",
+              "matches": {
+                "ipv4": {
+                  "ietf-acldns:src-dnsname": "www.nist.local",
+                  "protocol": 6
+                },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "to-device",
+                  "destination-port": {
+                    "operator": "eq",
+                    "port": 443
+                  }
+                }
+              },
+              "actions": {
+                "forwarding": "accept"
+              }
+            },
+            {
+              "name": "man0-todev",
+              "matches": {
+                "ietf-mud:mud": {
+                  "manufacturer": "sensor.nist.local"
+                }
+              },
+              "actions": {
+                "forwarding": "accept"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "mud-69096-v4fr",
+        "type": "ipv4-acl-type",
+        "aces": {
+          "ace": [
+            {
+              "name": "cl0-frdev",
+              "matches": {
+                "ipv4": {
+                  "ietf-acldns:dst-dnsname": "www.antd.local",
+                  "protocol": 6
+                },
+                "tcp": {
+                  "destination-port": {
+                    "operator": "eq",
+                    "port": 80
+                  }
+                }
+              },
+              "actions": {
+                "forwarding": "accept"
+              }
+            },
+            {
+              "name": "cl1-frdev",
+              "matches": {
+                "ipv4": {
+                  "ietf-acldns:dst-dnsname": "www.nist.local",
+                  "protocol": 6
+                },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "to-device",
+                  "source-port": {
+                    "operator": "eq",
+                    "port": 443
+                  }
+                }
+              },
+              "actions": {
+                "forwarding": "accept"
+              }
+            },
+            {
+              "name": "man0-frdev",
+              "matches": {
+                "ietf-mud:mud": {
+                  "manufacturer": "sensor.nist.local"
+                }
+              },
+              "actions": {
+                "forwarding": "accept"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
