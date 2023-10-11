@@ -2,7 +2,7 @@ import asyncio
 import os
 from uuid import uuid4
 
-from agent_container import (
+from agents.agent_container import (
     AgentContainer,
     AriesAgent,
     arg_parser,

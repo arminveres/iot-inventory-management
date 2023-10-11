@@ -5,7 +5,11 @@ import sys
 # add the source directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa
 
-from agent_container import AriesAgent, arg_parser, create_agent_with_args  # noqa:E402
+from agents.agent_container import (  # noqa:E402
+    AriesAgent,
+    arg_parser,
+    create_agent_with_args,
+)
 
 
 # class NodeAgent:

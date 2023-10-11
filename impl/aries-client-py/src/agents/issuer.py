@@ -3,7 +3,7 @@ import os
 from datetime import date
 from uuid import uuid4
 
-from agent_container import (
+from agents.agent_container import (
     CRED_PREVIEW_TYPE,
     AgentContainer,
     AriesAgent,
