@@ -1,30 +1,82 @@
 #!/bin/env bash
 set -e
+set -o pipefail
 
+function usage {
+    cat <<EOF
+Run an Aries agent with below options.
+Usage:
+    -p, --port [number]:
+        port number at which to operate
+    -n, --name [string]:
+        name that the agent should use
+    --multitenant:
+        whether the agent is responseible for other sub-agents
+    -h, --help:
+        print help/usage
+EOF
+}
+
+# Docker specific variables
+DOCKER_IMAGE_NAME="aries-my-agent"
+RUN_MODE="docker"
 DOCKERHOST=$(./scripts/getDockerHost.sh)
+DOCKER_NETWORK="bridge" # bridge or host
+# Aries/Indy specific variables
 LEDGER_URL="http://$DOCKERHOST:9000"
 GENESIS_URL="$LEDGER_URL/genesis"
-RUN_MODE="docker"
-DOCKER_NETWORK="bridge" # bridge or host
 
-agent_name=$1
-port=$2
-# We define a portrange of +9 for each agent
-portrange="$2-$((port + 9))"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p | --port)
+            PORT=$2
+            # We define a portrange of +9 for each agent
+            PORTRANGE="$2-$((PORT + 9))"
+            shift
+            shift
+            ;;
+        -n | --name)
+            AGENT_NAME=$2
+            shift
+            shift
+            ;;
+        -h | --help)
+            usage
+            exit 1
+            ;;
+        -*)
+            echo "Unknown option $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
 
-docker build -t aries-my-agent . || exit 1
+ARIES_FLAGS=(
+    "--wallet-type askar"
+    "--did-exchange"
+    "--reuse-connections"
+    "--revocation"
+)
+if [[ $3 == "--multitenant" ]]; then
+    ARIES_FLAGS+=(
+        "--multitenant"
+    )
+fi
+
+# we need to build each time, so changed files get copied over
+docker build -t $DOCKER_IMAGE_NAME . || exit 1
+
+# shellcheck disable=SC2048,SC2086
 docker container run --rm -it \
     --network="$DOCKER_NETWORK" \
-    -p 0.0.0.0:"$portrange":"$portrange" \
+    -p 0.0.0.0:"$PORTRANGE":"$PORTRANGE" \
     -e LEDGER_URL="$LEDGER_URL" \
     -e GENESIS_URL="$GENESIS_URL" \
     -e RUNMODE="$RUN_MODE" \
     -e DOCKERHOST="$DOCKERHOST" \
     -e POSTGRES=1 \
-    aries-my-agent "$agent_name" \
-    --ident="$agent_name" \
-    --wallet-type askar \
-    --port "$port" \
-    --did-exchange \
-    --reuse-connections \
-    --revocation
+    $DOCKER_IMAGE_NAME "$AGENT_NAME" \
+    --ident="$AGENT_NAME" \
+    --port "$PORT" \
+    ${ARIES_FLAGS[*]}
