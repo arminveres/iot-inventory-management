@@ -173,7 +173,7 @@ class IssuerAgent(AriesAgent):
 
         # TODO: (aver) improve error handling
         if not response.ok:
-            print("\n\nERRROR HAPPENED\n\n")
+            log_msg("\n\nERRROR HAPPENED\n\n")
             return False
 
         log_msg(f"Returned with {response.status}")
@@ -230,7 +230,10 @@ class IssuerAgent(AriesAgent):
                         {
                             "key": key_name,
                             "value": encoded_value,
-                            "acl": {"read_write_users": {self._db_user_id: True}},
+                            "acl": {
+                                "read_users": {"auditor": True},
+                                "read_write_users": {self._db_user_id: True},
+                            },
                         },
                     ],
                 }
@@ -363,10 +366,10 @@ async def main(args):
             "status": "valid",
         }
 
-        await agent_container.agent.db_record_key("Controller_1", controller_1_cred)
-
         # we create an auditor user, who then will mark software as vulnerable
         await agent_container.agent.db_create_user("auditor")
+        # TODO: (aver) figure out how to get the whole view of the database!
+        await agent_container.agent.db_record_key("Controller_1", controller_1_cred)
 
         exit(0)
 

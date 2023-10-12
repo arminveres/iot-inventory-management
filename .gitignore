@@ -12,3 +12,4 @@ indent.log
 
 impl/aries-client-py/crypto
 impl/aries-client-py/bin
+__pycache__/

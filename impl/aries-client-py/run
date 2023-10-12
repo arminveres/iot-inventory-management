@@ -76,6 +76,8 @@ fi
 DOCKER_FLAGS=(
     "--network=$DOCKER_NETWORK"
     "-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
+    "-e DOCKERHOST=$DOCKERHOST"
+    "-e RUNMODE=$RUN_MODE"
 )
 
 if [[ $AUDITOR == 1 ]]; then
@@ -86,8 +88,6 @@ else
     DOCKER_FLAGS+=(
         "-e LEDGER_URL=$LEDGER_URL"
         "-e GENESIS_URL=$GENESIS_URL"
-        "-e RUNMODE=$RUN_MODE"
-        "-e DOCKERHOST=$DOCKERHOST"
         "-e POSTGRES=1"
     )
     ARIES_FLAGS=(
