@@ -3,3 +3,4 @@ prompt_toolkit~=2.0.9
 web.py~=0.62
 pygments~=2.10
 qrcode[pil]~=6.1
+aiohttp

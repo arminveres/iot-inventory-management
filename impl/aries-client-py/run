@@ -1,5 +1,6 @@
 #!/bin/env bash
 set -e
+# set -v # verbosity for debugging
 set -o pipefail
 
 function usage {
@@ -7,16 +8,21 @@ function usage {
 Run an Aries agent with below options.
 Usage:
     -p, --port [number]:
-        port number at which to operate
+        REQUIRED: port number at which to operate
+    -a, --auditor:
+        Runs only the auditor and no Aries logic, can only be run in combination with the port flag.
     -n, --name [string]:
-        name that the agent should use
+        Name of the Agent type to be run
     --multitenant:
-        whether the agent is responseible for other sub-agents
+        Enables support for multinenacy, i.e., holding walltes for sub-agents.
     -h, --help:
-        print help/usage
+        Print help/usage
 EOF
 }
 
+# Set flag variables
+MULTITENANT=0
+AUDITOR=0
 # Docker specific variables
 DOCKER_IMAGE_NAME="aries-my-agent"
 RUN_MODE="docker"
@@ -35,9 +41,17 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        -a | --auditor)
+            AUDITOR=1
+            shift
+            ;;
         -n | --name)
             AGENT_NAME=$2
             shift
+            shift
+            ;;
+        --multitenant)
+            MULTITENANT=1
             shift
             ;;
         -h | --help)
@@ -52,16 +66,41 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-ARIES_FLAGS=(
-    "--wallet-type askar"
-    "--did-exchange"
-    "--reuse-connections"
-    "--revocation"
+# Catch incompatible flags
+if [[ $MULTITENANT == 1 && $AUDITOR == 1 ]]; then
+    echo "invalid combination"
+    usage
+    exit 1
+fi
+
+DOCKER_FLAGS=(
+    "--network=$DOCKER_NETWORK"
+    "-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
 )
-if [[ $3 == "--multitenant" ]]; then
-    ARIES_FLAGS+=(
-        "--multitenant"
+
+if [[ $AUDITOR == 1 ]]; then
+    # in case we have an auditor, we skip a lot of the default environments for the aries agents
+    AGENT_NAME=auditor
+else
+    AGENT_NAME="agents.$AGENT_NAME"
+    DOCKER_FLAGS+=(
+        "-e LEDGER_URL=$LEDGER_URL"
+        "-e GENESIS_URL=$GENESIS_URL"
+        "-e RUNMODE=$RUN_MODE"
+        "-e DOCKERHOST=$DOCKERHOST"
+        "-e POSTGRES=1"
     )
+    ARIES_FLAGS=(
+        "--wallet-type askar"
+        "--did-exchange"
+        "--reuse-connections"
+        "--revocation"
+        "--ident=$AGENT_NAME"
+        "--port $PORT"
+    )
+    if [[ $MULTITENANT == 1 ]]; then
+        ARIES_FLAGS+=("--multitenant")
+    fi
 fi
 
 # we need to build each time, so changed files get copied over
@@ -69,14 +108,6 @@ docker build -t $DOCKER_IMAGE_NAME . || exit 1
 
 # shellcheck disable=SC2048,SC2086
 docker container run --rm -it \
-    --network="$DOCKER_NETWORK" \
-    -p 0.0.0.0:"$PORTRANGE":"$PORTRANGE" \
-    -e LEDGER_URL="$LEDGER_URL" \
-    -e GENESIS_URL="$GENESIS_URL" \
-    -e RUNMODE="$RUN_MODE" \
-    -e DOCKERHOST="$DOCKERHOST" \
-    -e POSTGRES=1 \
+    ${DOCKER_FLAGS[*]} \
     $DOCKER_IMAGE_NAME "$AGENT_NAME" \
-    --ident="$AGENT_NAME" \
-    --port "$PORT" \
     ${ARIES_FLAGS[*]}
