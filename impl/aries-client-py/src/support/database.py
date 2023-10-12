@@ -1,9 +1,11 @@
 """
 Contains a host of helper functions for managing the Orion database
 """
-import json
-from support.utils import log_msg, run_executable
 import base64
+import json
+from uuid import uuid4
+
+from support.utils import log_msg, run_executable
 
 
 def sign_transaction(data: json, privatekey: str):
@@ -41,3 +43,10 @@ def decode_data(encoded_data: str):
     """
     decoded_data = base64.b64decode(encoded_data)
     return json.loads(decoded_data)
+
+
+def get_tx_id():
+    """
+    Generate a random uuid4 based id, generally to identify transactions
+    """
+    return str(uuid4())

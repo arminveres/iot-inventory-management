@@ -1,7 +1,6 @@
 import asyncio
 import os
 from datetime import date
-from uuid import uuid4
 
 from agents.agent_container import (
     CRED_PREVIEW_TYPE,
@@ -11,7 +10,7 @@ from agents.agent_container import (
     create_agent_with_args,
 )
 from support.agent import DEFAULT_INTERNAL_HOST
-from support.database import encode_data, sign_transaction
+from support.database import encode_data, get_tx_id, sign_transaction
 from support.utils import log_json, log_msg, log_status  # noqa:E402
 
 
@@ -125,15 +124,24 @@ class IssuerAgent(AriesAgent):
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
 
+    def _db_sign_tx(self, payload):
+        """
+        Wrapper function for signing a database transaction
+        """
+        return sign_transaction(payload, self._db_privatekey)
+
     def _db_glue_payload(self, payload: dict, signature: str):
+        """
+        Glues the payload and signature into a dict/json.
+        """
         return {"payload": payload, "signature": signature}
 
-    async def check_db(self, db_name: str):
+    async def _db_check_db(self, db_name: str):
         """
         Check existence of a database with given name
         """
         payload = {"user_id": self._db_user_id, "db_name": db_name}
-        signature = sign_transaction(payload, self._db_privatekey)
+        signature = self._db_sign_tx(payload)
         response = await self.client_session.get(
             url=f"{self.orion_db_url}/db/{db_name}",
             headers={"UserID": self._db_user_id, "Signature": signature},
@@ -152,12 +160,36 @@ class IssuerAgent(AriesAgent):
         except KeyError:
             return False
 
+    async def _db_check_user(self, username: str):
+        """
+        Check existence of a user with given name
+        """
+        payload = {"user_id": self._db_user_id, "target_user_id": username}
+        signature = self._db_sign_tx(payload)
+        response = await self.client_session.get(
+            url=f"{self.orion_db_url}/user/{username}",
+            headers={"UserID": self._db_user_id, "Signature": signature},
+        )
+
+        # TODO: (aver) improve error handling
+        if not response.ok:
+            print("\n\nERRROR HAPPENED\n\n")
+            return False
+
+        log_msg(f"Returned with {response.status}")
+        response = await response.json()
+        log_json(response)
+        try:
+            return response["response"]["user"]["id"] == username
+        except KeyError:
+            return False
+
     async def create_database(self, db_name: str):
         """
         Creates a database with given name, but checks first whether it exists
         """
 
-        if await self.check_db(db_name):
+        if await self._db_check_db(db_name):
             log_status(f"{db_name}: Already exists")
             if db_name not in self.databases:
                 self.databases.append(db_name)
@@ -165,11 +197,12 @@ class IssuerAgent(AriesAgent):
 
         payload = {
             "user_id": self._db_user_id,
-            "tx_id": str(uuid4()),
+            "tx_id": get_tx_id(),
             "create_dbs": [db_name],
         }
-        signature = sign_transaction(payload, self._db_privatekey)
-        data = {"payload": payload, "signature": signature}
+        signature = self._db_sign_tx(payload)
+        data = self._db_glue_payload(payload, signature)
+
         response = await self.client_session.post(
             url=f"{self.orion_db_url}/db/tx", json=data, headers={"TxTimeout": "2s"}
         )
@@ -184,11 +217,12 @@ class IssuerAgent(AriesAgent):
         log_json(response)
         self.databases.append(db_name)
 
-    async def record_db_key(self, key_name: str, value: dict):
+    async def db_record_key(self, key_name: str, value: dict):
+        headers = {"TxTimeout": "2s"}
         encoded_value = encode_data(value)
         payload = {
             "must_sign_user_ids": [self._db_user_id],
-            "tx_id": str(uuid4()),
+            "tx_id": get_tx_id(),
             "db_operations": [
                 {
                     "db_name": self.databases[0],
@@ -202,12 +236,12 @@ class IssuerAgent(AriesAgent):
                 }
             ],
         }
-        signature = sign_transaction(payload, self._db_privatekey)
-        # data = self._db_glue_payload(payload, signature)
+        signature = self._db_sign_tx(payload)
+        # cannot use the glue here, possibly multiple signatures expected...
         data = {"payload": payload, "signatures": {self._db_user_id: signature}}
 
         response = await self.client_session.post(
-            url=f"{self.orion_db_url}/data/tx", json=data, headers={"TxTimeout": "2s"}
+            url=f"{self.orion_db_url}/data/tx", json=data, headers=headers
         )
         if response.ok:
             log_status(f"Returned with {response.status}")
@@ -215,8 +249,63 @@ class IssuerAgent(AriesAgent):
             log_json(response)
         else:
             response = await response.json()
-            print("\n\nERRROR HAPPENED\n\n")
+            log_msg("\n\nERRROR HAPPENED\n\n")
             log_json(response)
+
+    async def db_create_user(self, username: str):
+        """
+        Creates a user with given `username` on request, if not already existing
+        """
+        if await self._db_check_user(username):
+            log_status(f"{username}: Already exists")
+            # return
+
+        with open(f"./crypto/{username}/{username}.pem", "r") as file:
+            # skip begin and end line
+            certificate = file.readlines()[1:-1]
+            # replace newlines, as certificate is broken up
+            certificate = "".join(certificate).replace("\n", "")
+
+        headers = {"TxTimeout": "10s"}
+        payload = {
+            "user_id": self._db_user_id,
+            "tx_id": get_tx_id(),
+            "user_writes": [
+                {
+                    "user": {
+                        "id": username,
+                        "certificate": certificate,
+                        # give read write access to the first, and only, database
+                        "privilege": {
+                            # WARN: This is kind of another mess ... the guide says use 0 for Read
+                            # access and 1 for ReadWrite access, but signature fails if numbers are
+                            # used, therefore use string of enum `Read` or `ReadWrite`
+                            "db_permission": {self.databases[0]: "ReadWrite"}
+                        },
+                    },
+                    # We could further specify access control, by default, undefined, everyone can
+                    # read credentials and privilege of the user
+                    "acl": {
+                        "read_users": {self._db_user_id: True},
+                    },
+                }
+            ],
+        }
+        signature = self._db_sign_tx(payload)
+        data = self._db_glue_payload(payload, signature)
+
+        response = await self.client_session.post(
+            url=f"{self.orion_db_url}/user/tx", json=data, headers=headers
+        )
+
+        if response.ok:
+            log_status(f"Returned with {response.status}")
+            response = await response.json()
+        else:
+            response = await response.json()
+            print("\n\n\tERRROR HAPPENED\n\n")
+        # log response in any case
+        log_json(response)
 
 
 async def send_message(agent: AriesAgent):
@@ -274,7 +363,10 @@ async def main(args):
             "status": "valid",
         }
 
-        await agent_container.agent.record_db_key("Controller_1", controller_1_cred)
+        await agent_container.agent.db_record_key("Controller_1", controller_1_cred)
+
+        # we create an auditor user, who then will mark software as vulnerable
+        await agent_container.agent.db_create_user("auditor")
 
         exit(0)
 
