@@ -1,7 +1,10 @@
 import asyncio
 import base64
 import os
+import sys
 from datetime import date
+
+# sys.path.append("../")
 
 from agents.agent_container import (
     CRED_PREVIEW_TYPE,
@@ -76,8 +79,13 @@ class IssuerAgent(AriesAgent):
         if prev_state == state:
             return  # ignore
 
-        self.cred_state[cred_ex_id] = state
+        # TODO: (aver) add cred_def_i
+        response = await self.db_query_key("db1", "Controller_1")
+        response["cred_ex_id"] = cred_ex_id
+        response["valid"] = True
+        await self.db_record_key("db1", "Controller_1", response)
 
+        self.cred_state[cred_ex_id] = state
         self.log(f"Credential: state = {state}, cred_ex_id = {cred_ex_id}")
 
         if state == "request-received":
@@ -129,19 +137,56 @@ class IssuerAgent(AriesAgent):
 
     async def handle_notify_vulnerability(self, message):
         """
-        Handle vulnerabilities presented to the maintainer,admin,issuer
+        Handle vulnerabilities presented to the maintainer/admin/issuer
         """
+        # FIXME: (aver) improve this 4 times nested loop !!!!
         log_msg("Received vulnearbility:")
         log_json(message)
         # Go through each vulnerability
-        for message in message:
+        for vuln_notif in message:
+            vuln_db_name = vuln_notif["db_name"]
+            vulnerability = vuln_notif["vulnerability"]
+
             # mark devices to be revoked
-            for device in self.db_keys["db1"]:
-                response = await self.db_query_key("db1", device)
-                # FIXME: (aver) check how to check sub-dicts parts
+            for device in self.db_keys[vuln_db_name]:
+                response = await self.db_query_key(vuln_db_name, device)
                 log_json(response)
-                if message in response:
-                    log_msg(message)
+                log_json(vulnerability)
+
+                for component_key, component_value in response["components"].items():
+                    for (
+                        vuln_component_key,
+                        vuln_component_value,
+                    ) in vulnerability.items():
+                        if not component_key == vuln_component_key:
+                            continue
+                        # find vulnerability that matches the marked one
+                        if vuln_component_value.items() <= component_value.items():
+                            log_msg(
+                                f"Found existing vulnerability for device {device} with component \
+                            {vuln_component_value}"
+                            )
+                            await self.revoke_credential(response["cred_ex_id"], None)
+
+    async def revoke_credential(self, cred_ex_id: str, connection_id: str):
+        """
+        Revoke a credentials and publish it.
+        """
+        response = await self.db_query_key("db1", "Controller_1")
+        response["cred_ex_id"] = ""
+        response["valid"] = False
+        await self.db_record_key("db1", "Controller_1", response)
+
+        # FIXME: (aver) remove hard coded connection_id and retrieve or store in database
+        await self.admin_POST(
+            "/revocation/revoke",
+            {
+                "cred_ex_id": cred_ex_id,
+                "publish": True,
+                "connection_id": self.connection_id,
+            },
+            # {"cred_ex_id": cred_ex_id, "publish": True, "connection_id": connection_id},
+        )
 
     def __db_sign_tx(self, payload):
         """
@@ -207,12 +252,12 @@ class IssuerAgent(AriesAgent):
         """
         Creates a database with given name, but checks first whether it exists
         """
+        if db_name not in self.databases:
+            self.databases.append(db_name)
+            self.db_keys[db_name] = []
 
         if await self._db_check_db(db_name):
             log_status(f"{db_name}: Already exists")
-            if db_name not in self.databases:
-                self.databases.append(db_name)
-                self.db_keys[db_name] = []
             return
 
         payload = {
@@ -368,10 +413,11 @@ class IssuerAgent(AriesAgent):
             log_msg(e.with_traceback())
 
 
-async def send_message(agent: AriesAgent):
-    message = {"content": f"hello from {agent.ident}!"}
-    await agent.admin_POST(
-        path=f"/connections/{agent.agent.connection_id}/send-message", data=message
+async def send_message(agent_container: AriesAgent):
+    message = {"content": f"hello from {agent_container.ident}!"}
+    await agent_container.admin_POST(
+        path=f"/connections/{agent_container.agent.connection_id}/send-message",
+        data=message,
     )
 
 
@@ -437,11 +483,11 @@ async def main(args):
         # TODO: (aver) figure out how to get the whole view of the database!
         await agent_container.agent.db_record_key(db_name, key_name, db_entry)
 
-        while True:
-            await asyncio.sleep(1)
+        # while True:
+        #     await asyncio.sleep(1)
+        # sys.exit(0)
 
-        exit(0)
-
+        # TODO: (aver) Add check for existing schema in case of restarts
         agent_container.cred_def_id = await agent_container.create_schema_and_cred_def(
             schema_name, schema_attributes, version
         )

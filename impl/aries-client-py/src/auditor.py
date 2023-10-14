@@ -98,13 +98,15 @@ class Auditor:
         except Exception as e:
             log_msg(e.with_traceback())
 
-    def check_vulnerability(self, components):
-        return (
-            {"software": {"shady_stuff": 0.9}},
-            # 0.9 == components["software"]["shady_stuff"],
-        )
+    def check_vulnerability(self, db_name, components):
+        return [
+            {
+                "vulnerability": {"software": {"shady_stuff": 0.9}},
+                "db_name": db_name,
+            }
+        ]
 
-    async def notify_maintainer(self, vulnerabilities):
+    async def notify_maintainer(self, db_name, vulnerabilities):
         response = await self.client_session.post(
             url=f"http://{DEFAULT_INTERNAL_HOST}:8012/webhooks/topic/notify_vulnerability/",
             json=vulnerabilities,
@@ -121,16 +123,16 @@ class Auditor:
 
 async def main():
     auditor = Auditor()
+    db_name = "db1"
 
     # TODO: (aver) fix and implement a query all keys, so we don't have to save them externally
     # await auditor.db_query_all("db1")
 
-    value = await auditor.db_query_key("db1", "Controller_1")
+    value = await auditor.db_query_key(db_name, "Controller_1")
     log_json(value)
-    # do some magic, analysis and return with the marked vulnerable componen
-    # send revoke request to issuer
-    marked_vulnerabilities = auditor.check_vulnerability(value["components"])
-    await auditor.notify_maintainer(marked_vulnerabilities)
+    # do some magic, analysis and return with the marked vulnerable component send revoke request to issuer
+    marked_vulnerabilities = auditor.check_vulnerability(db_name, value["components"])
+    await auditor.notify_maintainer(db_name, marked_vulnerabilities)
 
     # except Exception:
     await auditor.client_session.close()
