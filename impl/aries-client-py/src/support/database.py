@@ -7,6 +7,8 @@ from uuid import uuid4
 
 from support.utils import log_msg, run_executable
 
+# TODO: (aver) create class to hold database logic for less duplication
+
 
 def sign_transaction(data: json, privatekey: str):
     """

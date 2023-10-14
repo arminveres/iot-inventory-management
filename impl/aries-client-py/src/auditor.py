@@ -4,12 +4,13 @@ Demonstrative auditor to mark soft- or firmware as vulnerable
 # TODO: (aver)
 # - add analysis of DB and post revocation
 import asyncio
-import os
 import base64
+import json
+import os
 
 from aiohttp import ClientSession
 from support.agent import DEFAULT_INTERNAL_HOST
-from support.database import sign_transaction, encode_data, decode_data
+from support.database import decode_data, encode_data, sign_transaction
 from support.utils import log_json, log_msg
 
 
@@ -37,10 +38,25 @@ class Auditor:
         """
         return sign_transaction(payload, self.__db_privatekey_path)
 
-    async def db_query_all(self):
-        payload = {"user_id": self.db_username}
+    async def db_query_all(self, db_name):
+        """
+        https://github.com/hyperledger-labs/orion-server/blob/0009ffdf5f35e8cf9e6a938378733d4e5e6474d1/pkg/constants/http.go#L97
+        """
+        # FIXME: dunno how to fix this method, documentation is not existent and if I imitate the source
+        # code I get 404
+        key = "Controller_1"
+        key = ""
+        enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode()
+        payload = {
+            "user_id": self.db_username,
+            "db_name": db_name,
+            "start_key": key,
+            "end_key": key,
+            "limit": 10,
+        }
         signature = self.__db_sign_tx(payload)
         response = await self.client_session.get(
+            # url=f"{self.__orion_db_url}/data/db1/startkey={enc_key}&endkey={enc_key}/",
             url=f"{self.__orion_db_url}/data/db1",
             headers={"UserID": self.db_username, "Signature": signature},
         )
@@ -74,24 +90,47 @@ class Auditor:
         response = await response.json()
         log_json(response)
 
+        enc_value = response["response"]["value"]
+        dec_value = decode_data(enc_value)
+
         try:
-            return response["response"]["value"]
+            return dec_value
         except Exception as e:
-            raise e
+            log_msg(e.with_traceback())
+
+    def check_vulnerability(self, components):
+        return (
+            {"software": {"shady_stuff": 0.9}},
+            # 0.9 == components["software"]["shady_stuff"],
+        )
+
+    async def notify_maintainer(self, vulnerabilities):
+        response = await self.client_session.post(
+            url=f"http://{DEFAULT_INTERNAL_HOST}:8012/webhooks/topic/notify_vulnerability/",
+            json=vulnerabilities,
+        )
+        if not response.ok:
+            log_msg("\n\nERRROR HAPPENED\n\n")
+        log_msg(f"Returned with {response.status}")
+        try:
+            response = await response.json()
+            log_json(response)
+        except:
+            log_msg(response)
 
 
 async def main():
     auditor = Auditor()
-    # try:
-    # await auditor.db_query_all()
 
-    # key = base64.urlsafe_b64encode(bytes("Controller_1", "utf-8"))
-    # print(key.decode())
-    # dec_key = base64.urlsafe_b64decode(key)
-    # print(dec_key.decode())
+    # TODO: (aver) fix and implement a query all keys, so we don't have to save them externally
+    # await auditor.db_query_all("db1")
 
     value = await auditor.db_query_key("db1", "Controller_1")
-    log_msg(decode_data(value))
+    log_json(value)
+    # do some magic, analysis and return with the marked vulnerable componen
+    # send revoke request to issuer
+    marked_vulnerabilities = auditor.check_vulnerability(value["components"])
+    await auditor.notify_maintainer(marked_vulnerabilities)
 
     # except Exception:
     await auditor.client_session.close()

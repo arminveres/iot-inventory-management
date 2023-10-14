@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import os
 from datetime import date
 
@@ -10,15 +11,16 @@ from agents.agent_container import (
     create_agent_with_args,
 )
 from support.agent import DEFAULT_INTERNAL_HOST
-from support.database import encode_data, get_tx_id, sign_transaction
+from support.database import decode_data, encode_data, get_tx_id, sign_transaction
 from support.utils import log_json, log_msg, log_status  # noqa:E402
 
 
-# TODO: (aver) What about making this an administrative instance of the maintainer environment?
-# could serve as
+# TODO: (aver) possibly separate databaes instance to own class
 class IssuerAgent(AriesAgent):
     """
     This agent will be a credential issuer from the maintainer/manufacturer point of view.
+    It also works as a database administrator, being able to create new users and keys, with
+    complete control over Access Control
     """
 
     def __init__(
@@ -34,10 +36,11 @@ class IssuerAgent(AriesAgent):
         )
 
         # TODO: (aver) find a better way to manage keys
-        self.orion_db_url = orion_db_url
-        self._db_user_id = "admin"
+        self.__orion_db_url = orion_db_url
+        self.db_username = "admin"
         self._db_privatekey = "crypto/admin/admin.key"
         self.databases = []
+        self.db_keys = {}
 
         self.connection_id = None
         self._connection_ready = None
@@ -124,7 +127,23 @@ class IssuerAgent(AriesAgent):
                 self.log(f"cred_def_id {id_spec['cred_def_id']}")
             # TODO placeholder for the next step
 
-    def _db_sign_tx(self, payload):
+    async def handle_notify_vulnerability(self, message):
+        """
+        Handle vulnerabilities presented to the maintainer,admin,issuer
+        """
+        log_msg("Received vulnearbility:")
+        log_json(message)
+        # Go through each vulnerability
+        for message in message:
+            # mark devices to be revoked
+            for device in self.db_keys["db1"]:
+                response = await self.db_query_key("db1", device)
+                # FIXME: (aver) check how to check sub-dicts parts
+                log_json(response)
+                if message in response:
+                    log_msg(message)
+
+    def __db_sign_tx(self, payload):
         """
         Wrapper function for signing a database transaction
         """
@@ -140,11 +159,11 @@ class IssuerAgent(AriesAgent):
         """
         Check existence of a database with given name
         """
-        payload = {"user_id": self._db_user_id, "db_name": db_name}
-        signature = self._db_sign_tx(payload)
+        payload = {"user_id": self.db_username, "db_name": db_name}
+        signature = self.__db_sign_tx(payload)
         response = await self.client_session.get(
-            url=f"{self.orion_db_url}/db/{db_name}",
-            headers={"UserID": self._db_user_id, "Signature": signature},
+            url=f"{self.__orion_db_url}/db/{db_name}",
+            headers={"UserID": self.db_username, "Signature": signature},
         )
 
         # TODO: (aver) improve error handling
@@ -164,11 +183,11 @@ class IssuerAgent(AriesAgent):
         """
         Check existence of a user with given name
         """
-        payload = {"user_id": self._db_user_id, "target_user_id": username}
-        signature = self._db_sign_tx(payload)
+        payload = {"user_id": self.db_username, "target_user_id": username}
+        signature = self.__db_sign_tx(payload)
         response = await self.client_session.get(
-            url=f"{self.orion_db_url}/user/{username}",
-            headers={"UserID": self._db_user_id, "Signature": signature},
+            url=f"{self.__orion_db_url}/user/{username}",
+            headers={"UserID": self.db_username, "Signature": signature},
         )
 
         # TODO: (aver) improve error handling
@@ -193,18 +212,19 @@ class IssuerAgent(AriesAgent):
             log_status(f"{db_name}: Already exists")
             if db_name not in self.databases:
                 self.databases.append(db_name)
+                self.db_keys[db_name] = []
             return
 
         payload = {
-            "user_id": self._db_user_id,
+            "user_id": self.db_username,
             "tx_id": get_tx_id(),
             "create_dbs": [db_name],
         }
-        signature = self._db_sign_tx(payload)
+        signature = self.__db_sign_tx(payload)
         data = self._db_glue_payload(payload, signature)
 
         response = await self.client_session.post(
-            url=f"{self.orion_db_url}/db/tx", json=data, headers={"TxTimeout": "2s"}
+            url=f"{self.__orion_db_url}/db/tx", json=data, headers={"TxTimeout": "2s"}
         )
 
         # TODO: (aver) improve error handling
@@ -217,39 +237,46 @@ class IssuerAgent(AriesAgent):
         log_json(response)
         self.databases.append(db_name)
 
-    async def db_record_key(self, key_name: str, value: dict):
+    async def db_record_key(self, db_name: str, key_name: str, value: dict):
         headers = {"TxTimeout": "2s"}
         encoded_value = encode_data(value)
         payload = {
-            "must_sign_user_ids": [self._db_user_id],
+            "must_sign_user_ids": [self.db_username],
             "tx_id": get_tx_id(),
             "db_operations": [
                 {
-                    "db_name": self.databases[0],
+                    "db_name": db_name,
                     "data_writes": [
                         {
                             "key": key_name,
                             "value": encoded_value,
                             "acl": {
                                 "read_users": {"auditor": True},
-                                "read_write_users": {self._db_user_id: True},
+                                "read_write_users": {self.db_username: True},
                             },
                         },
                     ],
                 }
             ],
         }
-        signature = self._db_sign_tx(payload)
+        signature = self.__db_sign_tx(payload)
         # cannot use the glue here, possibly multiple signatures expected...
-        data = {"payload": payload, "signatures": {self._db_user_id: signature}}
+        data = {"payload": payload, "signatures": {self.db_username: signature}}
 
         response = await self.client_session.post(
-            url=f"{self.orion_db_url}/data/tx", json=data, headers=headers
+            url=f"{self.__orion_db_url}/data/tx", json=data, headers=headers
         )
         if response.ok:
             log_status(f"Returned with {response.status}")
             response = await response.json()
             log_json(response)
+            # we also record the keys, as a workaround to not being able to query all keys in the
+            # database
+            if key_name not in self.db_keys[db_name]:
+                self.db_keys[db_name].append(key_name)
+            else:
+                log_msg(f"Key {key_name}, already recorded (possible update of values)")
+            log_msg("Added to local map", self.db_keys[db_name])
         else:
             response = await response.json()
             log_msg("\n\nERRROR HAPPENED\n\n")
@@ -271,7 +298,7 @@ class IssuerAgent(AriesAgent):
 
         headers = {"TxTimeout": "10s"}
         payload = {
-            "user_id": self._db_user_id,
+            "user_id": self.db_username,
             "tx_id": get_tx_id(),
             "user_writes": [
                 {
@@ -289,16 +316,16 @@ class IssuerAgent(AriesAgent):
                     # We could further specify access control, by default, undefined, everyone can
                     # read credentials and privilege of the user
                     "acl": {
-                        "read_users": {self._db_user_id: True},
+                        "read_users": {self.db_username: True},
                     },
                 }
             ],
         }
-        signature = self._db_sign_tx(payload)
+        signature = self.__db_sign_tx(payload)
         data = self._db_glue_payload(payload, signature)
 
         response = await self.client_session.post(
-            url=f"{self.orion_db_url}/user/tx", json=data, headers=headers
+            url=f"{self.__orion_db_url}/user/tx", json=data, headers=headers
         )
 
         if response.ok:
@@ -309,6 +336,36 @@ class IssuerAgent(AriesAgent):
             print("\n\n\tERRROR HAPPENED\n\n")
         # log response in any case
         log_json(response)
+
+    async def db_query_key(self, db_name, key):
+        """
+        https://labs.hyperledger.org/orion-server/docs/getting-started/transactions/curl/datatx#12-checking-the-existance-of-key1
+        """
+        # keys need to be send as base64, in order for =/- characters to work.
+        enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode()
+
+        payload = {"user_id": self.db_username, "db_name": db_name, "key": key}
+        signature = self.__db_sign_tx(payload)
+
+        response = await self.client_session.get(
+            url=f"{self.__orion_db_url}/data/db1/{enc_key}",
+            headers={"UserID": self.db_username, "Signature": signature},
+        )
+
+        if not response.ok:
+            log_msg("\n\nERRROR HAPPENED\n\n")
+
+        log_msg(f"Returned with {response.status}")
+        response = await response.json()
+        log_json(response)
+
+        enc_value = response["response"]["value"]
+        dec_value = decode_data(enc_value)
+
+        try:
+            return dec_value
+        except Exception as e:
+            log_msg(e.with_traceback())
 
 
 async def send_message(agent: AriesAgent):
@@ -353,7 +410,9 @@ async def main(args):
         # Set up schema and initialize
         # =========================================================================================
 
-        await agent_container.agent.create_database("db1")
+        db_name = "db1"
+        key_name = "Controller_1"
+        await agent_container.agent.create_database(db_name)
 
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
@@ -366,10 +425,20 @@ async def main(args):
             "status": "valid",
         }
 
+        # we extend the credential with components so that the auditor can register them
+        db_entry = controller_1_cred.copy()
+        db_entry["components"] = {
+            "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
+            "firmware": {},
+            "hardware": {"asus-tinkerboard": 1.2},
+        }
         # we create an auditor user, who then will mark software as vulnerable
         await agent_container.agent.db_create_user("auditor")
         # TODO: (aver) figure out how to get the whole view of the database!
-        await agent_container.agent.db_record_key("Controller_1", controller_1_cred)
+        await agent_container.agent.db_record_key(db_name, key_name, db_entry)
+
+        while True:
+            await asyncio.sleep(1)
 
         exit(0)
 
