@@ -1,8 +1,8 @@
 import asyncio
+import json
 import os
 from datetime import date
 
-import json
 from agents.agent_container import (
     CRED_PREVIEW_TYPE,
     AgentContainer,
@@ -96,45 +96,6 @@ class IssuerAgent(AriesAgent):
                     f"/issue-credential-2.0/records/{cred_ex_id}/issue",
                     {"comment": f"Issuing credential, exchange {cred_ex_id}"},
                 )
-
-    async def handle_present_proof_v2_0(self, message):
-        state = message["state"]
-        pres_ex_id = message["pres_ex_id"]
-        self.log(f"Presentation: state = {state}, pres_ex_id = {pres_ex_id}")
-
-        if state == "presentation-received":
-            # TODO handle received presentations
-            log_status("#27 Process the proof provided by X")
-            log_status("#28 Check if proof is valid")
-            proof = await self.admin_POST(
-                f"/present-proof-2.0/records/{pres_ex_id}/verify-presentation"
-            )
-            self.log("Proof = ", proof["verified"])
-
-            # if presentation is a degree schema (proof of education), check values received
-            pres_req = message["by_format"]["pres_request"]["indy"]
-            pres = message["by_format"]["pres"]["indy"]
-            is_proof_of_education = pres_req["name"] == "Proof of Education"
-
-            if not is_proof_of_education:
-                # in case there are any other kinds of proofs received
-                self.log("#28.1 Received ", pres_req["name"])
-                return
-
-            log_status("#28.1 Received proof of education, check claims")
-            for referent, attr_spec in pres_req["requested_attributes"].items():
-                if referent in pres["requested_proof"]["revealed_attrs"]:
-                    self.log(
-                        f"{attr_spec['name']}: "
-                        f"{pres['requested_proof']['revealed_attrs'][referent]['raw']}"
-                    )
-                else:
-                    self.log(f"{attr_spec['name']}: " "(attribute not revealed)")
-            for id_spec in pres["identifiers"]:
-                # just print out the schema/cred def id's of presented claims
-                self.log(f"schema_id: {id_spec['schema_id']}")
-                self.log(f"cred_def_id {id_spec['cred_def_id']}")
-            # TODO placeholder for the next step
 
     async def handle_notify_vulnerability(self, message):
         """
@@ -271,6 +232,9 @@ async def main(args):
         # Set up schema and initialize
         # =========================================================================================
 
+        # WARN: fixed seed for DIDs
+        node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
+
         db_name = "db1"
         key_name = "Controller_1"
         await agent_container.agent.db_client.create_database(db_name)
@@ -288,6 +252,7 @@ async def main(args):
 
         # we extend the credential with components so that the auditor can register them
         db_entry = controller_1_cred.copy()
+        db_entry["controller_did"] = node_did
         db_entry["components"] = {
             "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
             "firmware": {},
@@ -310,8 +275,6 @@ async def main(args):
 
         # Take public DID from a DATABASE
 
-        # WARN: fixed seed for DIDs
-        node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
         recipient_key = await agent_container.agent.send_invitation(node_did)
         # we set the recipient key for later identification
         agent_container.agent.db_client.db_keys[db_name][key_name][
@@ -330,7 +293,6 @@ async def main(args):
                     "connection_id"
                 ] = conn_id
 
-        # conn_id = response["results"][0]["connection_id"]
         agent_container.agent._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
         await agent_container.agent.detect_connection()
