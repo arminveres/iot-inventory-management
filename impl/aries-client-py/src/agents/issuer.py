@@ -2,6 +2,7 @@ import asyncio
 import os
 from datetime import date
 
+import json
 from agents.agent_container import (
     CRED_PREVIEW_TYPE,
     AgentContainer,
@@ -166,9 +167,18 @@ class IssuerAgent(AriesAgent):
                                 f"Found existing vulnerability for device {device} with component \
                             {vuln_component_value}"
                             )
-                            await self.revoke_credential(response["cred_ex_id"], None)
+                            reason = {
+                                "reason": "vulnerability",
+                                "component": {vuln_component_key: vuln_component_value},
+                            }
+                            # TODO: (aver) use correct connection_id
+                            await self.revoke_credential(
+                                response["cred_ex_id"], None, reason
+                            )
 
-    async def revoke_credential(self, cred_ex_id: str, connection_id: str):
+    async def revoke_credential(
+        self, cred_ex_id: str, connection_id: str, revocation_reason: dict
+    ):
         """
         Revoke a credentials and publish it.
         """
@@ -184,6 +194,7 @@ class IssuerAgent(AriesAgent):
                 "cred_ex_id": cred_ex_id,
                 "publish": True,
                 "connection_id": self.connection_id,
+                "comment": json.dumps(revocation_reason),
             },
             # {"cred_ex_id": cred_ex_id, "publish": True, "connection_id": connection_id},
         )

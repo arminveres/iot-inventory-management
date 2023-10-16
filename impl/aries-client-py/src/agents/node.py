@@ -1,15 +1,14 @@
 import asyncio
 import os
-import sys
 
-# add the source directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa
+import json
 
 from agents.agent_container import (  # noqa:E402
     AriesAgent,
     arg_parser,
     create_agent_with_args,
 )
+from support.utils import log_json
 
 
 # class NodeAgent:
@@ -38,7 +37,9 @@ class NodeAgent(AriesAgent):
         print("\n\ngot\n\n", message)
 
     async def handle_revocation_notification(self, message):
-        self.log("Received revocation notification message:", message)
+        self.log("Received revocation notification message:")
+        message["comment"] = json.loads(message["comment"])
+        self.log_json(message)
         # TODO: (aver) handle update
         pass
 
