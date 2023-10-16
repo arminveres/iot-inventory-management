@@ -1287,7 +1287,10 @@ class DemoAgent:
         return connection
 
     async def send_invitation(self, did: str):
-        # TODO: (aver) move this into DemoAgent
+        """
+        Sends and invitation to a public `did` and returns the recipient_key for later connection
+        identification.
+        """
 
         # =========================================================================================
         # Create invitation
@@ -1298,6 +1301,8 @@ class DemoAgent:
         response = await self.admin_POST("/connections/create-invitation", {})
         log_json(response)
         invite = response["invitation"]
+        # take the first invitation key found, for later identification of connection
+        recipient_key = invite["recipientKeys"][0]
 
         # resolve did for did_document
         response = await self.admin_GET(f"/resolver/resolve/{did}")
@@ -1315,6 +1320,7 @@ class DemoAgent:
         )
         resp = await response.json()
         log_json(resp)
+        return recipient_key
 
 
 class MediatorAgent(DemoAgent):

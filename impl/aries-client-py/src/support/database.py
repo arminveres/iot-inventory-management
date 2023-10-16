@@ -128,7 +128,8 @@ class OrionDB:
         """
         if db_name not in self.databases:
             self.databases.append(db_name)
-            self.db_keys[db_name] = []
+            # self.db_keys[db_name] = []
+            self.db_keys[db_name] = {}
 
         if await self.check_db(db_name):
             log_status(f"{db_name}: Already exists")
@@ -247,7 +248,8 @@ class OrionDB:
             # we also record the keys, as a workaround to not being able to query all keys in the
             # database
             if key_name not in self.db_keys[db_name]:
-                self.db_keys[db_name].append(key_name)
+                # self.db_keys[db_name].append(key_name)
+                self.db_keys[db_name][key_name] = {}
             else:
                 log_msg(f"Key {key_name}, already recorded (possible update of values)")
             log_msg("Added to local map", self.db_keys[db_name])

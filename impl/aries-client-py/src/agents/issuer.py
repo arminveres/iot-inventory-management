@@ -43,6 +43,7 @@ class IssuerAgent(AriesAgent):
             client_session=self.client_session,
         )
 
+        # TODO: (aver) remove hardcoded self.connection_id
         self.connection_id = None
         self._connection_ready = None
         # TODO define a dict to hold credential attributes based on cred_def_id
@@ -50,6 +51,7 @@ class IssuerAgent(AriesAgent):
         self.cred_attrs = {}
 
     async def handle_connections(self, message):
+        # TODO: (aver) update for mutliple connections
         print(
             self.ident, "handle_connections", message["state"], message["rfc23_state"]
         )
@@ -187,22 +189,14 @@ class IssuerAgent(AriesAgent):
         )
 
 
-async def send_message(agent_container: AriesAgent):
-    message = {"content": f"hello from {agent_container.ident}!"}
-    await agent_container.admin_POST(
-        path=f"/connections/{agent_container.agent.connection_id}/send-message",
-        data=message,
-    )
-
-
 async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
     agent_container = await create_agent_with_args(args)
     agent_container.seed = "Autho_00000000000000000000000000"
     agent = IssuerAgent(
+        ident=agent_container.ident,
         http_port=agent_container.start_port,
         admin_port=agent_container.start_port + 1,
-        ident=agent_container.ident,
         genesis_data=agent_container.genesis_txns,
         genesis_txn_list=agent_container.genesis_txn_list,
         no_auto=agent_container.no_auto,
@@ -211,6 +205,9 @@ async def create_agent_container(args) -> AgentContainer:
         timing=agent_container.show_timing,
         multitenant=agent_container.multitenant,
         mediation=agent_container.mediation,
+        wallet_name=agent_container.ident,
+        # WARN: (aver) key is same as identity, which is insecure, watch out!
+        wallet_key=agent_container.ident,
         wallet_type=agent_container.wallet_type,
         aip=agent_container.aip,
         endorser_role=agent_container.endorser_role,
@@ -220,6 +217,39 @@ async def create_agent_container(args) -> AgentContainer:
         the_agent=agent,
     )
     return agent_container
+
+
+async def send_message(agent_container: AriesAgent):
+    message = {"content": f"hello from {agent_container.ident}!"}
+    await agent_container.admin_POST(
+        path=f"/connections/{agent_container.agent.connection_id}/send-message",
+        data=message,
+    )
+
+
+async def checked_schema_cred_creation(
+    agent_container: AgentContainer, schema_name, schema_attributes, schema_version
+):
+    try:
+        # TODO: (aver) Improve handling of existing credentials, would need to go more into the
+        # code. Although the whole code is so nested, I don't really see the possiblity for
+        # it...
+        agent_container.cred_def_id = await agent_container.create_schema_and_cred_def(
+            schema_name, schema_attributes, schema_version
+        )
+    except Exception as e:
+        # We check whether the exception is about the schema existing
+        resp = str(e).find("exists")
+        # if the exception was about something else, then we raise it againt
+        if resp == -1:
+            raise e
+        # we need another way to get cred_def_id
+        response = await agent_container.admin_GET(
+            # "/credential-definitions/created/?issuer_did=did:sov:8BJ4EjbZM87wCasqjE1kt"
+            "/credential-definitions/created"
+        )
+        log_json(response)
+        agent_container.cred_def_id = response["credential_definition_ids"][0]
 
 
 async def main(args):
@@ -236,7 +266,7 @@ async def main(args):
 
         schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]
-        version = "0.0.1"
+        schema_version = "0.0.1"
 
         # Currently the credential is of the same format as the entry to the database
         controller_1_cred = {
@@ -254,16 +284,11 @@ async def main(args):
         }
         # we create an auditor user, who then will mark software as vulnerable
         await agent_container.agent.db_client.create_user("auditor")
-        # TODO: (aver) figure out how to get the whole view of the database!
+
         await agent_container.agent.db_client.record_key(db_name, key_name, db_entry)
 
-        # while True:
-        #     await asyncio.sleep(1)
-        # sys.exit(0)
-
-        # TODO: (aver) Add check for existing schema in case of restarts
-        agent_container.cred_def_id = await agent_container.create_schema_and_cred_def(
-            schema_name, schema_attributes, version
+        await checked_schema_cred_creation(
+            agent_container, schema_name, schema_attributes, schema_version
         )
 
         # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
@@ -276,12 +301,25 @@ async def main(args):
 
         # WARN: fixed seed for DIDs
         node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
-        await agent_container.agent.send_invitation(node_did)
+        recipient_key = await agent_container.agent.send_invitation(node_did)
+        # we set the recipient key for later identification
+        agent_container.agent.db_client.db_keys[db_name][key_name][
+            "recipient_key"
+        ] = recipient_key
 
-        # send test message
+        # Set the connection id for each controller
         response = await agent_container.admin_GET("/connections")
         log_json(response)
-        conn_id = response["results"][0]["connection_id"]
+        # TODO: (aver) remove hardcoded key_name and add logic for general key check
+        # also remove hardcoded connection_id
+        for conn in response["results"]:
+            if conn["invitation_key"] == recipient_key:
+                conn_id = conn["connection_id"]
+                agent_container.agent.db_client.db_keys[db_name][key_name][
+                    "connection_id"
+                ] = conn_id
+
+        # conn_id = response["results"][0]["connection_id"]
         agent_container.agent._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
         await agent_container.agent.detect_connection()

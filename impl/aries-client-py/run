@@ -13,6 +13,10 @@ Usage:
         Runs only the auditor and no Aries logic, can only be run in combination with the port flag.
     -n, --name [string]:
         Name of the Agent type to be run
+    -t, --type [string]:
+        What type of Aries agent to be run, currently available:
+            Node: Agents handling IoT devices
+            Issuer: Agents handling admin side in Maintainer Domain
     --multitenant:
         Enables support for multinenacy, i.e., holding walltes for sub-agents.
     -h, --help:
@@ -43,6 +47,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         -a | --auditor)
             AUDITOR=1
+            shift
+            ;;
+        -t | --type)
+            AGENT_TYPE=$2
+            shift
             shift
             ;;
         -n | --name)
@@ -85,7 +94,7 @@ if [[ $AUDITOR == 1 ]]; then
     AGENT_NAME=auditor
     AGENT_FILE="$AGENT_NAME"
 else
-    AGENT_FILE="agents.$AGENT_NAME"
+    AGENT_FILE="agents.$AGENT_TYPE"
     DOCKER_FLAGS+=(
         "-e LEDGER_URL=$LEDGER_URL"
         "-e GENESIS_URL=$GENESIS_URL"

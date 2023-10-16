@@ -37,6 +37,11 @@ class NodeAgent(AriesAgent):
         self.log("Received invitation:", message["content"])
         print("\n\ngot\n\n", message)
 
+    async def handle_revocation_notification(self, message):
+        self.log("Received revocation notification message:", message)
+        # TODO: (aver) handle update
+        pass
+
 
 async def main(args):
     # First setup all the agent related stuff
@@ -56,6 +61,9 @@ async def main(args):
             timing=agent_container.show_timing,
             multitenant=agent_container.multitenant,
             mediation=agent_container.mediation,
+            wallet_name=agent_container.ident,
+            # WARN: (aver) key is same as identity, which is insecure, watch out!
+            wallet_key=agent_container.ident,
             wallet_type=agent_container.wallet_type,
             aip=agent_container.aip,
             endorser_role=agent_container.endorser_role,
