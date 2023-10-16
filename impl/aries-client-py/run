@@ -83,8 +83,9 @@ DOCKER_FLAGS=(
 if [[ $AUDITOR == 1 ]]; then
     # in case we have an auditor, we skip a lot of the default environments for the aries agents
     AGENT_NAME=auditor
+    AGENT_FILE="$AGENT_NAME"
 else
-    AGENT_NAME="agents.$AGENT_NAME"
+    AGENT_FILE="agents.$AGENT_NAME"
     DOCKER_FLAGS+=(
         "-e LEDGER_URL=$LEDGER_URL"
         "-e GENESIS_URL=$GENESIS_URL"
@@ -109,5 +110,5 @@ docker build -t $DOCKER_IMAGE_NAME . || exit 1
 # shellcheck disable=SC2048,SC2086
 docker container run --rm -it \
     ${DOCKER_FLAGS[*]} \
-    $DOCKER_IMAGE_NAME "$AGENT_NAME" \
+    $DOCKER_IMAGE_NAME "$AGENT_FILE" \
     ${ARIES_FLAGS[*]}
