@@ -2,8 +2,6 @@
 set -e
 set -o pipefail
 
-# ./scripts/cryptoGen.sh
-
 # on Windows, docker run needs to be prefixed by winpty
 if [ "$OSTYPE" == "msys" ]; then
     DOCKER="winpty docker"
@@ -17,8 +15,10 @@ $DOCKER run --rm -ti --name indy-demo-postgres \
     -c 'log_statement=all' -c 'logging_collector=on' -c 'log_destination=stderr' \
     -c 'log_connections=on'
 
-../dependencies/von-network/manage start
-../dependencies/indy-tails-server/docker/manage start
+echo "Running from Directory:  $(pwd)"
+
+"$(pwd)"/dependencies/von-network/manage start
+"$(pwd)"/dependencies/indy-tails-server/docker/manage start
 
 $DOCKER run -dit \
     --rm \

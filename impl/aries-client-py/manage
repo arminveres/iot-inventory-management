@@ -8,6 +8,10 @@ if [[ $cmd == "start" ]]; then
 elif [[ $cmd == "clean" ]]; then
     printf "Cleaning Docker ...\n\n"
     docker system prune
-elif [[ $cmd == "stop" ]]; then
-    echo hi
+elif [[ $cmd == "setup" ]]; then
+    ./scripts/setup.sh
+elif [[ $cmd == "teardown" ]]; then
+    ./scripts/teardown.sh
+elif [[ $cmd == "restart" ]]; then
+    ./scripts/teardown.sh && ./scripts/setup.sh
 fi
