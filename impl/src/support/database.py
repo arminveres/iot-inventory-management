@@ -298,7 +298,7 @@ def sign_transaction(data: json, privatekey: str):
         privatekey: location to private key
     """
     prepped_data = json.dumps(data).replace(" ", "")
-    log_msg("Data to be signed:", prepped_data)
+    # log_msg("Data to be signed:", prepped_data)
     signature = run_executable(
         (
             "./bin/signer",
@@ -314,7 +314,7 @@ def encode_data(data: json):
     Encodes data into base64
     """
     prepped_data = json.dumps(data).replace(" ", "")
-    log_msg("Data to be encoded:", prepped_data)
+    # log_msg("Data to be encoded:", prepped_data)
     encoded_data = base64.b64encode(bytes(prepped_data, "utf-8")).decode()
     return encoded_data
 

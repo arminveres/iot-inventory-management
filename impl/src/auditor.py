@@ -51,7 +51,7 @@ class Auditor:
         try:
             response = await response.json()
             log_json(response)
-        except:
+        except Exception:
             log_msg(response)
 
 

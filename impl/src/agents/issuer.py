@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import sys
 from datetime import date
 
 from agents.agent_container import (
@@ -12,7 +13,7 @@ from agents.agent_container import (
 )
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
-from support.utils import log_json, log_msg, log_status
+from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
 
 
 # TODO: (aver) possibly separate databaes instance to own class
@@ -224,114 +225,260 @@ async def checked_schema_cred_creation(
         agent_container.cred_def_id = response["credential_definition_ids"][0]
 
 
+async def demo_setup(agent_container: AgentContainer):
+    """
+    Sets up pre_defined instance of the demo with fixed everything
+    """
+    # WARN: (aver) Only works with fixed seed for DIDs e.g., 'Node1_00000000000000000000000000'
+    node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
+
+    db_name = "db1"
+    key_name = "Controller_1"
+    await agent_container.agent.db_client.create_database(db_name)
+
+    schema_name = "controller id schema"
+    schema_attributes = ["controller_id", "date", "status"]
+    schema_version = "0.0.1"
+
+    # Currently the credential is of the same format as the entry to the database
+    controller_1_cred = {
+        "controller_id": "node0001",
+        "date": date.isoformat(date.today()),
+        "status": "valid",
+    }
+
+    # we extend the credential with components so that the auditor can register them
+    db_entry = controller_1_cred.copy()
+    db_entry["controller_did"] = node_did
+    db_entry["components"] = {
+        "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
+        "firmware": {},
+        "hardware": {"asus-tinkerboard": 1.2},
+    }
+    # we create an auditor user, who then will mark software as vulnerable
+    await agent_container.agent.db_client.create_user("auditor")
+
+    await agent_container.agent.db_client.record_key(db_name, key_name, db_entry)
+
+    await checked_schema_cred_creation(
+        agent_container, schema_name, schema_attributes, schema_version
+    )
+
+    # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
+    # invitation requests, that then can be passed to the agent to be accepted.
+    # Flow:
+    #   1. Authority/Issuer creates invitation
+    #   2. Targeted Agent receives and accepts
+
+    # Take public DID from a DATABASE
+
+    recipient_key = await agent_container.agent.send_invitation(node_did)
+    # we set the recipient key for later identification
+    agent_container.agent.db_client.db_keys[db_name][key_name][
+        "recipient_key"
+    ] = recipient_key
+
+    # Set the connection id for each controller
+    response = await agent_container.admin_GET("/connections")
+    log_json(response)
+    # TODO: (aver) remove hardcoded key_name and add logic for general key check
+    # also remove hardcoded connection_id
+    for conn in response["results"]:
+        if conn["invitation_key"] == recipient_key:
+            conn_id = conn["connection_id"]
+            agent_container.agent.db_client.db_keys[db_name][key_name][
+                "connection_id"
+            ] = conn_id
+
+    agent_container.agent._connection_ready = asyncio.Future()
+    log_msg("Waiting for connection...")
+    await agent_container.agent.detect_connection()
+
+    log_status("#13 Issue credential offer to X")
+    # TODO credential offers
+    # WARN: this could be better handled for general usecases, here it is just for Alice
+    agent_container.agent.cred_attrs[agent_container.cred_def_id] = controller_1_cred
+    cred_preview = {
+        "@type": CRED_PREVIEW_TYPE,
+        "attributes": [
+            {"name": n, "value": v}
+            for (n, v) in agent_container.agent.cred_attrs[
+                agent_container.cred_def_id
+            ].items()
+        ],
+    }
+    offer_request = {
+        "connection_id": conn_id,
+        "comment": f"Offer on cred def id {agent_container.cred_def_id}",
+        "credential_preview": cred_preview,
+        "filter": {"indy": {"cred_def_id": agent_container.cred_def_id}},
+    }
+    await agent_container.admin_POST("/issue-credential-2.0/send-offer", offer_request)
+
+
+async def setup_database(agent_container: AgentContainer, db_name: str):
+    """
+    Setup the database, and register schema and credential on database
+    """
+    await agent_container.agent.db_client.create_database(db_name)
+
+    schema_name = "controller id schema"
+    schema_attributes = ["controller_id", "date", "status"]
+    schema_version = "0.0.1"
+
+    await checked_schema_cred_creation(
+        agent_container, schema_name, schema_attributes, schema_version
+    )
+    log_msg(
+        f"Setup database: '{db_name}' and schema '{schema_name}', '{schema_attributes}', {schema_version}"
+    )
+
+
+async def onboard_node(
+    agent_container: AgentContainer, domain: str, node_name: str, node_did: str
+):
+    """
+    params:
+        agent_container: AgentContainer,
+        domain: str, database name, which also works as domain name
+        node_name: str,
+        node_did: str
+    """
+    # Currently the credential is of the same format as the entry to the database
+    node_cred = {
+        "controller_id": node_name,
+        "date": date.isoformat(date.today()),
+        "status": "valid",
+    }
+
+    # WARN: (aver) the did has to be amended with the method for the resolver to work
+    node_did = "did:sov:" + node_did
+
+    # we extend the credential with components so that the auditor can register them
+    # NOTE: (aver) In an improved scenario, the config would be read in, instead of artificially
+    # created
+    db_entry = node_cred.copy()
+    db_entry["controller_did"] = node_did
+    db_entry["components"] = {
+        "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
+        "firmware": {},
+        "hardware": {"asus-tinkerboard": 1.2},
+    }
+    await agent_container.agent.db_client.record_key(domain, node_name, db_entry)
+
+    recipient_key = await agent_container.agent.send_invitation(node_did)
+    # we set the recipient key for later identification
+    agent_container.agent.db_client.db_keys[domain][node_name][
+        "recipient_key"
+    ] = recipient_key
+
+    # Set the connection id for each controller
+    response = await agent_container.admin_GET("/connections")
+    log_json(response)
+    # TODO: (aver) remove hardcoded key_name and add logic for general key check
+    # also remove hardcoded connection_id
+    for conn in response["results"]:
+        if conn["invitation_key"] == recipient_key:
+            conn_id = conn["connection_id"]
+            agent_container.agent.db_client.db_keys[domain][node_name][
+                "connection_id"
+            ] = conn_id
+            # remove recipient/invitation key
+            agent_container.agent.db_client.db_keys[domain][node_name].pop(
+                "recipient_key"
+            )
+
+    agent_container.agent._connection_ready = asyncio.Future()
+    log_msg("Waiting for connection...")
+    await agent_container.agent.detect_connection()
+
+    log_status(f"# Issuing credential offer to {node_name}")
+    agent_container.agent.cred_attrs[agent_container.cred_def_id] = node_cred
+    cred_preview = {
+        "@type": CRED_PREVIEW_TYPE,
+        "attributes": [
+            {"name": n, "value": v}
+            for (n, v) in agent_container.agent.cred_attrs[
+                agent_container.cred_def_id
+            ].items()
+        ],
+    }
+    offer_request = {
+        "connection_id": conn_id,
+        "comment": f"Offer on cred def id {agent_container.cred_def_id}",
+        "credential_preview": cred_preview,
+        "filter": {"indy": {"cred_def_id": agent_container.cred_def_id}},
+    }
+    response = await agent_container.admin_POST(
+        "/issue-credential-2.0/send-offer", offer_request
+    )
+
+
 async def main(args):
     agent_container = await create_agent_container(args)
+    db_name = "db1"
 
     try:
         # =========================================================================================
-        # Set up schema and initialize
-        # =========================================================================================
-
-        # WARN: fixed seed for DIDs
-        node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
-
-        db_name = "db1"
-        key_name = "Controller_1"
-        await agent_container.agent.db_client.create_database(db_name)
-
-        schema_name = "controller id schema"
-        schema_attributes = ["controller_id", "date", "status"]
-        schema_version = "0.0.1"
-
-        # Currently the credential is of the same format as the entry to the database
-        controller_1_cred = {
-            "controller_id": "node0001",
-            "date": date.isoformat(date.today()),
-            "status": "valid",
-        }
-
-        # we extend the credential with components so that the auditor can register them
-        db_entry = controller_1_cred.copy()
-        db_entry["controller_did"] = node_did
-        db_entry["components"] = {
-            "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
-            "firmware": {},
-            "hardware": {"asus-tinkerboard": 1.2},
-        }
-        # we create an auditor user, who then will mark software as vulnerable
-        await agent_container.agent.db_client.create_user("auditor")
-
-        await agent_container.agent.db_client.record_key(db_name, key_name, db_entry)
-
-        await checked_schema_cred_creation(
-            agent_container, schema_name, schema_attributes, schema_version
-        )
-
-        # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
-        # invitation requests, that then can be passed to the agent to be accepted.
-        # Flow:
-        #   1. Authority/Issuer creates invitation
-        #   2. Targeted Agent receives and accepts
-
-        # Take public DID from a DATABASE
-
-        recipient_key = await agent_container.agent.send_invitation(node_did)
-        # we set the recipient key for later identification
-        agent_container.agent.db_client.db_keys[db_name][key_name][
-            "recipient_key"
-        ] = recipient_key
-
-        # Set the connection id for each controller
-        response = await agent_container.admin_GET("/connections")
-        log_json(response)
-        # TODO: (aver) remove hardcoded key_name and add logic for general key check
-        # also remove hardcoded connection_id
-        for conn in response["results"]:
-            if conn["invitation_key"] == recipient_key:
-                conn_id = conn["connection_id"]
-                agent_container.agent.db_client.db_keys[db_name][key_name][
-                    "connection_id"
-                ] = conn_id
-
-        agent_container.agent._connection_ready = asyncio.Future()
-        log_msg("Waiting for connection...")
-        await agent_container.agent.detect_connection()
-
-        log_status("#13 Issue credential offer to X")
-        # TODO credential offers
-        # WARN: this could be better handled for general usecases, here it is just for Alice
-        agent_container.agent.cred_attrs[
-            agent_container.cred_def_id
-        ] = controller_1_cred
-        cred_preview = {
-            "@type": CRED_PREVIEW_TYPE,
-            "attributes": [
-                {"name": n, "value": v}
-                for (n, v) in agent_container.agent.cred_attrs[
-                    agent_container.cred_def_id
-                ].items()
-            ],
-        }
-        offer_request = {
-            "connection_id": conn_id,
-            "comment": f"Offer on cred def id {agent_container.cred_def_id}",
-            "credential_preview": cred_preview,
-            "filter": {"indy": {"cred_def_id": agent_container.cred_def_id}},
-        }
-        await agent_container.admin_POST(
-            "/issue-credential-2.0/send-offer", offer_request
-        )
-
-        # =========================================================================================
         # Event Loop
         # =========================================================================================
-        # This event loop is needed so that coroutines still can be run in the background, as well
-        # as webhooks received.
-        # Alternatively something like `asyncio.Event` could be used and be waited upon
-        while True:
-            await send_message(agent_container)
-            await asyncio.sleep(1)
+        # New prompt based event loop, events such as webhooks still run in the background.
 
+        # Setup options and make them dicts, so that they can be changed at runtime
+        options = {
+            "setup_db": "  [1]: Setup Database, Schema and Credential\n",
+            "demo": "  [0]: Run demo by setting up databasa and schema, and using default DID\n",
+            "exit": "  [x]: Exit\n",
+        }
+
+        def get_prompt():
+            options.update
+            options_str = "Options:\n"
+            for option in list(options.items()):
+                options_str += option[1]
+            # options_str += "\n"
+            return options_str
+
+        async for option in prompt_loop(get_prompt):
+            if option is not None:
+                option.strip()
+            if option is None or option == "":
+                log_msg("Please give an option")
+
+            # run options
+            if option == "1":
+                if not options.get("setup_db"):
+                    log_msg(f"invalid option, {option}")
+                    continue
+
+                await setup_database(agent_container, db_name)
+                options.pop("setup_db")
+                # add onboarding option
+                options["onboard"] = "  [2]: Onboard node with public DID\n"
+            elif option == "2":
+                if not options.get("onboard"):
+                    log_msg(f"invalid option, {option}")
+                    continue
+
+                node_name = (await prompt("Enter Node Name: ")).strip()
+                node_did = (await prompt("Enter Node DID: ")).strip()
+                await onboard_node(
+                    agent_container,
+                    domain=db_name,
+                    node_did=node_did,
+                    node_name=node_name,
+                )
+                # options.pop("onboard")
+
+            elif option == "0":
+                if not options.get("demo"):
+                    log_msg(f"invalid option, {option}")
+                    continue
+
+                await demo_setup(agent_container)
+
+            elif option == "x":  # shut off gracefully
+                sys.exit(0)
     finally:
         # Shut down the agent gracefully
         await agent_container.terminate()
