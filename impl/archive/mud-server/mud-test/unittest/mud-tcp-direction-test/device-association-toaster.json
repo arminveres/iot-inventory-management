@@ -1,7 +1,0 @@
-{
- "mapping":
-   { 
-     "device-id": [ "00:00:00:00:00:41" ], 
-     "mud-url": "file://mudfile-tcp-direction-test.json"
-   }
-}
