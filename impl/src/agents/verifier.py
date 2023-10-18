@@ -115,7 +115,7 @@ async def send_message(agent: AriesAgent):
 
 async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
-    agent_container = await create_agent_with_args(args, ident="verifier_node")
+    agent_container = await create_agent_with_args(args)
     agent_container.seed = "Autho_00000000000000000000000000"
     agent = VerifierAgent(
         "verifier.agent",
@@ -164,6 +164,7 @@ async def main(args):
         log_msg("Waiting for connection...")
         await node_agent.agent.detect_connection()
 
+        # TODO: (aver) get schema attributes from central location
         # send proof request
         # schema_name = "controller id schema"
         schema_attributes = ["controller_id", "date", "status"]

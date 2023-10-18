@@ -62,11 +62,12 @@ async def main():
     # TODO: (aver) fix and implement a query all keys, so we don't have to save them externally
     # await auditor.db_query_all("db1")
 
-    value = await auditor.db_client.query_key(db_name, "Controller_1")
+    value = await auditor.db_client.query_key(db_name, "node_1")
     log_json(value)
     # do some magic, analysis and return with the marked vulnerable component send revoke request to issuer
     marked_vulnerabilities = auditor.check_vulnerability(db_name, value["components"])
-    await auditor.notify_maintainer(db_name, marked_vulnerabilities)
+    if marked_vulnerabilities is not None:
+        await auditor.notify_maintainer(db_name, marked_vulnerabilities)
 
     # except Exception:
     await auditor.client_session.close()

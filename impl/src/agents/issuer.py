@@ -52,15 +52,25 @@ class IssuerAgent(AriesAgent):
         self.cred_state = {}
         self.cred_attrs = {}
 
+    @property
+    def connection_ready(self):
+        return self._connection_ready.done() and self._connection_ready.result()
+
+    def reset_connection(self):
+        """
+        Temporary function to reset connections in order to allow for multiple connections to be
+        made.
+        """
+        self._connection_ready = None
+        self.connection_id = None
+
     async def handle_connections(self, message):
-        # TODO: (aver) update for mutliple connections
-        print(
-            self.ident, "handle_connections", message["state"], message["rfc23_state"]
-        )
         conn_id = message["connection_id"]
+
         if (not self.connection_id) and message["rfc23_state"] == "invitation-sent":
             print(self.ident, "set connection id", conn_id)
             self.connection_id = conn_id
+
         if (
             message["connection_id"] == self.connection_id
             and message["rfc23_state"] == "completed"
@@ -81,11 +91,25 @@ class IssuerAgent(AriesAgent):
         if prev_state == state:
             return  # ignore
 
-        # TODO: (aver) add cred_def_i
-        response = await self.db_client.query_key("db1", "Controller_1")
+        node_name = [
+            i["value"]
+            for i in message["cred_proposal"]["credential_preview"]["attributes"]
+            if i["name"] == "controller_id"
+        ][0]
+
+        # TODO: (aver) remove hardcoded db-name
+        response = await self.db_client.query_key("db1", node_name)
+
+        if response is None:
+            print(
+                "\n\n\tsomething massively went wrong, if an existing db key is none!"
+            )
+            sys.exit(1)
+
+        # update credentials
         response["cred_ex_id"] = cred_ex_id
-        response["valid"] = True
-        await self.db_client.record_key("db1", "Controller_1", response)
+        response["status"] = "valid"
+        await self.db_client.record_key("db1", node_name, response)
 
         self.cred_state[cred_ex_id] = state
         self.log(f"Credential: state = {state}, cred_ex_id = {cred_ex_id}")
@@ -135,19 +159,26 @@ class IssuerAgent(AriesAgent):
                             }
                             # TODO: (aver) use correct connection_id
                             await self.revoke_credential(
-                                response["cred_ex_id"], None, reason
+                                response["cred_ex_id"],
+                                vuln_db_name,
+                                device,
+                                reason,
                             )
 
     async def revoke_credential(
-        self, cred_ex_id: str, connection_id: str, revocation_reason: dict
+        self,
+        cred_ex_id: str,
+        db_name: str,
+        node_name: str,
+        revocation_reason: dict,
     ):
         """
         Revoke a credentials and publish it.
         """
-        response = await self.db_client.query_key("db1", "Controller_1")
+        response = await self.db_client.query_key(db_name, node_name)
         response["cred_ex_id"] = ""
         response["valid"] = False
-        await self.db_client.record_key("db1", "Controller_1", response)
+        await self.db_client.record_key(db_name, node_name, response)
 
         # FIXME: (aver) remove hard coded connection_id and retrieve or store in database
         await self.admin_POST(
@@ -155,10 +186,11 @@ class IssuerAgent(AriesAgent):
             {
                 "cred_ex_id": cred_ex_id,
                 "publish": True,
-                "connection_id": self.connection_id,
+                "connection_id": self.db_client.db_keys[db_name][node_name][
+                    "connection_id"
+                ],
                 "comment": json.dumps(revocation_reason),
             },
-            # {"cred_ex_id": cred_ex_id, "publish": True, "connection_id": connection_id},
         )
 
 
@@ -332,6 +364,9 @@ async def setup_database(agent_container: AgentContainer, db_name: str):
     log_msg(
         f"Setup database: '{db_name}' and schema '{schema_name}', '{schema_attributes}', {schema_version}"
     )
+    # we create an auditor user, who then will mark software as vulnerable
+    await agent_container.agent.db_client.create_user("auditor")
+    log_status("Created auditor account")
 
 
 async def onboard_node(
@@ -372,6 +407,10 @@ async def onboard_node(
         "recipient_key"
     ] = recipient_key
 
+    agent_container.agent._connection_ready = asyncio.Future()
+    log_msg("Waiting for connection...")
+    await agent_container.agent.detect_connection()
+
     # Set the connection id for each controller
     response = await agent_container.admin_GET("/connections")
     log_json(response)
@@ -388,9 +427,7 @@ async def onboard_node(
                 "recipient_key"
             )
 
-    agent_container.agent._connection_ready = asyncio.Future()
-    log_msg("Waiting for connection...")
-    await agent_container.agent.detect_connection()
+    agent_container.agent.reset_connection()
 
     log_status(f"# Issuing credential offer to {node_name}")
     agent_container.agent.cred_attrs[agent_container.cred_def_id] = node_cred
@@ -414,6 +451,11 @@ async def onboard_node(
     )
 
 
+async def load_from_database(db_name: str):
+    # could create a local textfile to load in until the query all method works...
+    pass
+
+
 async def main(args):
     agent_container = await create_agent_container(args)
     db_name = "db1"
@@ -427,6 +469,7 @@ async def main(args):
         # Setup options and make them dicts, so that they can be changed at runtime
         options = {
             "setup_db": "  [1]: Setup Database, Schema and Credential\n",
+            # "load": "  [3]: Load from database\n",
             "demo": "  [0]: Run demo by setting up databasa and schema, and using default DID\n",
             "exit": "  [x]: Exit\n",
         }
@@ -470,6 +513,8 @@ async def main(args):
                 )
                 # options.pop("onboard")
 
+            # elif option == "3":
+            #     pass
             elif option == "0":
                 if not options.get("demo"):
                     log_msg(f"invalid option, {option}")

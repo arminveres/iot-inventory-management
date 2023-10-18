@@ -4,6 +4,8 @@ Contains a host of helper functions for managing the Orion database
 import base64
 import json
 from uuid import uuid4
+import sys
+from typing import Optional
 
 from aiohttp import ClientSession
 from support.utils import log_json, log_msg, run_executable, log_status
@@ -38,6 +40,12 @@ class OrionDB:
         """
         return sign_transaction(payload, self.__private_key_path)
 
+    def __glue_payload(self, payload: dict, signature: str):
+        """
+        Glues the payload and signature into a dict/json.
+        """
+        return {"payload": payload, "signature": signature}
+
     async def query_key(self, db_name, key):
         """
         https://labs.hyperledger.org/orion-server/docs/getting-started/transactions/curl/datatx#12-checking-the-existance-of-key1
@@ -60,19 +68,10 @@ class OrionDB:
         response = await response.json()
         log_json(response)
 
-        enc_value = response["response"]["value"]
-        dec_value = decode_data(enc_value)
-
-        try:
-            return dec_value
-        except Exception as e:
-            log_msg(e.with_traceback())
-
-    def __glue_payload(self, payload: dict, signature: str):
-        """
-        Glues the payload and signature into a dict/json.
-        """
-        return {"payload": payload, "signature": signature}
+        enc_value = response["response"].get("value")
+        if enc_value is None:
+            return None
+        return decode_data(enc_value)
 
     async def check_db(self, db_name: str):
         """
@@ -213,6 +212,9 @@ class OrionDB:
         log_json(response)
 
     async def record_key(self, db_name: str, key_name: str, value: dict):
+        """
+        Record a new key, or update an existin one, this simply overwrites the existing key!
+        """
         headers = {"TxTimeout": "2s"}
         encoded_value = encode_data(value)
         payload = {
@@ -226,6 +228,8 @@ class OrionDB:
                             "key": key_name,
                             "value": encoded_value,
                             "acl": {
+                                # NOTE: (aver) remove auditor until we find out what is causing the
+                                # freeze in the 2nd issuing.
                                 "read_users": {"auditor": True},
                                 "read_write_users": {self.__username: True},
                             },
