@@ -1,0 +1,162 @@
+// Copyright IBM Corp. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger-labs/orion-server/pkg/types";
+
+package types;
+
+// ClusterConfig holds the shared configuration of a blockchain database cluster.
+// This includes:
+// - a set of nodes that server client requests,
+// - a set of admins,
+// - the certificate authority configuration, including root and intermediate certificates, and
+// - the consensus configuration.
+//
+// This part of the configuration is replicated and is common to all nodes.
+// After the initial bootstrap, this part of the configuration can change only through configuration transactions.
+message ClusterConfig {
+  // The set of nodes that serve client requests, as they are known to clients.
+  repeated NodeConfig nodes = 1;
+  // The set of database administrators.
+  repeated Admin admins = 2;
+  // The x509 certificates of the root and intermediate certificate authorities that issued all the certificates used
+  // for client facing communication, including the client certificates and the server certificates for signing
+  // transactions and blocks.
+  CAConfig cert_auth_config = 3;
+  // The consensus configuration.
+  ConsensusConfig consensus_config = 4;
+
+  LedgerConfig ledger_config = 5;
+}
+
+// NodeConfig holds the information about a database node in the cluster.
+// This information is exposed to the clients.
+// The address and port (see below) define the HTTP/REST endpoint that clients connect to,
+// and must be reachable by clients that submit requests to the database.
+message NodeConfig {
+  // A unique identifier for the node within the cluster.
+  // TODO define and enforce the characters that can be used for this field. Should be something that complies with file names.
+  string id = 1;
+  // The host name or IP address of the HTTP/REST endpoint served by this node.
+  string address = 2;
+  // The port of the HTTP/REST endpoint served by this node.
+  uint32 port = 3;
+  // The x509 certificate used by this node to authenticate its communication with clients.
+  // This certificate corresponds to the private key the server uses to sign blocks and transaction responses.
+  bytes certificate = 4;
+}
+
+// Admin holds the id and certificate of a cluster administrator.
+message Admin {
+  string id = 1;
+  bytes certificate = 2;
+}
+
+message CAConfig {
+  repeated bytes roots = 1;
+  repeated bytes intermediates = 2;
+}
+
+// The definitions of the clustered consensus algorithm, members, and parameters.
+message ConsensusConfig {
+  // The consensus algorithm, currently only "raft" is supported.
+  string algorithm = 1;
+  // Peers that take part in consensus.
+  repeated PeerConfig members = 2;
+  // Peers that are allowed to connect and fetch the ledger from members, but do not take part in consensus.
+  repeated PeerConfig observers = 3;
+  // Raft protocol parameters.
+  RaftConfig raft_config = 4;
+}
+
+// Configuration parameters on the distributed ledger capabilities and algorithms that must be defined uniformly across
+// all servers.
+message LedgerConfig {
+  // Disables the state Merkle-Patricia-Trie construction. With MP-Trie construction disabled, the block's
+  // BlockHeadr.state_merkle_tree_root_hash field will be nil.
+  // This flag takes effect on deployment (bootstrap) only, from the first (genesis) block.
+  // The value of this flag cannot be changed during run-time.
+  bool state_merkle_patricia_trie_disabled = 1;
+}
+
+// PeerConfig defines a server that takes part in consensus, or an observer.
+message PeerConfig {
+  // The node ID correlates the peer definition here with the NodeConfig.ID field.
+  string node_id = 1;
+  // Raft ID must be >0 for members, or =0 for observers.
+  uint64 raft_id = 2;
+  // The host name or IP address that is used by other peers to connect to this peer.
+  string peer_host = 3;
+  // The port that is used by other peers to connect to this peer.
+  uint32 peer_port = 4;
+}
+
+message RaftConfig {
+  // Time interval between two Node.Tick invocations, e.g. 100ms.
+  // Any duration string parsable by ParseDuration():
+  // https://golang.org/pkg/time/#ParseDuration
+  string tick_interval = 1;
+
+  // The number of Node.Tick invocations that must pass  between elections.
+  // That is, if a follower does not receive any
+  // message from the leader of current term before ElectionTick has
+  // elapsed, it will become candidate and start an election.
+  // electionTicks must be greater than heartbeatTicks.
+  uint32 election_ticks = 2;
+
+  // The number of Node.Tick invocations that must
+  // pass between heartbeats. That is, a leader sends heartbeat
+  // messages to maintain its leadership every HeartbeatTick ticks.
+  uint32 heartbeat_ticks = 3;
+
+  // Limits the max number of in-flight blocks (i.e. Raft messages).
+  uint32 max_inflight_blocks = 4;
+
+  // Take a snapshot when cumulative data since last snapshot exceeds a certain size in bytes.
+  uint64 snapshot_interval_size = 5;
+
+  // The maximal Raft ID in the cluster, during the entire lifetime of the cluster.
+  // This is internally computed by the server when a config transaction commits and is read-only for clients (admins).
+  // Raft IDs must be unique for all time, and may never be reused even for deleted peers. To enforce this Raft
+  // requirement, we require that the Raft ID of a new peer added to the cluster must be higher than 'max_raft_id'.
+  // We recommend to start a cluster with low ID numbers, e.g. (1,2,3) => 'max_raft_id'=3,
+  // and then set the Raft ID of a new peer added to the cluster to 'max_raft_id'+1.
+  uint64 max_raft_id = 6;
+}
+
+// Database configuration. Stores default read/write ACLs
+// Stored as value in _dbs system database under key 'name'
+message DatabaseConfig {
+  string name = 1;
+  repeated string read_access_users = 2;
+  repeated string write_access_users = 3;
+}
+
+// User holds userID, certificate, privilege the user has,
+// and groups the user belong to.
+message User {
+  string id = 1;
+  bytes certificate = 2;
+  Privilege privilege = 3;
+}
+
+// Privilege holds user/group privilege information such as
+// a list of databases to which the read is allowed, a list of
+// databases to which the write is allowed, bools to indicate
+// where the db manipulation such as DB creation/deletion and
+// user manipulation such as add/update/delete are allowed.
+message Privilege {
+  enum Access {
+    Read = 0;
+    ReadWrite = 1;
+  }
+  map<string, Access> db_permission = 1;
+  // admin has privileges to submit a user administration transaction,
+  // cluster configuration transaction, and database administration
+  // transaction. Further, admin has permission to read-write states
+  // from any database provided that the state has no ACL defined. If
+  // a state has a read and write ACL, the admin can read or write to
+  // the state only if the admin is listed in the read or write ACL list.
+  bool admin = 2;
+}

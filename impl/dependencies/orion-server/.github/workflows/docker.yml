@@ -1,0 +1,31 @@
+name: Docker
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  pull_request:
+    branches:
+    - main
+env:
+  IMAGE_NAME: orion-server
+  DOCKER_USER: orionbcdb
+
+jobs:
+  docker-build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          make docker

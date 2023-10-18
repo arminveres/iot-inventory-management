@@ -1,0 +1,19 @@
+// Copyright IBM Corp. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger-labs/orion-server/internal/blockstore";
+
+package blockstore;
+
+import "block_and_transaction.proto";
+
+message BlockTxIDs {
+  repeated string tx_ids = 1;
+}
+
+message TxInfo {
+  uint64 block_number = 1;
+  uint64 tx_index = 2;
+  types.ValidationInfo validation = 3;
+}

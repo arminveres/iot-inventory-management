@@ -1,0 +1,288 @@
+// Copyright IBM Corp. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger-labs/orion-server/pkg/types";
+
+package types;
+
+import "configuration.proto";
+import "block_and_transaction.proto";
+
+message ResponseHeader {
+  string node_id = 1;
+}
+
+// GetDBStatus
+message GetDBStatusResponseEnvelope {
+  GetDBStatusResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDBStatusResponse {
+  ResponseHeader header = 1;
+  bool exist = 2;
+}
+
+message GetDBIndexResponseEnvelope {
+  GetDBIndexResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDBIndexResponse {
+  ResponseHeader header = 1;
+  string index = 2;
+}
+
+// GetData
+message GetDataResponseEnvelope {
+  GetDataResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDataResponse {
+  ResponseHeader header = 1;
+  bytes value = 2;
+  Metadata metadata = 3;
+}
+
+message GetDataRangeResponseEnvelope {
+  GetDataRangeResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDataRangeResponse {
+  ResponseHeader header = 1;
+  repeated KVWithMetadata KVs = 2;
+  bool pending_result = 3;
+  string next_start_key = 4;
+}
+
+// GetUser
+message GetUserResponseEnvelope {
+  GetUserResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetUserResponse {
+  ResponseHeader header = 1;
+  User user = 2;
+  Metadata metadata = 3;
+}
+
+// GetConfig
+message GetConfigResponseEnvelope {
+  GetConfigResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetConfigResponse {
+  ResponseHeader header = 1;
+  ClusterConfig config = 2;
+  Metadata metadata = 3;
+}
+
+// GetNodeConfig
+message GetNodeConfigResponseEnvelope {
+  GetNodeConfigResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetNodeConfigResponse {
+  ResponseHeader header = 1;
+  NodeConfig node_config = 2;
+}
+
+// GetConfigBlock
+message GetConfigBlockResponseEnvelope {
+  GetConfigBlockResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetConfigBlockResponse {
+  ResponseHeader header = 1;
+  // block bytes, marshaled with proto.Marshal
+  bytes block = 2;
+}
+
+// GetClusterStatus
+message GetClusterStatusResponseEnvelope {
+  GetClusterStatusResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetClusterStatusResponse {
+  ResponseHeader header = 1;
+  // The configuration of the nodes, the part from ClusterConfig accessible to every client.
+  repeated NodeConfig nodes = 2;
+  // The version of the ClusterConfig from which the nodes are taken of.
+  Version version = 3;
+  // The leader ID, if it exists.
+  string Leader = 4;
+  // The IDs of active nodes, including the leader.
+  repeated string Active = 5;
+}
+
+//==== Ledger API responses ===========================================================================================
+
+// GetBlock
+message GetBlockResponseEnvelope {
+  GetBlockResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetBlockResponse {
+  ResponseHeader header = 1;
+  BlockHeader block_header = 2;
+}
+
+// GetAugmentedBlockHeader
+message GetAugmentedBlockHeaderResponseEnvelope {
+  GetAugmentedBlockHeaderResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetAugmentedBlockHeaderResponse {
+  ResponseHeader header = 1;
+  AugmentedBlockHeader block_header = 2;
+}
+
+// GetLedgerPath
+message GetLedgerPathResponseEnvelope {
+  GetLedgerPathResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetLedgerPathResponse {
+  ResponseHeader header = 1;
+  repeated BlockHeader block_headers = 2;
+}
+
+// GetTxProof
+message GetTxProofResponseEnvelope {
+  GetTxProofResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetTxProofResponse {
+  ResponseHeader header = 1;
+  repeated bytes hashes = 2;
+}
+
+// GetTx
+message GetTxResponseEnvelope {
+  GetTxResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetTxResponse {
+  ResponseHeader header = 1;
+  oneof TxEnvelope {
+    DataTxEnvelope data_tx_envelope = 2;
+    ConfigTxEnvelope config_tx_envelope = 3;
+    DBAdministrationTxEnvelope db_administration_tx_envelope = 4;
+    UserAdministrationTxEnvelope user_administration_tx_envelope = 5;
+  }
+  ValidationInfo validation_info = 7;
+  Version version = 8;
+}
+
+// GetDataProof
+message GetDataProofResponseEnvelope {
+  GetDataProofResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDataProofResponse {
+  ResponseHeader header = 1;
+  repeated MPTrieProofElement path = 2;
+}
+
+message MPTrieProofElement {
+  repeated bytes hashes = 1;
+}
+
+message TxReceiptResponseEnvelope {
+  TxReceiptResponse response = 1;
+  bytes signature = 2;
+}
+
+message TxReceiptResponse {
+  ResponseHeader header = 1;
+  TxReceipt receipt = 2;
+}
+
+//=== Provenance API responses ========================================================================================
+
+// GetHistoricalData
+message GetHistoricalDataResponseEnvelope {
+  GetHistoricalDataResponse response = 1;
+  bytes signature = 2;
+}
+
+
+message GetHistoricalDataResponse {
+  ResponseHeader header = 1;
+  repeated ValueWithMetadata values = 2;
+}
+
+// GetDataReaders
+message GetDataReadersResponseEnvelope {
+  GetDataReadersResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDataReadersResponse {
+  ResponseHeader header = 1;
+  map<string, uint32> read_by = 2;
+}
+
+// GetDataWriters
+message GetDataWritersResponseEnvelope {
+  GetDataWritersResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetDataWritersResponse {
+  ResponseHeader header = 1;
+  map<string, uint32> written_by = 2;
+}
+
+// GetDataProvenance
+message GetDataProvenanceResponseEnvelope {
+  GetDataProvenanceResponse response = 1;
+  bytes signature = 2;
+}
+
+message KVsWithMetadata {
+    repeated KVWithMetadata KVs = 1;
+}
+
+message GetDataProvenanceResponse {
+  ResponseHeader header = 1;
+  map<string, KVsWithMetadata> DBKeyValues = 2;
+}
+
+// GetTxIDsSubmittedBy
+message GetTxIDsSubmittedByResponseEnvelope {
+  GetTxIDsSubmittedByResponse response = 1;
+  bytes signature = 2;
+}
+
+message GetTxIDsSubmittedByResponse {
+  ResponseHeader header = 1;
+  repeated string txIDs = 2;
+}
+
+//=== Data query API responses ========================================================================================
+
+message DataQueryResponseEnvelope {
+  DataQueryResponse response = 1;
+  bytes signature = 2;
+}
+
+message DataQueryResponse {
+  ResponseHeader header = 1;
+  repeated KVWithMetadata KVs = 2;
+}
+
