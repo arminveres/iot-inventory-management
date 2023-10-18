@@ -7,3 +7,5 @@ services:
     ports:
       - 8181:8181
       - 6653:6653/tcp
+    # network_mode: host
+    # command: bash
