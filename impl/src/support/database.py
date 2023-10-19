@@ -269,29 +269,49 @@ class OrionDB:
         # FIXME: dunno how to fix this method, documentation is not existent and if I imitate the source
         # code I get 404
         raise NotImplementedError
-        key = "Controller_1"
-        key = ""
-        enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode()
+
+        # key = "node_1"
+        # # key = ""
+        # enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode()
+        # payload = {
+        #     "user_id": self.__username,
+        #     "db_name": db_name,
+        #     "start_key": key,
+        #     "end_key": key,
+        #     "limit": 10,
+        # }
+        # signature = self.__sign_tx(payload)
+        # response = await self.__client_session.get(
+        #     url=f"{self.__orion_db_url}/data/{db_name}/?startkey={enc_key}&endkey={enc_key}&limit=10",
+        #     headers={"UserID": self.__username, "Signature": signature},
+        # )
+
         payload = {
             "user_id": self.__username,
             "db_name": db_name,
-            "start_key": key,
-            "end_key": key,
-            "limit": 10,
+            "payload": {"selector": {"status": {"$eq": "valid"}}},
         }
         signature = self.__sign_tx(payload)
-        response = await self.__client_session.get(
-            # url=f"{self.__orion_db_url}/data/db1/startkey={enc_key}&endkey={enc_key}/",
-            url=f"{self.__orion_db_url}/data/db1",
-            headers={"UserID": self.__username, "Signature": signature},
+        data = self.__glue_payload(payload, signature)
+        response = await self.__client_session.post(
+            url=f"{self.__orion_db_url}/data/{db_name}/jsonquery",
+            json=data,
+            headers={
+                "UserID": self.__username,
+                "Signature": signature,
+                # "TxTimeout": "2s",
+            },
         )
 
         if not response.ok:
             log_msg("\n\nERRROR HAPPENED\n\n")
 
         log_msg(f"Returned with {response.status}")
-        response = await response.json()
-        log_json(response)
+        try:
+            response = await response.json()
+            log_json(response)
+        except Exception:
+            log_msg(response)
 
 
 def sign_transaction(data: json, privatekey: str):
@@ -325,7 +345,7 @@ def encode_data(data: json):
 
 def decode_data(encoded_data: str):
     """
-    Decodes base64 data into a string
+    Decodes base64 data into a Python dict (JSON) if possible.
     """
     decoded_data = base64.b64decode(encoded_data)
     return json.loads(decoded_data)
@@ -333,6 +353,6 @@ def decode_data(encoded_data: str):
 
 def get_tx_id():
     """
-    Generate a random uuid4 based id, generally to identify transactions
+    Generate a random uuid4 based id, generally to identify transactions and return as string.
     """
     return str(uuid4())
