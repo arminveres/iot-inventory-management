@@ -1,18 +1,15 @@
 [submodule "thesis"]
 	path = thesis
 	url = https://git.overleaf.com/64d4c3dba8f0b9229f8d70d5
-[submodule "impl/aries-capy"]
+[submodule "impl/dependencies/aca-py"]
 	path = impl/dependencies/aca-py
 	url = https://github.com/hyperledger/aries-cloudagent-python/
-[submodule "impl/von-network"]
+[submodule "impl/dependencies/von-network"]
 	path = impl/dependencies/von-network
 	url = https://github.com/bcgov/von-network
-[submodule "impl/orion-server"]
+[submodule "impl/dependencies/orion-server"]
 	path = impl/dependencies/orion-server
 	url = https://github.com/hyperledger-labs/orion-server
-[submodule "impl/orion-sdk-go"]
-	path = impl/dependencies/orion-sdk-go
-	url = https://github.com/hyperledger-labs/orion-sdk-go.git
-[submodule "impl/indy-tails-server"]
+[submodule "impl/dependencies/indy-tails-server"]
 	path = impl/dependencies/indy-tails-server
 	url = https://github.com/bcgov/indy-tails-server.git
