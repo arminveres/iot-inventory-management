@@ -1,3 +1,0 @@
-## Demo: Academic Document Management
-
-

@@ -1,3 +1,0 @@
-{
-    "python.testing.pytestArgs": ["--no-cov"],
-}

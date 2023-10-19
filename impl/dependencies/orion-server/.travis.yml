@@ -1,5 +1,0 @@
-language: go
-go:
-    - 1.15.5
-script:
-    - scripts/run-tests.sh
