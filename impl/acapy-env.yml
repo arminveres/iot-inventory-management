@@ -5,4 +5,11 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.10
+  - python=3.11
+  - ipython
+  - asyncpg
+  - aiohttp
+  - prompt_toolkit
+  - web.py
+  - pygments
+  - qrcode
