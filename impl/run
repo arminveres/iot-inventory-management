@@ -77,7 +77,7 @@ done
 
 # Catch incompatible flags
 if [[ $MULTITENANT == 1 && $AUDITOR == 1 ]]; then
-    echo "invalid combination"
+    echo "Invalid combination, only Agents can have multitenancy activated"
     usage
     exit 1
 fi

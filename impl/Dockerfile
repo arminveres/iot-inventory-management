@@ -1,4 +1,5 @@
-ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.9.0
+# ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.9.0
+ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.10.4
 FROM ${from_image}
 
 # Enable some bash features such as pushd/popd
