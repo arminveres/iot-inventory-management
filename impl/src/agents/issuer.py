@@ -52,6 +52,9 @@ class IssuerAgent(AriesAgent):
         self.cred_state = {}
         self.cred_attrs = {}
 
+    # =============================================================================================
+    # Properties, getters and setters
+    # =============================================================================================
     @property
     def connection_ready(self):
         return self._connection_ready.done() and self._connection_ready.result()
@@ -64,6 +67,9 @@ class IssuerAgent(AriesAgent):
         self._connection_ready = None
         self.connection_id = None
 
+    # =============================================================================================
+    # Webhook handler implementations
+    # =============================================================================================
     async def handle_connections(self, message):
         conn_id = message["connection_id"]
 
@@ -165,6 +171,9 @@ class IssuerAgent(AriesAgent):
                                 reason,
                             )
 
+    # =============================================================================================
+    # Additional methods
+    # =============================================================================================
     async def revoke_credential(
         self,
         cred_ex_id: str,
@@ -194,6 +203,9 @@ class IssuerAgent(AriesAgent):
         )
 
 
+# =================================================================================================
+# Helper functions
+# =================================================================================================
 async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
     agent_container = await create_agent_with_args(args)
@@ -456,6 +468,9 @@ async def load_from_database(db_name: str):
     pass
 
 
+# =================================================================================================
+# MAIN Function
+# =================================================================================================
 async def main(args):
     agent_container = await create_agent_container(args)
     db_name = "db1"
@@ -475,11 +490,14 @@ async def main(args):
         }
 
         def get_prompt():
+            """
+            Builds the prompt out of the options dictionary
+            """
             options.update
             options_str = "Options:\n"
             for option in list(options.items()):
                 options_str += option[1]
-            # options_str += "\n"
+            options_str += "> "
             return options_str
 
         async for option in prompt_loop(get_prompt):
@@ -537,4 +555,4 @@ if __name__ == "__main__":
     try:
         asyncio.get_event_loop().run_until_complete(main(args))
     except KeyboardInterrupt:
-        os._exit(1)
+        sys.exit(1)

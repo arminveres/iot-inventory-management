@@ -117,6 +117,9 @@ async def main(args):
             options["reg_subnode"] = "  [1]: Register a subnode, i.e., and edge node\n"
 
         def get_prompt():
+            """
+            Builds the prompt out of the options dictionary
+            """
             options.update
             options_str = "Options:\n"
             for key, value in list(options.items()):

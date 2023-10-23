@@ -4,11 +4,9 @@ Contains a host of helper functions for managing the Orion database
 import base64
 import json
 from uuid import uuid4
-import sys
-from typing import Optional
 
 from aiohttp import ClientSession
-from support.utils import log_json, log_msg, run_executable, log_status
+from support.utils import log_json, log_msg, log_status, run_executable
 
 
 # TODO: (aver) create class to hold database logic for less duplication

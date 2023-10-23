@@ -907,7 +907,7 @@ class DemoAgent:
         loop = asyncio.get_event_loop()
         if self.proc:
             future = loop.run_in_executor(self.thread_pool_executor, self._terminate)
-            result = await asyncio.wait_for(future, 10, loop=loop)
+            _ = await asyncio.wait_for(future, 10, loop=loop)
 
     async def listen_webhooks(self, webhook_port: int):
         self.webhook_port = webhook_port
