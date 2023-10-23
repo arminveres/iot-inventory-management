@@ -471,6 +471,124 @@ class DemoAgent:
 
         return result
 
+    def get_agent_provision_args(self):
+        result = [
+            ("--endpoint", self.endpoint),
+            ("--wallet-type", self.wallet_type),
+            ("--wallet-name", self.wallet_name),
+            ("--wallet-key", self.wallet_key),
+        ]
+
+        if self.genesis_data:
+            result.append(("--genesis-transactions", self.genesis_data))
+        if self.genesis_txn_list:
+            result.append(("--genesis-transactions-list", self.genesis_txn_list))
+        if self.seed:
+            result.append(("--seed", self.seed))
+        if self.storage_type:
+            result.append(("--storage-type", self.storage_type))
+        if self.timing:
+            result.append("--timing")
+        if self.timing_log:
+            result.append(("--timing-log", self.timing_log))
+        if self.postgres:
+            result.extend(
+                [
+                    ("--wallet-storage-type", "postgres_storage"),
+                    ("--wallet-storage-config", json.dumps(self.postgres_config)),
+                    ("--wallet-storage-creds", json.dumps(self.postgres_creds)),
+                ]
+            )
+        if self.trace_enabled:
+            result.extend(
+                [
+                    ("--trace",),
+                    ("--trace-target", self.trace_target),
+                    ("--trace-tag", self.trace_tag),
+                    ("--trace-label", self.label + ".trace"),
+                ]
+            )
+
+        if self.revocation:
+            # turn on notifications if revocation is enabled
+            result.append("--notify-revocation")
+        # always enable notification webhooks
+        result.append("--monitor-revocation-notification")
+
+        if self.tails_server_base_url:
+            result.append(("--tails-server-base-url", self.tails_server_base_url))
+        else:
+            # set the tracing parameters but don't enable tracing
+            result.extend(
+                [
+                    (
+                        "--trace-target",
+                        self.trace_target if self.trace_target else "log",
+                    ),
+                    (
+                        "--trace-tag",
+                        self.trace_tag if self.trace_tag else "acapy.events",
+                    ),
+                    ("--trace-label", self.label + ".trace"),
+                ]
+            )
+
+        if self.mediation:
+            result.extend(
+                [
+                    "--open-mediation",
+                ]
+            )
+
+        if self.arg_file:
+            result.extend(
+                (
+                    "--arg-file",
+                    self.arg_file,
+                )
+            )
+
+        if self.endorser_role:
+            if self.endorser_role == "author":
+                result.extend(
+                    [
+                        ("--endorser-protocol-role", "author"),
+                        ("--auto-request-endorsement",),
+                        ("--auto-write-transactions",),
+                        ("--auto-create-revocation-transactions",),
+                        ("--auto-promote-author-did"),
+                        ("--endorser-alias", "endorser"),
+                    ]
+                )
+                if self.endorser_did:
+                    result.extend(
+                        [
+                            ("--endorser-public-did", self.endorser_did),
+                        ]
+                    )
+                if self.endorser_invite:
+                    result.extend(
+                        (
+                            "--endorser-invitation",
+                            self.endorser_invite,
+                        )
+                    )
+            elif self.endorser_role == "endorser":
+                result.extend(
+                    [
+                        (
+                            "--endorser-protocol-role",
+                            "endorser",
+                        ),
+                        ("--auto-endorse-transactions",),
+                    ]
+                )
+
+        if self.extra_args:
+            result.extend(self.extra_args)
+
+        return result
+
     @property
     def prefix_str(self):
         if self.prefix:
@@ -719,6 +837,16 @@ class DemoAgent:
             )
         )
 
+    def get_provision_process_args(self):
+        return list(
+            flatten(
+                (
+                    [PYTHON, "-m", "aries_cloudagent", "provision"],
+                    self.get_agent_provision_args(),
+                )
+            )
+        )
+
     async def start_process(self, python_path: str = None, wait: bool = True):
         my_env = os.environ.copy()
         python_path = DEFAULT_PYTHON_PATH if python_path is None else python_path
@@ -734,6 +862,25 @@ class DemoAgent:
             self.thread_pool_executor, self._process, agent_args, my_env, loop
         )
         self.proc = await asyncio.wait_for(future, 20, loop=loop)
+        if wait:
+            await asyncio.sleep(1.0)
+            await self.detect_process()
+
+    async def provision_process(self, python_path: str = None, wait: bool = True):
+        my_env = os.environ.copy()
+        python_path = DEFAULT_PYTHON_PATH if python_path is None else python_path
+        if python_path:
+            my_env["PYTHONPATH"] = python_path
+
+        agent_args = self.get_provision_process_args()
+        self.log(agent_args)
+
+        # start agent sub-process
+        loop = asyncio.get_event_loop()
+        future = loop.run_in_executor(
+            self.thread_pool_executor, self._process, agent_args, my_env, loop
+        )
+        self.proc = await asyncio.wait_for(future, 60, loop=loop)
         if wait:
             await asyncio.sleep(1.0)
             await self.detect_process()

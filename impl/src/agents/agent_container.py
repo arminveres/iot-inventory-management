@@ -62,6 +62,8 @@ class AriesAgent(DemoAgent):
         if not no_auto:
             extra_args.extend(
                 (
+                    # TODO: (aver) once agent provisioning works, remove make conditional for it and
+                    # disable these in provisioning mode
                     "--auto-accept-invites",
                     "--auto-accept-requests",
                     "--auto-store-credential",
@@ -785,6 +787,8 @@ class AgentContainer:
 
         with log_timer("Startup duration:"):
             await self.agent.start_process()
+            # FIXME: (aver) fix agent provisioning...
+            # await self.agent.provision_process()
 
         log_msg("Admin URL is at:", self.agent.admin_url)
         log_msg("Endpoint URL is at:", self.agent.endpoint)
