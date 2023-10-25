@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Script based off: https://github.com/bcgov/von-network/blob/main/manage
 set -eo pipefail
 
 function usage {

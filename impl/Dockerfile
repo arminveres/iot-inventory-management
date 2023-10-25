@@ -1,4 +1,4 @@
-# ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.9.0
+# Based off of: https://github.com/hyperledger/aries-cloudagent-python/blob/main/docker/Dockerfile.demo
 ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.10.4
 FROM ${from_image}
 

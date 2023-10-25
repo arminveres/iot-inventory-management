@@ -1,6 +1,6 @@
 #!/bin/env bash
 #
-# Source: github.com/hyperleger-labs/orion-server
+# Source: https://github.com/hyperleger-labs/orion-server
 #
 # Generate PKI keys for CA, Admin, Server, User and further may be specified
 

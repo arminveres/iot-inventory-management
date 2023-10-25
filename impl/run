@@ -1,4 +1,6 @@
 #!/bin/env bash
+# Script based off of https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/run_demo
+
 set -e
 # set -v # verbosity for debugging
 set -o pipefail
