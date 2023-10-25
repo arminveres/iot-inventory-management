@@ -3,6 +3,13 @@ set -e
 # set -v # verbosity for debugging
 set -o pipefail
 
+# on Windows, docker run needs to be prefixed by winpty
+if [ "$OSTYPE" == "msys" ]; then
+    DOCKER="winpty docker"
+else
+    DOCKER=${DOCKER:-docker}
+fi
+
 function usage {
     cat <<EOF
 Run an Aries agent with below options.
@@ -114,10 +121,10 @@ else
 fi
 
 # we need to build each time, so changed files get copied over
-docker build -t $DOCKER_IMAGE_NAME . || exit 1
+$DOCKER build -t $DOCKER_IMAGE_NAME . || exit 1
 
 # shellcheck disable=SC2048,SC2086
-docker container run --rm -it \
+$DOCKER container run --rm -it \
     ${DOCKER_FLAGS[*]} \
     $DOCKER_IMAGE_NAME "$AGENT_FILE" \
     ${ARIES_FLAGS[*]}

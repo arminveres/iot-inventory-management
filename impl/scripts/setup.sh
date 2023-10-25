@@ -9,7 +9,7 @@ else
     DOCKER=${DOCKER:-docker}
 fi
 
-$DOCKER run --rm -ti --name indy-demo-postgres \
+$DOCKER container run --rm -ti --name indy-demo-postgres \
     -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 \
     -d postgres:11 \
     -c 'log_statement=all' -c 'logging_collector=on' -c 'log_destination=stderr' \
@@ -20,7 +20,7 @@ echo "Running from Directory:  $(pwd)"
 "$(pwd)"/dependencies/von-network/manage start
 "$(pwd)"/dependencies/indy-tails-server/docker/manage start
 
-$DOCKER run -dit \
+$DOCKER container run -dit \
     --rm \
     --name oriondb \
     -v "$(pwd)"/crypto/:/etc/orion-server/crypto \
