@@ -1,14 +1,18 @@
 import asyncio
+import importlib
 import json
 import os
 import sys
 
+# Our custom software to be updated
+import shady_stuff
 from agents.agent_container import (  # noqa:E402
     AgentContainer,
     AriesAgent,
     arg_parser,
     create_agent_with_args,
 )
+from support.agent import DEFAULT_EXTERNAL_HOST
 from support.utils import log_msg, prompt, prompt_loop
 
 
@@ -44,12 +48,27 @@ class NodeAgent(AriesAgent):
         self.log("Received revocation notification message:")
         message["comment"] = json.loads(message["comment"])
         self.log_json(message)
-        # TODO: (aver) handle update
-        pass
+        await self.get_update(message)
 
     # =============================================================================================
     # Additional methods
     # =============================================================================================
+    async def get_update(self, vulnerabilities):
+        async with self.client_session.get(
+            f"http://{DEFAULT_EXTERNAL_HOST}:8080/"
+        ) as resp:
+            # we are overwriting the existing file as update
+            with open("shady_stuff.py", "wb") as fd:
+                while True:
+                    chunk = await resp.content.read(1024)
+                    if not chunk:
+                        break
+                    fd.write(chunk)
+            self.log("Old version")
+            shady_stuff.version()
+            self.log("Received new update:")
+            importlib.reload(shady_stuff)
+            shady_stuff.version()
 
 
 async def register_subnode(agent_container: AgentContainer, node_name: str):
@@ -116,6 +135,9 @@ async def main(args):
         if agent_container.multitenant:
             options["reg_subnode"] = "  [1]: Register a subnode, i.e., and edge node\n"
 
+        await agent_container.agent.get_update("")
+        sys.exit(0)
+
         def get_prompt():
             """
             Builds the prompt out of the options dictionary
@@ -157,4 +179,4 @@ if __name__ == "__main__":
     try:
         asyncio.get_event_loop().run_until_complete(main(args))
     except KeyboardInterrupt:
-        os._exit(1)
+        sys.exit(1)
