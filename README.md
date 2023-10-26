@@ -40,22 +40,16 @@ In order to run the demo network `docker` is needed. (add other requirements)
 
 ## Structure
 
-### ./thesis/
+### [Thesis](./thesis/)
 
 Contains markdown documents for thesis content
 
-### ./notes/
-
-Contains notes
-
-### ./impl/
+### [Implementation](./impl/)
 
 Contains the implementation and its dependencies
 
-### [terminology.md](./terminology.md)
+### [Notes](./notes/)
 
-Explanations for different topics
-
-### [todo.md](./todo.md)
+Contains personal notes, irrelevant for final submission.
 
 ### [Presentation Slides](https://docs.google.com/presentation/d/1dhrsWy_iDS3d3HnWNr0E9MciqOHN4IZfDC7f3xYNjKo/edit?usp=sharing)

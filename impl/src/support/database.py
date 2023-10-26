@@ -49,7 +49,12 @@ class OrionDB:
         https://labs.hyperledger.org/orion-server/docs/getting-started/transactions/curl/datatx#12-checking-the-existance-of-key1
         """
         # keys need to be send as base64, in order for =/- characters to work.
-        enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode()
+        # WARN: (aver) watch out if padding = is used, then the request does not work anymore
+        enc_key = (
+            base64.urlsafe_b64encode(bytes(key, encoding="utf-8"))
+            .decode()
+            .replace("=", "")
+        )
 
         payload = {"user_id": self.__username, "db_name": db_name, "key": key}
         signature = self.__sign_tx(payload)
@@ -260,45 +265,34 @@ class OrionDB:
             log_msg("\n\nERRROR HAPPENED\n\n")
             log_json(response)
 
-    async def query_all(self, db_name):
+    async def query_all(self, db_name: str):
         """
-        https://github.com/hyperledger-labs/orion-server/blob/0009ffdf5f35e8cf9e6a938378733d4e5e6474d1/pkg/constants/http.go#L97
+        Query all existing keys on database `db_name`
         """
-        # FIXME: dunno how to fix this method, documentation is not existent and if I imitate the source
-        # code I get 404
-        raise NotImplementedError
-
-        # key = "node_1"
-        # # key = ""
-        # enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode()
-        # payload = {
-        #     "user_id": self.__username,
-        #     "db_name": db_name,
-        #     "start_key": key,
-        #     "end_key": key,
-        #     "limit": 10,
-        # }
-        # signature = self.__sign_tx(payload)
-        # response = await self.__client_session.get(
-        #     url=f"{self.__orion_db_url}/data/{db_name}/?startkey={enc_key}&endkey={enc_key}&limit=10",
-        #     headers={"UserID": self.__username, "Signature": signature},
-        # )
+        start_key = "a"
+        enc_start_key = (
+            base64.urlsafe_b64encode(bytes(start_key, encoding="utf-8"))
+            .decode()
+            .replace("=", "")
+        )
+        end_key = "z"
+        enc_end_key = (
+            base64.urlsafe_b64encode(bytes(end_key, encoding="utf-8"))
+            .decode()
+            .replace("=", "")
+        )
 
         payload = {
             "user_id": self.__username,
             "db_name": db_name,
-            "payload": {"selector": {"status": {"$eq": "valid"}}},
+            "start_key": start_key,
+            "end_key": end_key,
+            "limit": "100",
         }
         signature = self.__sign_tx(payload)
-        data = self.__glue_payload(payload, signature)
-        response = await self.__client_session.post(
-            url=f"{self.__orion_db_url}/data/{db_name}/jsonquery",
-            json=data,
-            headers={
-                "UserID": self.__username,
-                "Signature": signature,
-                # "TxTimeout": "2s",
-            },
+        response = await self.__client_session.get(
+            url=f"{self.__orion_db_url}/data/{db_name}?startkey={enc_start_key}&endkey={enc_end_key}&limit=100",
+            headers={"UserID": self.__username, "Signature": signature},
         )
 
         if not response.ok:

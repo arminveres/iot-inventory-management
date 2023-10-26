@@ -99,7 +99,7 @@ class IssuerAgent(AriesAgent):
 
         node_name = [
             i["value"]
-            for i in message["cred_proposal"]["credential_preview"]["attributes"]
+            for i in message["cred_preview"]["attributes"]
             if i["name"] == "controller_id"
         ][0]
 
