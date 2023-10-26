@@ -119,14 +119,14 @@ if [[ $AUDITOR == 1 ]]; then
     AGENT_NAME=auditor
     AGENT_FILE="$AGENT_NAME"
     # we need to build each time, so changed files get copied over
-    $DOCKER build -t auditor:latest -f ./auditor.dockerfile . || exit 1
+    $DOCKER build -t auditor:latest -f docker/auditor.dockerfile . || exit 1
 elif [[ $UPDATER == 1 ]]; then
     AGENT_NAME=updater
     AGENT_FILE="$AGENT_NAME"
     # TODO: (aver) remove hardfixed port
     PORT=8080
     # we need to build each time, so changed files get copied over
-    $DOCKER build -t updater:latest -f ./updater.dockerfile . || exit 1
+    $DOCKER build -t updater:latest -f docker/updater.dockerfile . || exit 1
 else
     AGENT_FILE="agents.$AGENT_TYPE"
     DOCKER_FLAGS+=(
@@ -147,7 +147,7 @@ else
         ARIES_FLAGS+=("--multitenant")
     fi
     # we need to build each time, so changed files get copied over
-    $DOCKER build -t $DOCKER_IMAGE_NAME . || exit 1
+    $DOCKER build -t $DOCKER_IMAGE_NAME -f docker/Dockerfile . || exit 1
 fi
 
 # shellcheck disable=SC2048,SC2086
