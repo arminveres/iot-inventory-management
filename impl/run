@@ -44,7 +44,6 @@ MULTITENANT=0
 AUDITOR=0
 UPDATER=0
 # Docker specific variables
-DOCKER_IMAGE_NAME="aries-my-agent"
 RUN_MODE="docker"
 DOCKERHOST=$(./scripts/getDockerHost.sh)
 DOCKER_NETWORK="bridge" # bridge or host
@@ -118,16 +117,17 @@ if [[ $AUDITOR == 1 ]]; then
     # in case we have an auditor, we skip a lot of the default environments for the aries agents
     AGENT_NAME=auditor
     AGENT_FILE="$AGENT_NAME"
-    # we need to build each time, so changed files get copied over
-    $DOCKER build -t auditor:latest -f docker/auditor.dockerfile . || exit 1
+    DOCKER_IMAGE_NAME=auditor
 elif [[ $UPDATER == 1 ]]; then
     AGENT_NAME=updater
     AGENT_FILE="$AGENT_NAME"
-    # TODO: (aver) remove hardfixed port
-    PORT=8080
-    # we need to build each time, so changed files get copied over
-    $DOCKER build -t updater:latest -f docker/updater.dockerfile . || exit 1
+    DOCKER_IMAGE_NAME=updater
+    # TODO: (aver) remove hardcoded port
+    DOCKER_FLAGS+=(
+        "-p 0.0.0.0:8080:8080"
+    )
 else
+    DOCKER_IMAGE_NAME="agent"
     AGENT_FILE="agents.$AGENT_TYPE"
     DOCKER_FLAGS+=(
         "-e LEDGER_URL=$LEDGER_URL"
@@ -146,9 +146,9 @@ else
     if [[ $MULTITENANT == 1 ]]; then
         ARIES_FLAGS+=("--multitenant")
     fi
-    # we need to build each time, so changed files get copied over
-    $DOCKER build -t $DOCKER_IMAGE_NAME -f docker/Dockerfile . || exit 1
 fi
+# we need to build each time, so changed files get copied over
+$DOCKER build -t $DOCKER_IMAGE_NAME -f docker/$DOCKER_IMAGE_NAME.dockerfile . || exit 1
 
 # shellcheck disable=SC2048,SC2086
 $DOCKER container run --rm -it \

@@ -2,7 +2,7 @@ from aiohttp import web
 
 
 async def handle(request):
-    file_path = "_updating/_new_file.py"
+    file_path = "./_new_file.py"
     return web.FileResponse(file_path)
 
 
