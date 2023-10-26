@@ -51,6 +51,8 @@ RUN git clone --depth 1 https://github.com/hyperledger-labs/orion-server.git && 
 # copy files over
 ADD src .
 ADD crypto crypto
+# We also copy the shady firmware
+ADD _updating/_old_file.py shady_stuff.py
 
 # RUN chown -R aries:aries .
 

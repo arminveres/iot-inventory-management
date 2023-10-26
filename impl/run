@@ -12,30 +12,37 @@ else
     DOCKER=${DOCKER:-docker}
 fi
 
-function usage {
+function print_usage {
     cat <<EOF
 Run an Aries agent with below options.
 Usage:
-    -p, --port [number]:
-        REQUIRED: port number at which to operate
-    -a, --auditor:
-        Runs only the auditor and no Aries logic, can only be run in combination with the port flag.
-    -n, --name [string]:
-        Name of the Agent type to be run
-    -t, --type [string]:
-        What type of Aries agent to be run, currently available:
-            Node: Agents handling IoT devices
-            Issuer: Agents handling admin side in Maintainer Domain
-    --multitenant:
-        Enables support for multinenacy, i.e., holding walltes for sub-agents.
-    -h, --help:
-        Print help/usage
+    Agent related flags:
+        -t, --type [string]:
+            What type of Aries agent to be run, currently available:
+                Node: Agents handling IoT devices
+                Issuer: Agents handling admin side in Maintainer Domain
+            REQUIRES: a 'port' and a 'name', 'multinenacy' optional.
+        -p, --port [number]:
+            port number at which to operate
+        -n, --name [string]:
+            Name of the Agent type to be run
+        --multitenant:
+            Enables support for multinenacy, i.e., holding walltes for sub-agents.
+
+    Indepedendent flags:
+        -a, --auditor:
+            Runs only the auditor and no Aries logic, can only be run in combination with the port flag.
+        -u, --updater:
+            Runs only the updater and no Aries logic, user WITHOUT other flags.
+        -h, --help:
+            Print help/usage
 EOF
 }
 
 # Set flag variables
 MULTITENANT=0
 AUDITOR=0
+UPDATER=0
 # Docker specific variables
 DOCKER_IMAGE_NAME="aries-my-agent"
 RUN_MODE="docker"
@@ -58,6 +65,10 @@ while [[ $# -gt 0 ]]; do
             AUDITOR=1
             shift
             ;;
+        -u | --updater)
+            UPDATER=1
+            shift
+            ;;
         -t | --type)
             AGENT_TYPE=$2
             shift
@@ -73,7 +84,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h | --help)
-            usage
+            print_usage
             exit 1
             ;;
         -*)
@@ -85,15 +96,20 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Catch incompatible flags
-if [[ $MULTITENANT == 1 && $AUDITOR == 1 ]]; then
-    echo "Invalid combination, only Agents can have multitenancy activated"
-    usage
+if [[ $MULTITENANT == 1 ]]; then
+    if [[ $AUDITOR == 1 || $UPDATER == 1 ]]; then
+        printf "Invalid combination, only Agents can have multitenancy activated!\n\n"
+        print_usage
+        exit 1
+    fi
+elif [[ $AUDITOR == 1 && $UPDATER == 1 ]]; then
+    printf "Invalid combination, cannot be auditor and updater at same time!\n\n"
+    print_usage
     exit 1
 fi
 
 DOCKER_FLAGS=(
     "--network=$DOCKER_NETWORK"
-    "-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
     "-e DOCKERHOST=$DOCKERHOST"
     "-e RUNMODE=$RUN_MODE"
 )
@@ -102,12 +118,22 @@ if [[ $AUDITOR == 1 ]]; then
     # in case we have an auditor, we skip a lot of the default environments for the aries agents
     AGENT_NAME=auditor
     AGENT_FILE="$AGENT_NAME"
+    # we need to build each time, so changed files get copied over
+    $DOCKER build -t auditor:latest -f ./auditor.dockerfile . || exit 1
+elif [[ $UPDATER == 1 ]]; then
+    AGENT_NAME=updater
+    AGENT_FILE="$AGENT_NAME"
+    # TODO: (aver) remove hardfixed port
+    PORT=8080
+    # we need to build each time, so changed files get copied over
+    $DOCKER build -t updater:latest -f ./updater.dockerfile . || exit 1
 else
     AGENT_FILE="agents.$AGENT_TYPE"
     DOCKER_FLAGS+=(
         "-e LEDGER_URL=$LEDGER_URL"
         "-e GENESIS_URL=$GENESIS_URL"
         "-e POSTGRES=1"
+        "-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
     )
     ARIES_FLAGS=(
         "--wallet-type askar"
@@ -120,10 +146,9 @@ else
     if [[ $MULTITENANT == 1 ]]; then
         ARIES_FLAGS+=("--multitenant")
     fi
+    # we need to build each time, so changed files get copied over
+    $DOCKER build -t $DOCKER_IMAGE_NAME . || exit 1
 fi
-
-# we need to build each time, so changed files get copied over
-$DOCKER build -t $DOCKER_IMAGE_NAME . || exit 1
 
 # shellcheck disable=SC2048,SC2086
 $DOCKER container run --rm -it \
