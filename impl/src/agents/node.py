@@ -135,8 +135,8 @@ async def main(args):
         if agent_container.multitenant:
             options["reg_subnode"] = "  [1]: Register a subnode, i.e., and edge node\n"
 
-        await agent_container.agent.get_update("")
-        sys.exit(0)
+        # await agent_container.agent.get_update("")
+        # sys.exit(0)
 
         def get_prompt():
             """
