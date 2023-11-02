@@ -15,6 +15,10 @@ $DOCKER container run --rm -ti --name indy-demo-postgres \
     -c 'log_statement=all' -c 'logging_collector=on' -c 'log_destination=stderr' \
     -c 'log_connections=on'
 
+if [[ $1 == 'node' ]]; then
+    exit 0
+fi
+
 echo "Running from Directory:  $(pwd)"
 
 "$(pwd)"/dependencies/von-network/manage start

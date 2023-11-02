@@ -11,6 +11,10 @@ fi
 
 $DOCKER stop indy-demo-postgres &>/dev/null && echo "Stopped previous postgres container" || true
 
+if [[ $1 == 'node' ]]; then
+    exit 0
+fi
+
 echo "Running from Directory:  $(pwd)"
 
 "$(pwd)"/dependencies/von-network/manage down

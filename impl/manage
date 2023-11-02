@@ -2,41 +2,60 @@
 # Script based off: https://github.com/bcgov/von-network/blob/main/manage
 set -eo pipefail
 
-function usage {
+function print_usage {
     cat <<EOF
 Manage infrastructure for the Identity Management framework.
-Run an Aries agent with below options.
+Instantiates Orion Database Node, VON-network for Indy nodes and PostgreSQL storage for individual nodes.
+
 Usage:
-    clean:
-        Cleanup docker related files, needs to be done periodically in development because of unused volumes.
     setup:
         Instantiate all infrastructure related services.
+        sub-option: 'node' when passed, runs only node specific setup
     teardown:
         Stop all infrastructure related services.
+        sub-option: 'node' when passed, runs only node specific teardown
     restart:
         Runs 'teardown' and then 'setup', restarting the infrastructure.
+        sub-option: 'node' when passed, runs only node specific restart
+    clean:
+        Cleanup docker related files, needs to be done periodically in development because of unused volumes.
     help:
         Print the usage.
 EOF
 }
 
 cmd=$1
+option=$2
 
-if [[ $cmd == "clean" ]]; then
-    printf "Cleaning Docker ...\n\n"
-    docker system prune
-elif [[ $cmd == "setup" ]]; then
-    ./scripts/setup.sh
-elif [[ $cmd == "teardown" ]]; then
-    ./scripts/teardown.sh
-elif [[ $cmd == "restart" ]]; then
-    ./scripts/teardown.sh && ./scripts/setup.sh
-elif [[ $cmd == "help" ]]; then
-    usage
-    exit 0
-else
-    echo "Unknown Option $cmd"
+if [[ -n $option && $option != 'node' ]]; then
+    echo "Unknown sub-option $option"
     echo
-    usage
+    print_usage
     exit 1
 fi
+
+case $cmd in
+    setup)
+        ./scripts/setup.sh "$option"
+        ;;
+    teardown)
+        ./scripts/teardown.sh "$option"
+        ;;
+    restart)
+        ./scripts/teardown.sh "$option" && ./scripts/setup.sh "$option"
+        ;;
+    clean)
+        printf "Cleaning Docker ...\n\n"
+        printf "ATTENTION: This invokes docker system prune, running system wide cleaning\n\n"
+        docker system prune
+        ;;
+    help)
+        print_usage
+        ;;
+    *)
+        echo "Unknown Option $cmd"
+        echo
+        print_usage
+        exit 1
+        ;;
+esac
