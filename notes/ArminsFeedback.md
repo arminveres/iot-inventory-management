@@ -60,43 +60,57 @@ Did not read in details, but overall looks good.
 
 ## Chapter 5
 
-In the first paragraph, I would suggest adding a last sentence saying what the following sections describing. Such as "In the following sections, we discribe components of the architecture in more details". Othwerise, its not very clear whether those are components (sections 5.4.1 - 5.4.3). And possibly move 5.4.4 as another paragraph to the first paragraph. Follow the structure from general to specific: describe overall architecture -> describe contributing components in details.
+> In the first paragraph, I would suggest adding a last sentence saying what the following sections describing. Such as "In the following sections, we discribe components of the architecture in more details". Othwerise, its not very clear whether those are components (sections 5.4.1 - 5.4.3). And possibly move 5.4.4 as another paragraph to the first paragraph. Follow the structure from general to specific: describe overall architecture -> describe contributing components in details.
 
-Are Actors part of the architecture? If so, I would suggest the following structure:
-5.4 Architecture
-5.4.1 Actors
-5.4.2 Software Components
-5.4.2.1 Configuration and Management DB
-5.4.2.2 Decentralised Identity Management Framework
-5.4.2.3 Secure Firmware Udate
-5.4.3 Hardware Components
-5.4.3.1 Controller Nodes
-5.4.3.2 Edge Nodes
+Do you mean 5.4.4 as another paragraph to 5.4?
 
-Then you can go into details about work flows (section 5.7). I would also rename that section to something like "Process Interactions" and possibly display few flow diagrams to illustrate the text better (but if you have time).
+> Are Actors part of the architecture? If so, I would suggest the following structure:
+> 5.4 Architecture\
+> 5.4.1 Actors\
+> 5.4.2 Software Components\
+> 5.4.2.1 Configuration and Management DB\
+> 5.4.2.2 Decentralised Identity Management Framework\
+> 5.4.2.3 Secure Firmware Udate\
+> 5.4.3 Hardware Components\
+> 5.4.3.1 Controller Nodes\
+> 5.4.3.2 Edge Nodes
+>
+> Then you can go into details about work flows (section 5.7). I would also rename that section to something like "Process Interactions" and possibly display few flow diagrams to illustrate the text better (but if you have time).
+
+Should I create flow diagrams for the design specifically? I created Sequence Diagrams for the
+implementation.
 
 ## Chapter 6
 
-You don't need to cover what is what again, outlining in one paragraph what (e.g., software like Docker, programming languages, environments, etc.) was used for the implementation is enough. Although it feels that Hyperledger should be rather discussed as part of the architecture desing, as I'm not sure that Orion, Indy and Aries can be labelled as tools (something to ask Bruno maybe?). But things like Aries Cloudagent Pythod is definately a tool. Overall, I would keep this section short and without subsections.
+> You don't need to cover what is what again, outlining in one paragraph what (e.g., software like Docker, programming languages, environments, etc.) was used for the implementation is enough. Although it feels that Hyperledger should be rather discussed as part of the architecture desing, as I'm not sure that Orion, Indy and Aries can be labelled as tools (something to ask Bruno maybe?). But things like Aries Cloudagent Pythod is definately a tool. Overall, I would keep this section short and without subsections.
+>
+> Figure 6.1 belongs to the background knowledge on Hyperledger Orion. Which also means, you probably want to cover Orion in the background section.
 
-Figure 6.1 belongs to the background knowledge on Hyperledger Orion. Which also means, you probably want to cover Orion in the background section.
+Same question as before, unsure about explicit applications being mentioned in the background
+section.
 
-I'm not quite clear on the 6.3.3 Node purpose. If it handles revocations, then its usually a credential issuer who should be doing that.
+> I'm not quite clear on the 6.3.3 Node purpose. If it handles revocations, then its usually a credential issuer who should be doing that.
 
-I'm also not very clear on the purpose of 6.3.1 section and would suggest moving it after discussion of Isuser, Auditor and Verifier, as it rather refers to a process.
+Maybe the wording was weird, but the responsibility is to handle, when a revocation happens, issued
+by the issuer. rewrote this part.
 
-So I would suggest structure of this section as follwos:
-6.1 Tools
-6.2 Configuration and Mng DB
-6.2.1 Running on Orion Node
-6.3 Identity and Cred Mng
-6.3.1 Issuer
-(6.3.2 Node)
-6.3.2 Auditor
-6.3.3 Verifier
-6.3.4 Running an Agent
-6.4 Netowkring
-6.5 Processes
-6.5.1 Onboarding
-6.5.2 Revocation
-6.5.3 Firmware updating
+> I'm also not very clear on the purpose of 6.3.1 section and would suggest moving it after discussion of Isuser, Auditor and Verifier, as it rather refers to a process.
+>
+> So I would suggest structure of this section as follows:
+>
+> 6.1 Tools\
+> 6.2 Configuration and Mng DB\
+> 6.2.1 Running on Orion Node\
+> 6.3 Identity and Cred Mng\
+> 6.3.1 Issuer\
+> (6.3.2 Node)\
+> 6.3.2 Auditor\
+> 6.3.3 Verifier\
+> 6.3.4 Running an Agent\
+> 6.4 Networking\
+> 6.5 Processes\
+> 6.5.1 Onboarding\
+> 6.5.2 Revocation\
+> 6.5.3 Firmware updating
+
+Done!

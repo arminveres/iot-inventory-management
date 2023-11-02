@@ -21,7 +21,8 @@ Usage:
             What type of Aries agent to be run, currently available:
                 Node: Agents handling IoT devices
                 Issuer: Agents handling admin side in Maintainer Domain
-            REQUIRES: a 'port' and a 'name', 'multinenacy' optional.
+                Verifier: Checks a given credential
+            REQUIRES: a 'port' and a 'name', 'multinenacy' optional for Node.
         -p, --port [number]:
             port number at which to operate
         -n, --name [string]:

@@ -141,9 +141,10 @@ async def create_agent_container(args) -> AgentContainer:
 
 
 async def main(args):
+    # TODO: (aver) create prompt loop with credential to check for
+    # TODO: (aver) refactor as every other agent
+    agent_container = await create_agent_container(args)
     try:
-        node_agent = await create_agent_container(args)
-
         # TODO: find better way to post. It would make sense to create a unique/separate endpoint for
         # invitation requests, that then can be passed to the agent to be accepted.
         # Flow:
@@ -154,15 +155,15 @@ async def main(args):
 
         # WARN: fixed seed for DIDs
         node_did = "did:sov:SYBqqHS7oYwthtCDNHi841"
-        await node_agent.agent.send_invitation(node_did)
+        await agent_container.agent.send_invitation(node_did)
 
         # send test message
-        response = await node_agent.admin_GET("/connections")
+        response = await agent_container.admin_GET("/connections")
         log_json(response)
-        node_agent.agent.connection_id = response["results"][0]["connection_id"]
-        node_agent.agent._connection_ready = asyncio.Future()
+        agent_container.agent.connection_id = response["results"][0]["connection_id"]
+        agent_container.agent._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
-        await node_agent.agent.detect_connection()
+        await agent_container.agent.detect_connection()
 
         # TODO: (aver) get schema attributes from central location
         # send proof request
@@ -184,12 +185,12 @@ async def main(args):
             "requested_predicates": {},
         }
         proof_request_web_request = {
-            "connection_id": node_agent.agent.connection_id,
+            "connection_id": agent_container.agent.connection_id,
             "presentation_request": {"indy": indy_proof_request},
         }
 
         # Send request to agent and forward it to alice, based on connection_id
-        await node_agent.admin_POST(
+        await agent_container.admin_POST(
             "/present-proof-2.0/send-request", proof_request_web_request
         )
 
@@ -200,12 +201,11 @@ async def main(args):
         # as webhooks received.
         # Alternatively something like `asyncio.Event` could be used and be waited upon
         while True:
-            await send_message(node_agent)
+            await send_message(agent_container)
             await asyncio.sleep(1)
-
     finally:
         # Shut down the agent gracefully
-        await node_agent.terminate()
+        await agent_container.terminate()
 
 
 if __name__ == "__main__":
