@@ -1,3 +1,3 @@
 def version():
-    print("Shady Stuff Software")
-    print("Version 0.10")
+    desc = {"name": "Shady Stuff Software", "version": 0.2}
+    return desc

@@ -1,7 +1,6 @@
 import asyncio
 import importlib
 import json
-import os
 import sys
 
 # Our custom software to be updated
@@ -13,7 +12,7 @@ from agents.agent_container import (  # noqa:E402
     create_agent_with_args,
 )
 from support.agent import DEFAULT_EXTERNAL_HOST
-from support.utils import log_msg, prompt, prompt_loop
+from support.utils import log_json, log_msg, prompt, prompt_loop
 
 
 # class NodeAgent:
@@ -46,12 +45,14 @@ class NodeAgent(AriesAgent):
         self.log("Received revocation notification message:")
         message["comment"] = json.loads(message["comment"])
         self.log_json(message)
-        await self.get_update(message)
+        diff = await self.get_update(message)
+        await self.notify_admin_of_update(diff)
 
     # =============================================================================================
     # Additional methods
     # =============================================================================================
     async def get_update(self, vulnerabilities):
+        # TODO: (aver) remove hardcoded updater URL
         async with self.client_session.get(f"http://{DEFAULT_EXTERNAL_HOST}:8080/") as resp:
             # we are overwriting the existing file as update
             with open("shady_stuff.py", "wb") as fd:
@@ -60,11 +61,55 @@ class NodeAgent(AriesAgent):
                     if not chunk:
                         break
                     fd.write(chunk)
+            old = shady_stuff.version()
             self.log("Old version")
-            shady_stuff.version()
+            self.log(old)
             self.log("Received new update:")
             importlib.reload(shady_stuff)
-            shady_stuff.version()
+            new = shady_stuff.version()
+            self.log(new)
+            if not old["version"] < new["version"]:
+                raise Exception("shutdown, wrong update delivered.")
+            diff = {
+                "old": {"components": {"software": {"shady_stuff": old["version"]}}},
+                "new": {"components": {"software": {"shady_stuff": new["version"]}}},
+            }
+            return diff
+
+    async def notify_admin_of_update(self, changes):
+        # TODO: (aver) possibly create a connection
+        response = await self.admin_GET("/credentials")
+        cred = response["results"][0]
+
+        # cred_id = cred["referent"]
+        # response = await self.admin_GET(f"/credentials/revoked/{cred_id}")
+        # if not response.ok:
+        #     raise Exception
+
+        # if not response["revoked"]:
+        #     return
+
+        idx = cred["schema_id"].find(":")
+        if idx == -1:
+            raise Exception
+        did = cred["schema_id"][:idx]
+        response = await self.admin_GET(f"/resolver/resolve/did:sov:{did}")
+        # if not response.ok:
+        #     raise Exception
+        issuer_url = response["did_document"]["service"][0]["serviceEndpoint"]
+        issuer_url = issuer_url[:-1] + "2"
+
+        payload = {"node_did": self.did, "diff": changes}
+        response = await self.client_session.post(
+            url=f"{issuer_url}/webhooks/topic/node_updated/",
+            json=payload,
+        )
+        if not response.ok:
+            log_msg(response)
+            return
+        log_msg(response)
+        # response = await response.json()
+        # log_json(response)
 
 
 async def register_subnode(agent_container: AgentContainer, node_name: str):
@@ -90,7 +135,7 @@ async def main(args):
     agent_container = await create_agent_with_args(args)
     # agent_container.seed = "Node1_00000000000000000000000000"
     # TODO: (aver) save seed for provisioning to pick up on
-    agent_container.seed = "d_000000000000000000000000752220"
+    agent_container.seed = "d_000000000000000000000000144318"
 
     try:
         agent = NodeAgent(
@@ -141,6 +186,9 @@ async def main(args):
                     options_str += value
                 options_str += "> "
                 return options_str
+
+            diff = await agent_container.agent.get_update("")
+            await agent_container.agent.notify_admin_of_update(diff)
 
             async for option in prompt_loop(get_prompt):
                 if option is not None:

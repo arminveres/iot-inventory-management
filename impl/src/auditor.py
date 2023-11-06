@@ -3,7 +3,7 @@ Demonstrative auditor to mark components as vulnerable by notifying the maintain
 """
 
 import asyncio
-import os
+import sys
 
 from aiohttp import ClientSession
 from support.agent import DEFAULT_INTERNAL_HOST
@@ -34,7 +34,7 @@ class Auditor:
     def check_vulnerability(self, db_name, components):
         return [
             {
-                "vulnerability": {"software": {"shady_stuff": 0.9}},
+                "vulnerability": {"software": {"shady_stuff": 0.1}},
                 "db_name": db_name,
             }
         ]
@@ -79,4 +79,4 @@ if __name__ == "__main__":
     try:
         asyncio.get_event_loop().run_until_complete(main())
     except KeyboardInterrupt:
-        os._exit(1)
+        sys.exit(1)
