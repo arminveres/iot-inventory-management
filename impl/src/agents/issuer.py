@@ -297,7 +297,7 @@ async def demo_setup(agent_container: AgentContainer):
     db_entry["components"] = {
         "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
         "firmware": {},
-        "hardware": {"asus-tinkerboard": 1.2},
+        "hardware": {"raspberry-pi": "4B"},
     }
     # we create an auditor user, who then will mark software as vulnerable
     await agent_container.agent.db_client.create_user("auditor")
@@ -409,7 +409,7 @@ async def onboard_node(
     db_entry["components"] = {
         "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.9},
         "firmware": {},
-        "hardware": {"asus-tinkerboard": 1.2},
+        "hardware": {"raspberry-pi": "4B"},
     }
     await agent_container.agent.db_client.record_key(domain, node_name, db_entry)
 

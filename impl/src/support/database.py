@@ -28,8 +28,6 @@ class OrionDB:
         self.__client_session = client_session
         # Holds created databases
         self.databases = []
-        # FIXME: Holds created keys until query_all works
-        # Holds keys and `connection_id`s
         self.db_keys = {}
 
     def __sign_tx(self, payload):
@@ -50,11 +48,7 @@ class OrionDB:
         """
         # keys need to be send as base64, in order for =/- characters to work.
         # WARN: (aver) watch out if padding = is used, then the request does not work anymore
-        enc_key = (
-            base64.urlsafe_b64encode(bytes(key, encoding="utf-8"))
-            .decode()
-            .replace("=", "")
-        )
+        enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode().replace("=", "")
 
         payload = {"user_id": self.__username, "db_name": db_name, "key": key}
         signature = self.__sign_tx(payload)
@@ -130,11 +124,18 @@ class OrionDB:
         """
         if db_name not in self.databases:
             self.databases.append(db_name)
-            # self.db_keys[db_name] = []
             self.db_keys[db_name] = {}
 
         if await self.check_db(db_name):
             log_status(f"{db_name}: Already exists")
+            log_status("Parsing entries to local dictionary...")
+            response = await self.query_all(db_name)
+            for entry in response["response"]["KVs"]:
+                value = decode_data(entry["value"])
+                # NOTE: (aver) not necessary to keep local copy of database!
+                self.db_keys[db_name][entry["key"]] = value
+                # self.db_keys[db_name][entry["key"]] = {}
+                # log_json(self.db_keys[db_name])
             return
 
         payload = {
@@ -271,15 +272,11 @@ class OrionDB:
         """
         start_key = "a"
         enc_start_key = (
-            base64.urlsafe_b64encode(bytes(start_key, encoding="utf-8"))
-            .decode()
-            .replace("=", "")
+            base64.urlsafe_b64encode(bytes(start_key, encoding="utf-8")).decode().replace("=", "")
         )
         end_key = "z"
         enc_end_key = (
-            base64.urlsafe_b64encode(bytes(end_key, encoding="utf-8"))
-            .decode()
-            .replace("=", "")
+            base64.urlsafe_b64encode(bytes(end_key, encoding="utf-8")).decode().replace("=", "")
         )
 
         payload = {
@@ -301,7 +298,8 @@ class OrionDB:
         log_msg(f"Returned with {response.status}")
         try:
             response = await response.json()
-            log_json(response)
+            # log_json(response)
+            return response
         except Exception:
             log_msg(response)
 

