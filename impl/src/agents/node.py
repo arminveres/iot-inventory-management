@@ -120,47 +120,48 @@ async def main(args):
         # =========================================================================================
         # New prompt based event loop, events such as webhooks still run in the background.
 
-        # Setup options and make them dicts, so that they can be changed at runtime, although watch
-        # out for duplicated keys.
-        # TODO: (aver) find better way to interact with runtime options
-        options = {
-            "exit": "  [x]: Exit\n",
-        }
+        try:  # try to do an interactive loop
+            # Setup options and make them dicts, so that they can be changed at runtime, although watch
+            # out for duplicated keys.
+            # TODO: (aver) find better way to interact with runtime options
+            options = {
+                "exit": "  [x]: Exit\n",
+            }
 
-        if agent_container.multitenant:
-            options["reg_subnode"] = "  [1]: Register a subnode, i.e., and edge node\n"
+            if agent_container.multitenant:
+                options["reg_subnode"] = "  [1]: Register a subnode, i.e., and edge node\n"
 
-        # await agent_container.agent.get_update("")
-        # sys.exit(0)
+            def get_prompt():
+                """
+                Builds the prompt out of the options dictionary
+                """
+                options.update
+                options_str = "Options:\n"
+                for key, value in list(options.items()):
+                    options_str += value
+                options_str += "> "
+                return options_str
 
-        def get_prompt():
-            """
-            Builds the prompt out of the options dictionary
-            """
-            options.update
-            options_str = "Options:\n"
-            for key, value in list(options.items()):
-                options_str += value
-            options_str += "> "
-            return options_str
+            async for option in prompt_loop(get_prompt):
+                if option is not None:
+                    option.strip()
+                if option is None or option == "":
+                    log_msg("Please give an option")
 
-        async for option in prompt_loop(get_prompt):
-            if option is not None:
-                option.strip()
-            if option is None or option == "":
-                log_msg("Please give an option")
+                if option == "1" and agent_container.multitenant:
+                    edge_node_name = (await prompt("Enter a name for the subnode: ")).strip()
+                    await register_subnode(agent_container, edge_node_name)
 
-            if option == "1" and agent_container.multitenant:
-                edge_node_name = (
-                    await prompt("Enter a name for the subnode: ")
-                ).strip()
-                await register_subnode(agent_container, edge_node_name)
+                elif option in "xX":
+                    sys.exit(0)
 
-            elif option in "xX":
-                sys.exit(0)
-
-            else:
-                log_msg("Unknown option: " + option)
+                else:
+                    log_msg("Unknown option: " + option)
+        # WARN: (aver) We discovered that running in non-interactive mode creates an exception because
+        # of the prompt toolkit. We therefore expect it and assume it is because of non-interactiveness
+        except PermissionError:
+            while True:
+                await asyncio.sleep(1)
 
     finally:
         await agent_container.terminate()

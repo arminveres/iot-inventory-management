@@ -44,6 +44,7 @@ EOF
 MULTITENANT=0
 AUDITOR=0
 UPDATER=0
+INTERACTIVE=1
 # Docker specific variables
 RUN_MODE="docker"
 DOCKERHOST=$(./scripts/getDockerHost.sh)
@@ -83,6 +84,10 @@ while [[ $# -gt 0 ]]; do
             MULTITENANT=1
             shift
             ;;
+        --no-interactive)
+            INTERACTIVE=0
+            shift
+            ;;
         -h | --help)
             print_usage
             exit 1
@@ -113,6 +118,9 @@ DOCKER_FLAGS=(
     "-e DOCKERHOST=$DOCKERHOST"
     "-e RUNMODE=$RUN_MODE"
 )
+if [[ $INTERACTIVE == 1 ]]; then
+    DOCKER_FLAGS+=("-it")
+fi
 
 if [[ $AUDITOR == 1 ]]; then
     # in case we have an auditor, we skip a lot of the default environments for the aries agents
@@ -152,7 +160,7 @@ fi
 $DOCKER build -t $DOCKER_IMAGE_NAME -f docker/$DOCKER_IMAGE_NAME.dockerfile . || exit 1
 
 # shellcheck disable=SC2048,SC2086
-$DOCKER container run --rm -it \
+$DOCKER container run --rm \
     ${DOCKER_FLAGS[*]} \
     $DOCKER_IMAGE_NAME "$AGENT_FILE" \
     ${ARIES_FLAGS[*]}
