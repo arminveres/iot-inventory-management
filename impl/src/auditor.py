@@ -1,8 +1,7 @@
 """
-Demonstrative auditor to mark soft- or firmware as vulnerable
+Demonstrative auditor to mark components as vulnerable by notifying the maintainer.
 """
-# TODO: (aver)
-# - add analysis of DB and post revocation
+
 import asyncio
 import os
 
@@ -51,23 +50,26 @@ class Auditor:
         try:
             response = await response.json()
             log_json(response)
-        except Exception:
+        except Exception as e:
+            log_msg(f"Encountered error: {e}")
             log_msg(response)
 
 
 async def main():
     auditor = Auditor()
-    db_name = "db1"
+    # simulated db to be checked
+    db_to_check = "db1"
+    # response = await auditor.db_client.query_all("db1")
 
-    # TODO: (aver) fix and implement a query all keys, so we don't have to save them externally
-    # await auditor.db_query_all("db1")
-
-    value = await auditor.db_client.query_key(db_name, "node_1")
+    value = await auditor.db_client.query_key(db_to_check, "node")
     log_json(value)
-    # do some magic, analysis and return with the marked vulnerable component send revoke request to issuer
-    marked_vulnerabilities = auditor.check_vulnerability(db_name, value["components"])
+
+    # do some magic, analysis and return with the marked vulnerable component send revoke request
+    # to issuer
+    marked_vulnerabilities = auditor.check_vulnerability(db_to_check, value["components"])
+
     if marked_vulnerabilities is not None:
-        await auditor.notify_maintainer(db_name, marked_vulnerabilities)
+        await auditor.notify_maintainer(db_to_check, marked_vulnerabilities)
 
     # except Exception:
     await auditor.client_session.close()

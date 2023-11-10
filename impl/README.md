@@ -1,6 +1,8 @@
 # Aries Client Controller
 
 The current implementation depends on the demos provided by aca-py repo.
+Currently, the `feat/portability` branch is the only place, where interoperability between different
+device types work. The main branch, this one, features only local deployment on one machine.
 
 ## Documentation
 

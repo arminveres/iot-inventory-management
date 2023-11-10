@@ -56,7 +56,7 @@ Moved MUD related sections into background.
 
 ## Chapter 4
 
-Did not read in details, but overall looks good.
+> Did not read in details, but overall looks good.
 
 ## Chapter 5
 
