@@ -70,7 +70,7 @@ class OrionDB:
             return None
         return decode_data(enc_value)
 
-    async def check_db(self, db_name: str):
+    async def db_exists(self, db_name: str):
         """
         Check existence of a database with given name
         """
@@ -126,16 +126,20 @@ class OrionDB:
             self.databases.append(db_name)
             self.db_keys[db_name] = {}
 
-        if await self.check_db(db_name):
+        if await self.db_exists(db_name):
             log_status(f"{db_name}: Already exists")
             log_status("Parsing entries to local dictionary...")
             response = await self.query_all(db_name)
+
+            # only proceed if we have a key-values
+            if response["response"].get("KVs") is None:
+                return
+
             for entry in response["response"]["KVs"]:
                 value = decode_data(entry["value"])
                 # NOTE: (aver) not necessary to keep local copy of database!
                 self.db_keys[db_name][entry["key"]] = value
                 # self.db_keys[db_name][entry["key"]] = {}
-                # log_json(self.db_keys[db_name])
             return
 
         payload = {
