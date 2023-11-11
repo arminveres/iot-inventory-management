@@ -396,9 +396,7 @@ async def onboard_node(agent_container: AgentContainer, domain: str, node_name: 
     }
     await agent_container.agent.db_client.record_key(domain, node_name, db_entry)
 
-    await agent_container.agent.issue_credential(
-        agent_container, node_did, node_name, node_cred, domain
-    )
+    await agent_container.agent.issue_credential(node_did, node_name, node_cred, domain)
 
 
 # =================================================================================================

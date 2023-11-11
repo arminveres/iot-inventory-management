@@ -187,9 +187,6 @@ async def main(args):
                 options_str += "> "
                 return options_str
 
-            diff = await agent_container.agent.get_update("")
-            await agent_container.agent.notify_admin_of_update(diff)
-
             async for option in prompt_loop(get_prompt):
                 if option is not None:
                     option.strip()

@@ -14,3 +14,4 @@ impl/aries-client-py/crypto
 impl/aries-client-py/bin
 __pycache__/
 impl/agent.tar
+impl/logs

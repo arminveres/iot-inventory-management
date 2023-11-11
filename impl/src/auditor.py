@@ -41,7 +41,7 @@ class Auditor:
 
     async def notify_maintainer(self, db_name, vulnerabilities):
         response = await self.client_session.post(
-            url=f"http://{DEFAULT_INTERNAL_HOST}:8012/webhooks/topic/notify_vulnerability/",
+            url=f"http://{DEFAULT_INTERNAL_HOST}:8002/webhooks/topic/notify_vulnerability/",
             json=vulnerabilities,
         )
         if not response.ok:
@@ -61,7 +61,7 @@ async def main():
     db_to_check = "db1"
     # response = await auditor.db_client.query_all("db1")
 
-    value = await auditor.db_client.query_key(db_to_check, "node")
+    value = await auditor.db_client.query_key(db_to_check, "node1")
     log_json(value)
 
     # do some magic, analysis and return with the marked vulnerable component send revoke request
