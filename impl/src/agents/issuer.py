@@ -1,6 +1,5 @@
 import asyncio
 import json
-import os
 import sys
 from datetime import date
 
@@ -16,7 +15,6 @@ from support.database import OrionDB
 from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
 
 
-# TODO: (aver) possibly separate databaes instance to own class
 class IssuerAgent(AriesAgent):
     """
     This agent will be a credential issuer from the maintainer/manufacturer point of view.
@@ -475,84 +473,106 @@ async def main(args):
     agent_container = await create_agent_container(args)
     db_name = "db1"
 
+    def add_option(options: dict, key: str, value: str) -> dict:
+        """Adds an option to the dict and returns a sorted version"""
+        options[key] = value
+        options = dict(sorted(options.items(), key=lambda x: x[1]))
+        return options
+
+    # Setup options and make them dicts, so that they can be changed at runtime
+    prompt_options = {
+        "setup_db": "  [1]: Setup/Load existing Database, Schema and Credential\n",
+        "exit": "  [x]: Exit\n",
+        "help": "  [h]: Print help\n",
+    }
+
+    def get_prompt():
+        """
+        Builds the prompt out of the options dictionary
+        """
+        prompt_options.update()
+        options_str = "Options:\n"
+        for option in list(prompt_options.items()):
+            options_str += option[1]
+        options_str += "> "
+        return options_str
+
     try:
         # =========================================================================================
         # Event Loop
         # =========================================================================================
         # New prompt based event loop, events such as webhooks still run in the background.
 
-        # Setup options and make them dicts, so that they can be changed at runtime
-        options = {
-            "setup_db": "  [1]: Setup Database, Schema and Credential\n",
-            # "load": "  [3]: Load from database\n",
-            "demo": "  [0]: Run demo by setting up databasa and schema, and using default DID\n",
-            "exit": "  [x]: Exit\n",
-        }
-
-        def get_prompt():
-            """
-            Builds the prompt out of the options dictionary
-            """
-            options.update
-            options_str = "Options:\n"
-            for option in list(options.items()):
-                options_str += option[1]
-            options_str += "> "
-            return options_str
-
         async for option in prompt_loop(get_prompt):
             if option is not None:
-                option.strip()
+                option = option.strip()
             if option is None or option == "":
                 log_msg("Please give an option")
 
             # run options
             if option == "1":
-                if not options.get("setup_db"):
+                if not prompt_options.get("setup_db"):
                     log_msg(f"invalid option, {option}")
                     continue
 
-                await setup_database(agent_container, db_name)
-                options.pop("setup_db")
-                # add onboarding option
-                options["onboard"] = "  [2]: Onboard node with public DID\n"
+                await setup_database(agent_container, DB_NAME)
+                prompt_options.pop("setup_db")
+                # add onboarding option and update order by values
+                prompt_options = add_option(
+                    prompt_options, "onboard", "  [2]: Onboard node with public DID\n"
+                )
+
             elif option == "2":
-                if not options.get("onboard"):
+                if not prompt_options.get("onboard"):
                     log_msg(f"invalid option, {option}")
                     continue
+                # We could also go the route of exception, which I do not prefer.
+                # try:  # we can now Ctrl-c out of the input
+                #     node_name = (await prompt("Enter Node Name: ")).strip()
+                #     node_did = (await prompt("Enter Node DID: ")).strip()
+                # except (KeyboardInterrupt, EOFError):
+                #     log_status("Stopping node onboarding...")
+                #     continue
 
-                node_name = (await prompt("Enter Node Name: ")).strip()
-                node_did = (await prompt("Enter Node DID: ")).strip()
+                node_name = await prompt("Enter Node Name: ")
+                if node_name is None or node_name == "":
+                    log_msg("Aborting Node onboarding...")
+                    continue
+                node_did = await prompt("Enter Node DID: ")
+                if node_did is None or node_did == "":
+                    log_msg("Aborting Node onboarding...")
+                    continue
+                node_name = node_name.strip()
+                node_did = node_did.strip()
+
                 await onboard_node(
                     agent_container,
                     domain=db_name,
                     node_did=node_did,
                     node_name=node_name,
                 )
-                # options.pop("onboard")
 
-            # elif option == "3":
-            #     pass
-            elif option == "0":
-                if not options.get("demo"):
-                    log_msg(f"invalid option, {option}")
-                    continue
-
-                await demo_setup(agent_container)
+            elif option == "h":
+                print(
+                    """
+You can exit via Ctrl-c, or inputting x.
+You can exit the current prompot by Ctrl-d or submit the current input by hitting enter.
+                """
+                )
 
             elif option == "x":  # shut off gracefully
                 sys.exit(0)
-    finally:
-        # Shut down the agent gracefully
+
+    finally:  # Shut down the agent gracefully
         await agent_container.terminate()
 
 
 if __name__ == "__main__":
     parser = arg_parser()
     args = parser.parse_args()
+    loop = asyncio.get_event_loop()
 
-    # execute main
     try:
-        asyncio.get_event_loop().run_until_complete(main(args))
+        loop.run_until_complete(main(args))
     except KeyboardInterrupt:
         sys.exit(1)
