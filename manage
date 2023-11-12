@@ -41,6 +41,7 @@ case $cmd in
     teardown)
         ./scripts/teardown.sh "$option"
         ;;
+    stop) ;; # TODO: (aver) implement a pause script for resource sparing
     restart)
         ./scripts/teardown.sh "$option" && ./scripts/setup.sh "$option"
         ;;
