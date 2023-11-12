@@ -12,7 +12,7 @@ from agents.agent_container import (  # noqa:E402
     create_agent_with_args,
 )
 from support.agent import DEFAULT_EXTERNAL_HOST
-from support.utils import log_json, log_msg, prompt, prompt_loop
+from support.utils import log_msg, prompt, prompt_loop
 
 
 # class NodeAgent:

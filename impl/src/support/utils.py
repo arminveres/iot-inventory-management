@@ -53,9 +53,7 @@ class PrefixFilter(Filter):
             yield from line
 
 
-def print_lexer(
-    body: str, lexer: Lexer, label: str = None, prefix: str = None, indent: int = None
-):
+def print_lexer(body: str, lexer: Lexer, label: str = None, prefix: str = None, indent: int = None):
     if COLORIZE:
         prefix_str = prefix + " " if prefix else ""
         if prefix_str or indent:
@@ -226,10 +224,7 @@ class DurationTimer:
 def log_timer(label: str, show: bool = True, logger=None, **kwargs):
     logger = logger or log_msg
     cb = (
-        (
-            lambda timer: timer.last_error
-            or logger(timer.label, f"{timer.duration:.2f}s", **kwargs)
-        )
+        (lambda timer: timer.last_error or logger(timer.label, f"{timer.duration:.2f}s", **kwargs))
         if show
         else None
     )

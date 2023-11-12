@@ -139,16 +139,16 @@ class IssuerAgent(AriesAgent):
 
             # mark devices to be revoked
             for device in self.db_client.db_keys[vuln_db_name]:
-                response = await self.db_client.query_key(vuln_db_name, device)
-                log_json(response)
+                db_result = await self.db_client.query_key(vuln_db_name, device)
+                log_json(db_result)
                 log_json(vulnerability)
 
-                for component_key, component_value in response["components"].items():
+                for component_key, component_value in db_result["components"].items():
                     for (
                         vuln_component_key,
                         vuln_component_value,
                     ) in vulnerability.items():
-                        if not component_key == vuln_component_key:
+                        if component_key != vuln_component_key:
                             continue
                         # find vulnerability that matches the marked one
                         if vuln_component_value.items() <= component_value.items():
@@ -160,21 +160,17 @@ class IssuerAgent(AriesAgent):
                                 "reason": "vulnerability",
                                 "component": {vuln_component_key: vuln_component_value},
                             }
-                            # TODO: (aver) use correct connection_id
                             await self.revoke_credential(
-                                response["cred_ex_id"],
+                                db_result["cred_ex_id"],
                                 vuln_db_name,
                                 device,
                                 reason,
                             )
 
     async def handle_node_updated(self, message):
-        # TODO: (aver) reissue credential
         log_json(message)
         node_did = "did:sov:" + message["node_did"]
         # node_did = message["node_did"]
-
-        # TODO: (aver) fix name parsing
 
         for entry in self.db_client.db_keys[DB_NAME].items():
             print(entry)
@@ -182,6 +178,7 @@ class IssuerAgent(AriesAgent):
                 node_name = entry[0]
                 print(node_name)
 
+        # TODO: (aver) make components and node_cred pluggable
         components = {
             "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.2},
             "firmware": {},
@@ -237,6 +234,14 @@ class IssuerAgent(AriesAgent):
         node_cred: dict,
         domain: str,
     ):
+        """
+        Issue a predetermined credential to a node
+        params:
+            node_did: public did of the targeted node
+            node_name: name and identifier of targeted node
+            node_cred: credential to be issued
+            domain: databse name where it will be stored
+        """
         recipient_key = await self.send_invitation(node_did)
         # we set the recipient key for later identification
         self.db_client.db_keys[domain][node_name]["recipient_key"] = recipient_key
@@ -307,14 +312,6 @@ async def create_agent_container(args) -> AgentContainer:
         the_agent=agent,
     )
     return agent_container
-
-
-async def send_message(agent_container: AriesAgent):
-    message = {"content": f"hello from {agent_container.ident}!"}
-    await agent_container.admin_POST(
-        path=f"/connections/{agent_container.agent.connection_id}/send-message",
-        data=message,
-    )
 
 
 async def checked_schema_cred_creation(

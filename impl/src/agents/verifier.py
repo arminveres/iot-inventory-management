@@ -17,9 +17,7 @@ class VerifierAgent(AriesAgent):
     """
 
     def __init__(self, ident: str, http_port: int, admin_port: int, **kwargs):
-        super().__init__(
-            ident=ident, http_port=http_port, admin_port=admin_port, **kwargs
-        )
+        super().__init__(ident=ident, http_port=http_port, admin_port=admin_port, **kwargs)
         self.connection_id = None
         self._connection_ready = None
         # TODO define a dict to hold credential attributes based on cred_def_id
@@ -27,9 +25,7 @@ class VerifierAgent(AriesAgent):
         self.cred_attrs = {}
 
     async def handle_connections(self, message):
-        print(
-            self.ident, "handle_connections", message["state"], message["rfc23_state"]
-        )
+        print(self.ident, "handle_connections", message["state"], message["rfc23_state"])
         conn_id = message["connection_id"]
         if (not self.connection_id) and message["rfc23_state"] == "invitation-sent":
             print(self.ident, "set connection id", conn_id)
@@ -106,10 +102,11 @@ class VerifierAgent(AriesAgent):
             # TODO placeholder for the next step
 
 
-async def send_message(agent: AriesAgent):
-    message = {"content": f"hello from {agent.ident}!"}
-    await agent.admin_POST(
-        path=f"/connections/{agent.agent.connection_id}/send-message", data=message
+async def send_message(agent_container: AgentContainer):
+    message = {"content": f"hello from {agent_container.ident}!"}
+    await agent_container.admin_POST(
+        path=f"/connections/{agent_container.agent.connection_id}/send-message",
+        data=message,
     )
 
 
@@ -179,8 +176,7 @@ async def main(args):
             "version": "1.0",
             "nonce": str(uuid4().int),
             "requested_attributes": {
-                f"0_{req_atrb['name']}_uuid": req_atrb
-                for req_atrb in request_attributes
+                f"0_{req_atrb['name']}_uuid": req_atrb for req_atrb in request_attributes
             },
             "requested_predicates": {},
         }
