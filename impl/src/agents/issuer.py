@@ -111,7 +111,7 @@ class IssuerAgent(AriesAgent):
 
         # update credentials
         response["cred_ex_id"] = cred_ex_id
-        response["status"] = "valid"
+        response["valid"] = True
         await self.db_client.record_key(DB_NAME, node_name, response)
 
         self.cred_state[cred_ex_id] = state
@@ -182,21 +182,21 @@ class IssuerAgent(AriesAgent):
                 node_name = entry[0]
                 print(node_name)
 
-        node_cred = {
-            "controller_id": node_name,
-            "date": date.isoformat(date.today()),
-            # TODO: (aver) serves no use, replace by something like a security level and move validity
-            # to database
-            "status": "valid",
-        }
-
-        db_entry = node_cred.copy()
-        db_entry["controller_did"] = node_did
-        db_entry["components"] = {
+        components = {
             "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.2},
             "firmware": {},
             "hardware": {"raspberry-pi": "4B"},
         }
+        node_cred = {
+            "controller_id": node_name,
+            "date": date.isoformat(date.today()),
+            "components": str(components),
+            "security_level": "low",
+        }
+
+        db_entry = node_cred.copy()
+        db_entry["controller_did"] = node_did
+        db_entry["components"] = components
 
         await self.db_client.record_key(DB_NAME, node_name, db_entry)
         await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
@@ -350,7 +350,7 @@ async def setup_database(agent_container: AgentContainer, db_name: str):
     await agent_container.agent.db_client.create_database(db_name)
 
     schema_name = "controller id schema"
-    schema_attributes = ["controller_id", "date", "status"]
+    schema_attributes = ["controller_id", "date", "components", "security_level"]
     schema_version = "0.0.1"
 
     await checked_schema_cred_creation(
@@ -373,12 +373,16 @@ async def onboard_node(agent_container: AgentContainer, domain: str, node_name: 
         node_did: str
     """
     # Currently the credential is of the same format as the entry to the database
+    components = {
+        "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.1},
+        "firmware": {},
+        "hardware": {"raspberry-pi": "4B"},
+    }
     node_cred = {
         "controller_id": node_name,
         "date": date.isoformat(date.today()),
-        # TODO: (aver) serves no use, replace by something like a security level and move validity
-        # to database
-        "status": "valid",
+        "components": str(components),
+        "security_level": "low",
     }
 
     # WARN: (aver) the did has to be amended with the method for the resolver to work
@@ -389,11 +393,8 @@ async def onboard_node(agent_container: AgentContainer, domain: str, node_name: 
     # created
     db_entry = node_cred.copy()
     db_entry["controller_did"] = node_did
-    db_entry["components"] = {
-        "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.1},
-        "firmware": {},
-        "hardware": {"raspberry-pi": "4B"},
-    }
+    db_entry["components"] = components
+
     await agent_container.agent.db_client.record_key(domain, node_name, db_entry)
 
     await agent_container.agent.issue_credential(node_did, node_name, node_cred, domain)
