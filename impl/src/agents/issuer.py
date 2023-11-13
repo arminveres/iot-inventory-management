@@ -146,8 +146,8 @@ class IssuerAgent(AriesAgent):
             # mark devices to be revoked
             for device in self.db_client.db_keys[vuln_db_name]:
                 db_result = await self.db_client.query_key(vuln_db_name, device)
-                log_json(db_result)
-                log_json(vulnerability)
+                # log_json(db_result)
+                # log_json(vulnerability)
 
                 for component_key, component_value in db_result["components"].items():
                     for (
@@ -211,8 +211,8 @@ class IssuerAgent(AriesAgent):
         db_entry["controller_did"] = node_did
         db_entry["components"] = components
 
-        await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
         await self.db_client.record_key(DB_NAME, node_name, db_entry)
+        await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
         log_time_to_file(f"UPDATE: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
     # =============================================================================================
@@ -229,6 +229,9 @@ class IssuerAgent(AriesAgent):
         Revoke a credentials and publish it.
         """
         response = await self.db_client.query_key(db_name, node_name)
+        cred_ex_id = response.get("cred_ex_id")
+
+        # update database with removed credential id
         response["cred_ex_id"] = ""
         response["valid"] = False
         await self.db_client.record_key(db_name, node_name, response)
@@ -250,7 +253,7 @@ class IssuerAgent(AriesAgent):
         node_did: str,
         node_name: str,
         node_cred: dict,
-        domain: str,
+        db_name: str,
     ):
         """
         Issue a predetermined credential to a node
@@ -262,7 +265,7 @@ class IssuerAgent(AriesAgent):
         """
         recipient_key = await self.send_invitation(node_did)
         # we set the recipient key for later identification
-        self.db_client.db_keys[domain][node_name]["recipient_key"] = recipient_key
+        self.db_client.db_keys[db_name][node_name]["recipient_key"] = recipient_key
 
         self._connection_ready = asyncio.Future()
         log_msg("Waiting for connection...")
@@ -276,9 +279,9 @@ class IssuerAgent(AriesAgent):
         for conn in response["results"]:
             if conn["invitation_key"] == recipient_key:
                 conn_id = conn["connection_id"]
-                self.db_client.db_keys[domain][node_name]["connection_id"] = conn_id
+                self.db_client.db_keys[db_name][node_name]["connection_id"] = conn_id
                 # remove recipient/invitation key
-                self.db_client.db_keys[domain][node_name].pop("recipient_key")
+                self.db_client.db_keys[db_name][node_name].pop("recipient_key")
 
         self.reset_connection()
 
@@ -296,7 +299,8 @@ class IssuerAgent(AriesAgent):
             "credential_preview": cred_preview,
             "filter": {"indy": {"cred_def_id": self.cred_def_id}},
         }
-        response = await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
+        _ = await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
+        log_time_to_file(f"REISSUING: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
     async def onboard_node(self, domain: str, node_name: str, node_did: str):
         """
@@ -333,6 +337,9 @@ class IssuerAgent(AriesAgent):
         await self.issue_credential(node_did, node_name, node_cred, domain)
 
     async def mass_onboard(self):
+        """
+        Rudimentally onboards a list of devices
+        """
         devices = []
         device = {}
         with open(".agent_cache/mass_onboarding", mode="r", encoding="utf-8") as file:
@@ -344,6 +351,17 @@ class IssuerAgent(AriesAgent):
                     device = {}
         for node in devices:
             await self.onboard_node(DB_NAME, node["name"], node["did"])
+
+    async def remove_device(self, node_name: str):
+        # db_result = await self.db_client.query_key(DB_NAME, node_name)
+        await self.revoke_credential(
+            "",
+            DB_NAME,
+            node_name,
+            {"reason": "manually revoked by maintainer"},
+        )
+        _ = await self.db_client.delete_key(DB_NAME, node_name)
+        self.log(f"Successfully removed node: {node_name}")
 
 
 # =================================================================================================
@@ -446,6 +464,7 @@ async def main():
     # Setup options and make them dicts, so that they can be changed at runtime
     prompt_options = {
         "setup_db": "  [1]: Setup/Load existing Database, Schema and Credential\n",
+        "rm_node": "  [2]: Remove an onboarded node from the infrastructure\n",
         "exit": "  [x]: Exit\n",
         "help": "  [h]: Print help\n",
     }
@@ -467,6 +486,14 @@ async def main():
         # =========================================================================================
         # New prompt based event loop, events such as webhooks still run in the background.
 
+        await setup_database(agent_container, DB_NAME)
+        prompt_options.pop("setup_db")
+        # add onboarding option and update order by values
+        prompt_options = add_option(
+            prompt_options, "onboard", "  [3]: Onboard node with public DID\n"
+        )
+        prompt_options = add_option(prompt_options, "mass_onboard", "  [4]: Mass Onboard fleet\n")
+
         async for option in prompt_loop(get_prompt):
             if option is not None:
                 option = option.strip()
@@ -474,32 +501,33 @@ async def main():
                 log_msg("Please give an option")
 
             # run options
-            if option == "1":
-                if not prompt_options.get("setup_db"):
-                    log_msg(f"invalid option, {option}")
+            # if option == "1":
+            #     if not prompt_options.get("setup_db"):
+            #         log_msg(f"invalid option, {option}")
+            #         continue
+
+            #     await setup_database(agent_container, DB_NAME)
+            #     prompt_options.pop("setup_db")
+            #     # add onboarding option and update order by values
+            #     prompt_options = add_option(
+            #         prompt_options, "onboard", "  [3]: Onboard node with public DID\n"
+            #     )
+            #     prompt_options = add_option(
+            #         prompt_options, "mass_onboard", "  [4]: Onboard fleet with public DID\n"
+            #     )
+
+            if option == "2":
+                node_name = await prompt("Enter Node Name: ")
+                if node_name is None or node_name == "":
+                    log_msg("Aborting Node onboarding...")
                     continue
+                node_name = node_name.strip()
+                await agent_container.agent.remove_device(node_name)
 
-                await setup_database(agent_container, DB_NAME)
-                prompt_options.pop("setup_db")
-                # add onboarding option and update order by values
-                prompt_options = add_option(
-                    prompt_options, "onboard", "  [2]: Onboard node with public DID\n"
-                )
-                prompt_options = add_option(
-                    prompt_options, "mass_onboard", "  [3]: Onboard fleet with public DID\n"
-                )
-
-            elif option == "2":
+            elif option == "3":
                 if not prompt_options.get("onboard"):
                     log_msg(f"invalid option, {option}")
                     continue
-                # We could also go the route of exception, which I do not prefer.
-                # try:  # we can now Ctrl-c out of the input
-                #     node_name = (await prompt("Enter Node Name: ")).strip()
-                #     node_did = (await prompt("Enter Node DID: ")).strip()
-                # except (KeyboardInterrupt, EOFError):
-                #     log_status("Stopping node onboarding...")
-                #     continue
 
                 node_name = await prompt("Enter Node Name: ")
                 if node_name is None or node_name == "":
@@ -513,15 +541,15 @@ async def main():
                 node_did = node_did.strip()
 
                 await agent_container.agent.onboard_node(
-                    domain=DB_NAME,
+                    db_name=DB_NAME,
                     node_did=node_did,
                     node_name=node_name,
                 )
 
-            elif option == "3":
+            elif option == "4":
                 await agent_container.agent.mass_onboard()
 
-            elif option == "4":
+            elif option == "5":
                 log_json(
                     [
                         await agent_container.agent.db_client.query_key(DB_NAME, device)
