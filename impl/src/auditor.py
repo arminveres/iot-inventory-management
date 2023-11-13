@@ -8,7 +8,7 @@ import sys
 from aiohttp import ClientSession
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
-from support.utils import log_json, log_msg, log_status
+from support.utils import log_json, log_msg, log_status, prompt
 
 
 class Auditor:
@@ -55,7 +55,10 @@ async def main():
     db_to_check = "db1"
     # response = await auditor.db_client.query_all("db1")
 
-    value = await auditor.db_client.query_key(db_to_check, "node_1")
+    # value = await auditor.db_client.query_key(db_to_check, "controller_node_0.agent")
+    node_input = await prompt("Node to be checked: ")
+    value = await auditor.db_client.query_key(db_to_check, node_input.strip())
+
     log_json(value)
 
     # do some magic, analysis and return with the marked vulnerable component send revoke request
