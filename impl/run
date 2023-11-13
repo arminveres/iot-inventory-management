@@ -44,7 +44,7 @@ EOF
 MULTITENANT=0
 AUDITOR=0
 UPDATER=0
-INTERACTIVE=1
+BACKGROUND=0
 # Docker specific variables
 RUN_MODE="docker"
 DOCKERHOST=$(./scripts/getDockerHost.sh)
@@ -84,8 +84,8 @@ while [[ $# -gt 0 ]]; do
             MULTITENANT=1
             shift
             ;;
-        --no-interactive)
-            INTERACTIVE=0
+        --background)
+            BACKGROUND=1
             shift
             ;;
         -h | --help)
@@ -117,9 +117,11 @@ DOCKER_FLAGS=(
     "--network=$DOCKER_NETWORK"
     "-e DOCKERHOST=$DOCKERHOST"
     "-e RUNMODE=$RUN_MODE"
+    "-it"
 )
-if [[ $INTERACTIVE == 1 ]]; then
-    DOCKER_FLAGS+=("-it")
+
+if [[ $BACKGROUND == 1 ]]; then
+    DOCKER_FLAGS+=("-d")
 fi
 
 if [[ $AUDITOR == 1 ]]; then
