@@ -8,7 +8,7 @@ import sys
 from aiohttp import ClientSession
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
-from support.utils import log_json, log_msg
+from support.utils import log_json, log_msg, log_status
 
 
 class Auditor:
@@ -45,14 +45,8 @@ class Auditor:
             json=vulnerabilities,
         )
         if not response.ok:
-            log_msg("\n\nERRROR HAPPENED\n\n")
+            log_status("\n\nERRROR HAPPENED\n\n")
         log_msg(f"Returned with {response.status}")
-        try:
-            response = await response.json()
-            log_json(response)
-        except Exception as e:
-            log_msg(f"Encountered error: {e}")
-            log_msg(response)
 
 
 async def main():

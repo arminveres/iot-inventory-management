@@ -263,11 +263,12 @@ class OrionDB:
                 # self.db_keys[db_name].append(key_name)
                 self.db_keys[db_name][key_name] = {}
             else:
-                log_msg(f"Key {key_name}, already recorded (possible update of values)")
-            log_msg("Added to local map", self.db_keys[db_name])
+                log_msg(f"ORION: Key {key_name}, already recorded (possible update of values)")
+            log_status("ORION: Added to local map")
+            log_json(self.db_keys[db_name])
         else:
             response = await response.json()
-            log_msg("\n\nERRROR HAPPENED\n\n")
+            log_status("\n\nERRROR HAPPENED\n\n")
             log_json(response)
 
     async def query_all(self, db_name: str):

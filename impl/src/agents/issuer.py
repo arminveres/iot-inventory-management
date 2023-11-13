@@ -102,7 +102,6 @@ class IssuerAgent(AriesAgent):
             if i["name"] == "controller_id"
         ][0]
 
-        # TODO: (aver) remove hardcoded db-name
         response = await self.db_client.query_key(DB_NAME, node_name)
 
         if response is None:
@@ -172,11 +171,17 @@ class IssuerAgent(AriesAgent):
         node_did = "did:sov:" + message["node_did"]
         # node_did = message["node_did"]
 
-        for entry in self.db_client.db_keys[DB_NAME].items():
-            print(entry)
-            if entry[1]["controller_did"] == node_did:
-                node_name = entry[0]
+        for key,value in self.db_client.db_keys[DB_NAME].items():
+            # print(f"{key=}, {value=}")
+            if value.get('controller_did') is None:
+                db_res = await self.db_client.query_key(DB_NAME, key)
+                self.db_client.db_keys[DB_NAME][key].update(db_res)
+                log_status('Updated local db map...')
+                log_json(self.db_client.db_keys[DB_NAME][key])
+            else:
+                node_name = key
                 print(node_name)
+
 
         # TODO: (aver) make components and node_cred pluggable
         components = {

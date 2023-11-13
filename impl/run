@@ -142,6 +142,7 @@ else
     DOCKER_IMAGE_NAME="agent"
     AGENT_FILE="agents.$AGENT_TYPE"
     DOCKER_FLAGS+=(
+        "--name $AGENT_NAME"
         "-e LEDGER_URL=$LEDGER_URL"
         "-e GENESIS_URL=$GENESIS_URL"
         "-e POSTGRES=1"
