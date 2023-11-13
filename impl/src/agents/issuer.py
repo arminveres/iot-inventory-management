@@ -2,6 +2,7 @@ import asyncio
 import json
 import sys
 from datetime import date
+import time
 
 from agents.agent_container import (
     CRED_PREVIEW_TYPE,
@@ -15,6 +16,12 @@ from support.database import OrionDB
 from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
 
 DB_NAME = "db1"
+PERF_LOG = "./.agent_cache/time_log"
+
+
+def log_time_to_file(text):
+    with open(PERF_LOG, mode="a", encoding="utf-8") as perf_log:
+        perf_log.write(text)
 
 
 class IssuerAgent(AriesAgent):
@@ -170,7 +177,7 @@ class IssuerAgent(AriesAgent):
         Handle when a node sends an notification about its update state
         """
         node_did = "did:sov:" + message["node_did"]
-        self.log(f'Node {node_did} was updated')
+        self.log(f"Node {node_did} was updated")
         log_json(message)
         # node_did = message["node_did"]
 
@@ -182,11 +189,10 @@ class IssuerAgent(AriesAgent):
                 # self.log("Updated local db map...")
                 # log_json(self.db_client.db_keys[DB_NAME][key])
 
-            if value.get('controller_did') == node_did:
+            if value.get("controller_did") == node_did:
                 node_name = key
                 self.log(f"Found node: {node_name}")
                 break
-
 
         # TODO: (aver) make components and node_cred pluggable
         components = {
@@ -205,8 +211,9 @@ class IssuerAgent(AriesAgent):
         db_entry["controller_did"] = node_did
         db_entry["components"] = components
 
-        await self.db_client.record_key(DB_NAME, node_name, db_entry)
         await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
+        await self.db_client.record_key(DB_NAME, node_name, db_entry)
+        log_time_to_file(f"UPDATE: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
     # =============================================================================================
     # Additional methods
@@ -236,6 +243,7 @@ class IssuerAgent(AriesAgent):
                 "comment": json.dumps(revocation_reason),
             },
         )
+        log_time_to_file(f"REVOCATION: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
     async def issue_credential(
         self,
@@ -322,7 +330,6 @@ class IssuerAgent(AriesAgent):
         db_entry["components"] = components
 
         await self.db_client.record_key(domain, node_name, db_entry)
-
         await self.issue_credential(node_did, node_name, node_cred, domain)
 
     async def mass_onboard(self):
