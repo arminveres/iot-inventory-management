@@ -28,13 +28,13 @@ Usage:
         -n, --name [string]:
             Name of the Agent type to be run
         --multitenant:
-            Enables support for multinenacy, i.e., holding walltes for sub-agents.
+            Enables support for multinenacy, i.e., holding wallets for sub-agents.
 
     Indepedendent flags:
         -a, --auditor:
             Runs only the auditor and no Aries logic, can only be run in combination with the port flag.
         -u, --updater:
-            Runs only the updater and no Aries logic, user WITHOUT other flags.
+            Runs only the updater and no Aries logic, use WITHOUT other flags.
         -h, --help:
             Print help/usage
 EOF
