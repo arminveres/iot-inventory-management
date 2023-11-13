@@ -151,9 +151,8 @@ class IssuerAgent(AriesAgent):
                             continue
                         # find vulnerability that matches the marked one
                         if vuln_component_value.items() <= component_value.items():
-                            log_msg(
-                                f"Found existing vulnerability for device {device} with component \
-                            {vuln_component_value}"
+                            self.log(
+                                f"Found existing vulnerability for device {device} with component {vuln_component_value}"
                             )
                             reason = {
                                 "reason": "vulnerability",
@@ -167,20 +166,27 @@ class IssuerAgent(AriesAgent):
                             )
 
     async def handle_node_updated(self, message):
-        log_json(message)
+        """
+        Handle when a node sends an notification about its update state
+        """
         node_did = "did:sov:" + message["node_did"]
+        self.log(f'Node {node_did} was updated')
+        log_json(message)
         # node_did = message["node_did"]
 
         for key, value in self.db_client.db_keys[DB_NAME].items():
-            # print(f"{key=}, {value=}")
+            # if the did value is missing get it!
             if value.get("controller_did") is None:
                 db_res = await self.db_client.query_key(DB_NAME, key)
                 self.db_client.db_keys[DB_NAME][key].update(db_res)
-                log_status("Updated local db map...")
-                log_json(self.db_client.db_keys[DB_NAME][key])
-            else:
+                # self.log("Updated local db map...")
+                # log_json(self.db_client.db_keys[DB_NAME][key])
+
+            if value.get('controller_did') == node_did:
                 node_name = key
-                print(node_name)
+                self.log(f"Found node: {node_name}")
+                break
+
 
         # TODO: (aver) make components and node_cred pluggable
         components = {
@@ -284,6 +290,54 @@ class IssuerAgent(AriesAgent):
         }
         response = await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
 
+    async def onboard_node(self, domain: str, node_name: str, node_did: str):
+        """
+        params:
+            agent_container: AgentContainer,
+            domain: str, database name, which also works as domain name
+            node_name: str,
+            node_did: str
+        """
+        # Currently the credential is of the same format as the entry to the database
+        components = {
+            "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.1},
+            "firmware": {},
+            "hardware": {"raspberry-pi": "4B"},
+        }
+        node_cred = {
+            "controller_id": node_name,
+            "date": date.isoformat(date.today()),
+            "components": str(components),
+            "security_level": "low",
+        }
+
+        # WARN: (aver) the did has to be amended with the method for the resolver to work
+        node_did = "did:sov:" + node_did
+
+        # we extend the credential with components so that the auditor can register them
+        # NOTE: (aver) In an improved scenario, the config would be read in, instead of artificially
+        # created
+        db_entry = node_cred.copy()
+        db_entry["controller_did"] = node_did
+        db_entry["components"] = components
+
+        await self.db_client.record_key(domain, node_name, db_entry)
+
+        await self.issue_credential(node_did, node_name, node_cred, domain)
+
+    async def mass_onboard(self):
+        devices = []
+        device = {}
+        with open(".agent_cache/mass_onboarding", mode="r", encoding="utf-8") as file:
+            for line in file:
+                key, value = line.strip().split(": ")
+                device[key] = value
+                if key == "did":
+                    devices.append(device)
+                    device = {}
+        for node in devices:
+            await self.onboard_node(DB_NAME, node["name"], node["did"])
+
 
 # =================================================================================================
 # Helper functions
@@ -368,42 +422,6 @@ async def setup_database(agent_container: AgentContainer, db_name: str):
     log_status("Created auditor account")
 
 
-async def onboard_node(agent_container: AgentContainer, domain: str, node_name: str, node_did: str):
-    """
-    params:
-        agent_container: AgentContainer,
-        domain: str, database name, which also works as domain name
-        node_name: str,
-        node_did: str
-    """
-    # Currently the credential is of the same format as the entry to the database
-    components = {
-        "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.1},
-        "firmware": {},
-        "hardware": {"raspberry-pi": "4B"},
-    }
-    node_cred = {
-        "controller_id": node_name,
-        "date": date.isoformat(date.today()),
-        "components": str(components),
-        "security_level": "low",
-    }
-
-    # WARN: (aver) the did has to be amended with the method for the resolver to work
-    node_did = "did:sov:" + node_did
-
-    # we extend the credential with components so that the auditor can register them
-    # NOTE: (aver) In an improved scenario, the config would be read in, instead of artificially
-    # created
-    db_entry = node_cred.copy()
-    db_entry["controller_did"] = node_did
-    db_entry["components"] = components
-
-    await agent_container.agent.db_client.record_key(domain, node_name, db_entry)
-
-    await agent_container.agent.issue_credential(node_did, node_name, node_cred, domain)
-
-
 # =================================================================================================
 # MAIN Function
 # =================================================================================================
@@ -460,6 +478,9 @@ async def main():
                 prompt_options = add_option(
                     prompt_options, "onboard", "  [2]: Onboard node with public DID\n"
                 )
+                prompt_options = add_option(
+                    prompt_options, "mass_onboard", "  [3]: Onboard fleet with public DID\n"
+                )
 
             elif option == "2":
                 if not prompt_options.get("onboard"):
@@ -484,12 +505,14 @@ async def main():
                 node_name = node_name.strip()
                 node_did = node_did.strip()
 
-                await onboard_node(
-                    agent_container,
+                await agent_container.agent.onboard_node(
                     domain=DB_NAME,
                     node_did=node_did,
                     node_name=node_name,
                 )
+
+            elif option == "3":
+                await agent_container.agent.mass_onboard()
 
             elif option == "h":
                 print(
@@ -498,7 +521,6 @@ You can exit via Ctrl-c, or inputting x.
 You can exit the current prompot by Ctrl-d or submit the current input by hitting enter.
                 """
                 )
-
             elif option == "x":  # shut off gracefully
                 sys.exit(0)
 

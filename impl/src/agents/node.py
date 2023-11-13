@@ -107,17 +107,7 @@ class NodeAgent(AriesAgent):
 
     async def notify_admin_of_update(self, changes):
         # TODO: (aver) possibly create a connection
-        response = await self.admin_GET("/credentials")
-        cred = response["results"][0]
-
-        # cred_id = cred["referent"]
-        # response = await self.admin_GET(f"/credentials/revoked/{cred_id}")
-        # if not response.ok:
-        #     raise Exception
-
-        # if not response["revoked"]:
-        #     return
-
+        cred = await self.admin_GET(f"/credential/{self.cred_id}")
         idx = cred["schema_id"].find(":")
         if idx == -1:
             raise Exception
@@ -140,7 +130,7 @@ class NodeAgent(AriesAgent):
         # response = await response.json()
         # log_json(response)
 
-    async def get_credential_state(self) -> bool | None:
+    async def get_credential_state(self):
         """
         Prints and returns the current credential state (true if revoked, or false for valid)
         """
@@ -219,6 +209,9 @@ async def create_node_agent(args):
         with open(cache_path, "wb") as cache:
             cache.write(bytes(_agent.seed, "utf-8"))
     await agent_container.initialize(the_agent=_agent)
+    with open('.agent_cache/mass_onboarding', "ab") as cache:
+        output=f"name: {agent_container.ident}\ndid: {agent_container.agent.did}\n"
+        cache.write(bytes(output, "utf-8"))
     return agent_container
 
 
