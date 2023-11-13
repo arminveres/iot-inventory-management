@@ -136,46 +136,56 @@ async def register_subnode(agent_container: AgentContainer, node_name: str):
     )
 
 
+async def create_node_agent(args):
     # First setup all the agent related stuff
     agent_container = await create_agent_with_args(args)
-    # agent_container.seed = "Node1_00000000000000000000000000"
-    # TODO: (aver) save seed for provisioning to pick up on
-    agent_container.seed = "d_000000000000000000000000144318"
+    cache_path = f".agent_cache/{agent_container.ident}"
+    provision = False
+    if os.path.exists(cache_path):
+        provision = True
+        with open(cache_path, mode="r", encoding="utf-8") as cache:
+            agent_container.seed = cache.read()
+    _agent = NodeAgent(
+        # "node.agent",
+        agent_container.ident,
+        agent_container.start_port,
+        agent_container.start_port + 1,
+        genesis_data=agent_container.genesis_txns,
+        genesis_txn_list=agent_container.genesis_txn_list,
+        no_auto=agent_container.no_auto,
+        tails_server_base_url=agent_container.tails_server_base_url,
+        revocation=agent_container.revocation,
+        timing=agent_container.show_timing,
+        multitenant=agent_container.multitenant,
+        mediation=agent_container.mediation,
+        wallet_name=agent_container.ident,
+        # WARN: (aver) key is same as identity, which is insecure, watch out!
+        wallet_key=agent_container.ident,
+        wallet_type=agent_container.wallet_type,
+        aip=agent_container.aip,
+        endorser_role=agent_container.endorser_role,
+        seed=agent_container.seed,
+    )
+    if not provision:
+        with open(cache_path, "wb") as cache:
+            cache.write(bytes(_agent.seed, "utf-8"))
+    await agent_container.initialize(the_agent=_agent)
+    return agent_container
 
-    try:
-        agent = NodeAgent(
-            "node.agent",
-            agent_container.start_port,
-            agent_container.start_port + 1,
-            genesis_data=agent_container.genesis_txns,
-            genesis_txn_list=agent_container.genesis_txn_list,
-            no_auto=agent_container.no_auto,
-            tails_server_base_url=agent_container.tails_server_base_url,
-            revocation=agent_container.revocation,
-            timing=agent_container.show_timing,
-            multitenant=agent_container.multitenant,
-            mediation=agent_container.mediation,
-            wallet_name=agent_container.ident,
-            # WARN: (aver) key is same as identity, which is insecure, watch out!
-            wallet_key=agent_container.ident,
-            wallet_type=agent_container.wallet_type,
-            aip=agent_container.aip,
-            endorser_role=agent_container.endorser_role,
-            seed=agent_container.seed,
-        )
-        await agent_container.initialize(the_agent=agent)
 
 async def main():
     parser = arg_parser()
     args = parser.parse_args()
+    agent_container = await create_node_agent(args)
+    try:
         # =========================================================================================
         # Event Loop
         # =========================================================================================
         # New prompt based event loop, events such as webhooks still run in the background.
 
         try:  # try to do an interactive loop
-            # Setup options and make them dicts, so that they can be changed at runtime, although watch
-            # out for duplicated keys.
+            # Setup options and make them dicts, so that they can be changed at runtime, although
+            # watch out for duplicated keys.
             # TODO: (aver) find better way to interact with runtime options
             options = {
                 "exit": "  [x]: Exit\n",

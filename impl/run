@@ -138,6 +138,7 @@ elif [[ $UPDATER == 1 ]]; then
         "-p 0.0.0.0:$PORT:$PORT"
     )
 else
+    mkdir -p .agent_cache
     DOCKER_IMAGE_NAME="agent"
     AGENT_FILE="agents.$AGENT_TYPE"
     DOCKER_FLAGS+=(
@@ -145,6 +146,7 @@ else
         "-e GENESIS_URL=$GENESIS_URL"
         "-e POSTGRES=1"
         "-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
+        "-v ./.agent_cache/:/home/aries/.agent_cache/"
     )
     ARIES_FLAGS=(
         "--wallet-type askar"
