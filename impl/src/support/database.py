@@ -29,6 +29,7 @@ class OrionDB:
         # Holds created databases
         self.databases = []
         self.db_keys = {}
+        self.last_block_num = None
 
     def __sign_tx(self, payload):
         """
@@ -68,6 +69,7 @@ class OrionDB:
         enc_value = response["response"].get("value")
         if enc_value is None:
             return None
+        self.last_block_num = response["response"].get("metadata").get("version").get("block_num")
         return decode_data(enc_value)
 
     async def db_exists(self, db_name: str):
@@ -307,6 +309,44 @@ class OrionDB:
             return response
         except Exception:
             log_msg(response)
+
+    async def delete_key(self, db_name: str, key_name: str):
+        headers = {"TxTimeout": "2s"}
+
+        # value = await self.query_key(db_name, key_name)
+        # block_num = value["response"]["metadata"]["version"]["block_num"]
+        _ = await self.query_key(db_name, key_name)
+        payload = {
+            "must_sign_user_ids": [self.__username],
+            "tx_id": get_tx_id(),
+            "db_operations": [
+                {
+                    "db_name": db_name,
+                    "data_reads": [
+                        {"key": key_name, "version": {"block_num": self.last_block_num}}
+                    ],
+                    "data_deletes": [{"key": key_name}],
+                }
+            ],
+        }
+        signature = self.__sign_tx(payload)
+        # cannot use the glue here, possibly multiple signatures expected...
+        data = {"payload": payload, "signatures": {self.__username: signature}}
+        response = await self.__client_session.post(
+            url=f"{self.__orion_db_url}/data/tx", json=data, headers=headers
+        )
+        if response.ok:
+            log_status(f"Returned with {response.status}")
+            response = await response.json()
+            log_json(response)
+            # we also record the keys, as a workaround to not being able to query all keys in the
+            # database
+            self.db_keys[db_name].pop(key_name)
+            log_status(f"ORION: Removed key: {key_name}!")
+        else:
+            response = await response.json()
+            log_status("\n\nERRROR HAPPENED\n\n")
+            log_json(response)
 
 
 def sign_transaction(data: json, privatekey: str):
