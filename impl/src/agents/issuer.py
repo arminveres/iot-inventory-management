@@ -521,6 +521,15 @@ async def main():
             elif option == "3":
                 await agent_container.agent.mass_onboard()
 
+            elif option == "4":
+                log_json(
+                    [
+                        await agent_container.agent.db_client.query_key(DB_NAME, device)
+                        for device in agent_container.agent.db_client.db_keys[DB_NAME]
+                    ]
+                )
+                # log_json(await agent_container.agent.db_client.query_all(DB_NAME))
+
             elif option == "h":
                 print(
                     """
