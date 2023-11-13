@@ -400,7 +400,9 @@ async def onboard_node(agent_container: AgentContainer, domain: str, node_name: 
 # =================================================================================================
 # MAIN Function
 # =================================================================================================
-async def main(args):
+async def main():
+    parser = arg_parser()
+    args = parser.parse_args()
     agent_container = await create_agent_container(args)
 
     def add_option(options: dict, key: str, value: str) -> dict:
@@ -498,11 +500,8 @@ You can exit the current prompot by Ctrl-d or submit the current input by hittin
 
 
 if __name__ == "__main__":
-    parser = arg_parser()
-    args = parser.parse_args()
     loop = asyncio.get_event_loop()
-
     try:
-        loop.run_until_complete(main(args))
+        loop.run_until_complete(main())
     except KeyboardInterrupt:
         sys.exit(1)

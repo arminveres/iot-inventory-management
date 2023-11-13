@@ -27,10 +27,9 @@ class NodeAgent(AriesAgent):
         super().__init__(ident=ident, http_port=http_port, admin_port=admin_port, **kwargs)
         self.connection_id = None
         self._connection_ready = None
-        self.cred_state = {}
-        # TODO define a dict to hold credential attributes
-        # based on cred_def_id
-        self.cred_attrs = {}
+        # TODO define a dict to hold credential attributes based on cred_def_id
+        # self.cred_attrs = {}
+        # self.cred_state = {}
 
     # =============================================================================================
     # Webhook handler implementations
@@ -40,7 +39,7 @@ class NodeAgent(AriesAgent):
         Handle invitation received for connections
         """
         self.log("Received invitation:", message["content"])
-        print("\n\ngot\n\n", message)
+        log_msg("\n\ngot\n\n", message)
 
     async def handle_revocation_notification(self, message):
         """
@@ -137,7 +136,6 @@ async def register_subnode(agent_container: AgentContainer, node_name: str):
     )
 
 
-async def main(args):
     # First setup all the agent related stuff
     agent_container = await create_agent_with_args(args)
     # agent_container.seed = "Node1_00000000000000000000000000"
@@ -167,6 +165,9 @@ async def main(args):
         )
         await agent_container.initialize(the_agent=agent)
 
+async def main():
+    parser = arg_parser()
+    args = parser.parse_args()
         # =========================================================================================
         # Event Loop
         # =========================================================================================
@@ -220,11 +221,8 @@ async def main(args):
 
 
 if __name__ == "__main__":
-    parser = arg_parser()
-    args = parser.parse_args()
-
     # execute main
     try:
-        asyncio.get_event_loop().run_until_complete(main(args))
+        asyncio.get_event_loop().run_until_complete(main())
     except KeyboardInterrupt:
         sys.exit(1)

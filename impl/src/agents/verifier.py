@@ -137,7 +137,10 @@ async def create_agent_container(args) -> AgentContainer:
     return agent_container
 
 
-async def main(args):
+async def main():
+    parser = arg_parser()
+    args = parser.parse_args()
+
     # TODO: (aver) create prompt loop with credential to check for
     # TODO: (aver) refactor as every other agent
     agent_container = await create_agent_container(args)
@@ -205,11 +208,8 @@ async def main(args):
 
 
 if __name__ == "__main__":
-    parser = arg_parser()
-    args = parser.parse_args()
-
     # execute main
     try:
-        asyncio.get_event_loop().run_until_complete(main(args))
+        asyncio.get_event_loop().run_until_complete(main())
     except KeyboardInterrupt:
         os._exit(1)
