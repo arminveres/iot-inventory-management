@@ -171,17 +171,16 @@ class IssuerAgent(AriesAgent):
         node_did = "did:sov:" + message["node_did"]
         # node_did = message["node_did"]
 
-        for key,value in self.db_client.db_keys[DB_NAME].items():
+        for key, value in self.db_client.db_keys[DB_NAME].items():
             # print(f"{key=}, {value=}")
-            if value.get('controller_did') is None:
+            if value.get("controller_did") is None:
                 db_res = await self.db_client.query_key(DB_NAME, key)
                 self.db_client.db_keys[DB_NAME][key].update(db_res)
-                log_status('Updated local db map...')
+                log_status("Updated local db map...")
                 log_json(self.db_client.db_keys[DB_NAME][key])
             else:
                 node_name = key
                 print(node_name)
-
 
         # TODO: (aver) make components and node_cred pluggable
         components = {
@@ -293,6 +292,7 @@ async def create_agent_container(args) -> AgentContainer:
     # First setup all the agent related stuff
     agent_container = await create_agent_with_args(args)
     agent_container.seed = "Autho_00000000000000000000000000"
+    agent_container.prefix = agent_container.ident
     agent = IssuerAgent(
         ident=agent_container.ident,
         http_port=agent_container.start_port,
@@ -307,11 +307,13 @@ async def create_agent_container(args) -> AgentContainer:
         mediation=agent_container.mediation,
         wallet_name=agent_container.ident,
         # WARN: (aver) key is same as identity, which is insecure, watch out!
+        # this could be stored in Secure Element (SE)
         wallet_key=agent_container.ident,
         wallet_type=agent_container.wallet_type,
         aip=agent_container.aip,
         endorser_role=agent_container.endorser_role,
         seed=agent_container.seed,
+        prefix=agent_container.prefix,
     )
     await agent_container.initialize(
         the_agent=agent,

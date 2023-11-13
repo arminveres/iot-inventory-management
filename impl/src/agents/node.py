@@ -1,3 +1,6 @@
+"""
+This modules holds the logic for Controller Nodes
+"""
 import asyncio
 import importlib
 import json
@@ -11,7 +14,7 @@ from agents.agent_container import (  # noqa:E402
     create_agent_with_args,
 )
 from support.agent import DEFAULT_EXTERNAL_HOST
-from support.utils import log_msg, prompt, prompt_loop
+from support.utils import log_msg, prompt, prompt_loop, log_json, log_status
 
 # Our custom software to be updated
 import shady_stuff
@@ -27,9 +30,8 @@ class NodeAgent(AriesAgent):
         super().__init__(ident=ident, http_port=http_port, admin_port=admin_port, **kwargs)
         self.connection_id = None
         self._connection_ready = None
-        # TODO define a dict to hold credential attributes based on cred_def_id
-        # self.cred_attrs = {}
-        # self.cred_state = {}
+        # NOTE: (aver) We assume only one credential for the moment
+        self.cred_id = None
 
     # =============================================================================================
     # Webhook handler implementations
@@ -39,7 +41,7 @@ class NodeAgent(AriesAgent):
         Handle invitation received for connections
         """
         self.log("Received invitation:", message["content"])
-        log_msg("\n\ngot\n\n", message)
+        self.log("\n\ngot\n\n", message)
 
     async def handle_revocation_notification(self, message):
         """
@@ -50,6 +52,27 @@ class NodeAgent(AriesAgent):
         self.log_json(message)
         diff = await self.get_update(message)
         await self.notify_admin_of_update(diff)
+
+    async def handle_issue_credential_v2_0_indy(self, message):
+        rev_reg_id = message.get("rev_reg_id")
+        cred_rev_id = message.get("cred_rev_id")
+        cred_id_stored = message.get("cred_id_stored")
+
+        if cred_id_stored:
+            cred_id = message["cred_id_stored"]
+            log_status(f"#18.1 Stored credential {cred_id} in wallet")
+            self.cred_id = cred_id
+            cred = await self.admin_GET(f"/credential/{cred_id}")
+            log_json(cred, label="Credential details:")
+            self.log("credential_id", cred_id)
+            self.log("cred_def_id", cred["cred_def_id"])
+            self.log("schema_id", cred["schema_id"])
+            # track last successfully received credential
+            self.last_credential_received = cred
+
+        if rev_reg_id and cred_rev_id:
+            self.log(f"Revocation registry ID: {rev_reg_id}")
+            self.log(f"Credential revocation ID: {cred_rev_id}")
 
     # =============================================================================================
     # Additional methods
@@ -117,6 +140,26 @@ class NodeAgent(AriesAgent):
         # response = await response.json()
         # log_json(response)
 
+    async def get_credential_state(self) -> bool | None:
+        """
+        Prints and returns the current credential state (true if revoked, or false for valid)
+        """
+        if self.cred_id is None:
+            response = await self.admin_GET("/credentials")
+            res = response["results"]
+            if len(res) == 0:
+                self.log("No existing credential.")
+                return
+            self.cred_id = res[-1]["referent"]
+
+        self.log("The following credential:")
+        response = await self.admin_GET(f"/credential/{self.cred_id}")
+        log_json(response)
+        self.log("Status:")
+        response = await self.admin_GET(f"/credential/revoked/{self.cred_id}")
+        log_json(response)
+        return response["revoked"]
+
 
 async def register_subnode(agent_container: AgentContainer, node_name: str):
     """
@@ -139,12 +182,15 @@ async def register_subnode(agent_container: AgentContainer, node_name: str):
 async def create_node_agent(args):
     # First setup all the agent related stuff
     agent_container = await create_agent_with_args(args)
+    agent_container.prefix = agent_container.ident
+
     cache_path = f".agent_cache/{agent_container.ident}"
     provision = False
     if os.path.exists(cache_path):
         provision = True
         with open(cache_path, mode="r", encoding="utf-8") as cache:
             agent_container.seed = cache.read()
+
     _agent = NodeAgent(
         # "node.agent",
         agent_container.ident,
@@ -160,12 +206,15 @@ async def create_node_agent(args):
         mediation=agent_container.mediation,
         wallet_name=agent_container.ident,
         # WARN: (aver) key is same as identity, which is insecure, watch out!
+        # this could be stored in Secure Element (SE)
         wallet_key=agent_container.ident,
         wallet_type=agent_container.wallet_type,
         aip=agent_container.aip,
         endorser_role=agent_container.endorser_role,
         seed=agent_container.seed,
+        prefix=agent_container.prefix,
     )
+
     if not provision:
         with open(cache_path, "wb") as cache:
             cache.write(bytes(_agent.seed, "utf-8"))
@@ -177,54 +226,67 @@ async def main():
     parser = arg_parser()
     args = parser.parse_args()
     agent_container = await create_node_agent(args)
+
+    def add_option(options: dict, key: str, value: str) -> dict:
+        """Adds an option to the dict and returns a sorted version"""
+        options[key] = value
+        options = dict(sorted(options.items(), key=lambda x: x[1]))
+        return options
+
+    prompt_options = {
+        "cred_status": "  [1]: Credential Status\n",
+        "exit": "  [x]: Exit\n",
+    }
+    if agent_container.multitenant:
+        prompt_options = add_option(
+            prompt_options, "reg_subnode", "  [2]: Register a subnode, i.e., and edge node\n"
+        )
+
+    def get_prompt():
+        """
+        Builds the prompt out of the options dictionary
+        """
+        # prompt_options.update()
+        options_str = "Options:\n"
+        for option in list(prompt_options.items()):
+            options_str += option[1]
+        options_str += "> "
+        return options_str
+
     try:
         # =========================================================================================
         # Event Loop
         # =========================================================================================
         # New prompt based event loop, events such as webhooks still run in the background.
 
-        try:  # try to do an interactive loop
-            # Setup options and make them dicts, so that they can be changed at runtime, although
-            # watch out for duplicated keys.
-            # TODO: (aver) find better way to interact with runtime options
-            options = {
-                "exit": "  [x]: Exit\n",
-            }
+        # try to do an interactive loop
+        # Setup options and make them dicts, so that they can be changed at runtime, although
+        # watch out for duplicated keys.
+        async for option in prompt_loop(get_prompt):
+            if option is not None:
+                option.strip()
+            if option is None or option == "":
+                log_msg("Please give an option")
 
-            if agent_container.multitenant:
-                options["reg_subnode"] = "  [1]: Register a subnode, i.e., and edge node\n"
+            if option == "1":
+                await agent_container.agent.get_credential_state()
 
-            def get_prompt():
-                """
-                Builds the prompt out of the options dictionary
-                """
-                options.update
-                options_str = "Options:\n"
-                for key, value in list(options.items()):
-                    options_str += value
-                options_str += "> "
-                return options_str
+            elif option == "2" and agent_container.multitenant:
+                edge_node_name = (await prompt("Enter a name for the subnode: ")).strip()
+                await register_subnode(agent_container, edge_node_name)
 
-            async for option in prompt_loop(get_prompt):
-                if option is not None:
-                    option.strip()
-                if option is None or option == "":
-                    log_msg("Please give an option")
+            elif option in "xX":
+                sys.exit(0)
 
-                if option == "1" and agent_container.multitenant:
-                    edge_node_name = (await prompt("Enter a name for the subnode: ")).strip()
-                    await register_subnode(agent_container, edge_node_name)
+            else:
+                log_msg("Unknown option: " + option)
 
-                elif option in "xX":
-                    sys.exit(0)
-
-                else:
-                    log_msg("Unknown option: " + option)
-        # WARN: (aver) We discovered that running in non-interactive mode creates an exception because
-        # of the prompt toolkit. We therefore expect it and assume it is because of non-interactiveness
-        except PermissionError:
-            while True:
-                await asyncio.sleep(1)
+    # WARN: (aver) We discovered that running in non-interactive mode creates an exception
+    # because of the prompt toolkit. We therefore expect it and assume it is because of
+    # non-interactiveness
+    except PermissionError:
+        while True:
+            await asyncio.sleep(1)
 
     finally:
         await agent_container.terminate()
