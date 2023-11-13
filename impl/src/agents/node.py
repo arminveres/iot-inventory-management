@@ -2,9 +2,8 @@ import asyncio
 import importlib
 import json
 import sys
+import os
 
-# Our custom software to be updated
-import shady_stuff
 from agents.agent_container import (  # noqa:E402
     AgentContainer,
     AriesAgent,
@@ -14,8 +13,10 @@ from agents.agent_container import (  # noqa:E402
 from support.agent import DEFAULT_EXTERNAL_HOST
 from support.utils import log_msg, prompt, prompt_loop
 
+# Our custom software to be updated
+import shady_stuff
 
-# class NodeAgent:
+
 class NodeAgent(AriesAgent):
     """
     A NodeAgent represents an end target, that will hold credentials.
@@ -42,6 +43,9 @@ class NodeAgent(AriesAgent):
         print("\n\ngot\n\n", message)
 
     async def handle_revocation_notification(self, message):
+        """
+        Handles incoming revocation, perpetrated by the auditor and issued by Issuer
+        """
         self.log("Received revocation notification message:")
         message["comment"] = json.loads(message["comment"])
         self.log_json(message)
@@ -52,8 +56,11 @@ class NodeAgent(AriesAgent):
     # Additional methods
     # =============================================================================================
     async def get_update(self, vulnerabilities):
-        # TODO: (aver) remove hardcoded updater URL
-        async with self.client_session.get(f"http://{DEFAULT_EXTERNAL_HOST}:8080/") as resp:
+        """
+        Demonstrative method to provide update to node.
+        """
+        UPDATER_URL = os.getenv("UPDATER_URL") or f"http://{DEFAULT_EXTERNAL_HOST}:8080/"
+        async with self.client_session.get(UPDATER_URL) as resp:
             # we are overwriting the existing file as update
             with open("shady_stuff.py", "wb") as fd:
                 while True:

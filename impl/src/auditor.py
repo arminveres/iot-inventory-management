@@ -61,7 +61,7 @@ async def main():
     db_to_check = "db1"
     # response = await auditor.db_client.query_all("db1")
 
-    value = await auditor.db_client.query_key(db_to_check, "node1")
+    value = await auditor.db_client.query_key(db_to_check, "node_1")
     log_json(value)
 
     # do some magic, analysis and return with the marked vulnerable component send revoke request

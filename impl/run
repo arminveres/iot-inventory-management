@@ -127,13 +127,15 @@ if [[ $AUDITOR == 1 ]]; then
     AGENT_NAME=auditor
     AGENT_FILE="$AGENT_NAME"
     DOCKER_IMAGE_NAME=auditor
+    DOCKER_FLAGS+=(
+        "-p 0.0.0.0:$PORT:$PORT"
+    )
 elif [[ $UPDATER == 1 ]]; then
     AGENT_NAME=updater
     AGENT_FILE="$AGENT_NAME"
     DOCKER_IMAGE_NAME=updater
-    # TODO: (aver) remove hardcoded port
     DOCKER_FLAGS+=(
-        "-p 0.0.0.0:8080:8080"
+        "-p 0.0.0.0:$PORT:$PORT"
     )
 else
     DOCKER_IMAGE_NAME="agent"
