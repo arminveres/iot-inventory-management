@@ -16,6 +16,7 @@ from agents.agent_container import (  # noqa:E402
 )
 from support.agent import DEFAULT_EXTERNAL_HOST
 from support.utils import log_msg, prompt, prompt_loop, log_json, LogLevel
+from support.perf_analysis import log_time_to_file
 
 # Our custom software to be updated
 import shady_stuff
@@ -57,33 +58,17 @@ class NodeAgent(AriesAgent):
         """
         Handles incoming revocation, perpetrated by the auditor and issued by Issuer
         """
+
+        log_time_to_file(
+            "revocation", f"REV_RECEIVED: time: {time.perf_counter_ns()}, node: {self.ident}\n"
+        )
+
         if self.log_level == LogLevel.DEBUG:
             self.log("Received revocation notification message:")
             self.log_json(message)
         message["comment"] = json.loads(message["comment"])
         diff = await self.get_update(message)
         await self.notify_admin_of_update(diff)
-
-    async def handle_issue_credential_v2_0_indy(self, message):
-        rev_reg_id = message.get("rev_reg_id")
-        cred_rev_id = message.get("cred_rev_id")
-        cred_id_stored = message.get("cred_id_stored")
-
-        if cred_id_stored:
-            cred_id = message["cred_id_stored"]
-            log_status(f"#18.1 Stored credential {cred_id} in wallet")
-            self.cred_id = cred_id
-            cred = await self.admin_GET(f"/credential/{cred_id}")
-            log_json(cred, label="Credential details:")
-            self.log("credential_id", cred_id)
-            self.log("cred_def_id", cred["cred_def_id"])
-            self.log("schema_id", cred["schema_id"])
-            # track last successfully received credential
-            self.last_credential_received = cred
-
-        if rev_reg_id and cred_rev_id:
-            self.log(f"Revocation registry ID: {rev_reg_id}")
-            self.log(f"Credential revocation ID: {cred_rev_id}")
 
     # =============================================================================================
     # Additional methods
@@ -221,8 +206,8 @@ async def create_node_agent(args):
         with open(cache_path, "wb") as cache:
             cache.write(bytes(_agent.seed, "utf-8"))
     await agent_container.initialize(the_agent=_agent)
-    with open('.agent_cache/mass_onboarding', "ab") as cache:
-        output=f"name: {agent_container.ident}\ndid: {agent_container.agent.did}\n"
+    with open(".agent_cache/mass_onboarding", "ab") as cache:
+        output = f"name: {agent_container.ident}\ndid: {agent_container.agent.did}\n"
         cache.write(bytes(output, "utf-8"))
     return agent_container
 

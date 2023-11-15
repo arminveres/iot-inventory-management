@@ -74,9 +74,7 @@ class AriesAgent(DemoAgent):
                 )
             )
         if anoncreds_legacy_revocation:
-            extra_args.append(
-                f"--anoncreds-legacy-revocation={anoncreds_legacy_revocation}"
-            )
+            extra_args.append(f"--anoncreds-legacy-revocation={anoncreds_legacy_revocation}")
         super().__init__(
             ident,
             http_port,
@@ -216,17 +214,13 @@ class AriesAgent(DemoAgent):
             cred_attrs = self.cred_attrs[message["credential_definition_id"]]
             cred_preview = {
                 "@type": CRED_PREVIEW_TYPE,
-                "attributes": [
-                    {"name": n, "value": v} for (n, v) in cred_attrs.items()
-                ],
+                "attributes": [{"name": n, "value": v} for (n, v) in cred_attrs.items()],
             }
             try:
                 cred_ex_rec = await self.admin_POST(
                     f"/issue-credential/records/{credential_exchange_id}/issue",
                     {
-                        "comment": (
-                            f"Issuing credential, exchange {credential_exchange_id}"
-                        ),
+                        "comment": (f"Issuing credential, exchange {credential_exchange_id}"),
                         "credential_preview": cred_preview,
                     },
                 )
@@ -267,9 +261,7 @@ class AriesAgent(DemoAgent):
             if self.log_level == LogLevel.DEBUG:
                 log_status("#15 After receiving credential offer, send credential request")
             if message["by_format"]["cred_offer"].get("indy"):
-                await self.admin_POST(
-                    f"/issue-credential-2.0/records/{cred_ex_id}/send-request"
-                )
+                await self.admin_POST(f"/issue-credential-2.0/records/{cred_ex_id}/send-request")
             elif message["by_format"]["cred_offer"].get("ld_proof"):
                 holder_did = await self.admin_POST(
                     "/wallet/did/create",
@@ -362,9 +354,7 @@ class AriesAgent(DemoAgent):
                 for referent in presentation_request["requested_attributes"]:
                     if referent in credentials_by_reft:
                         revealed[referent] = {
-                            "cred_id": credentials_by_reft[referent]["cred_info"][
-                                "referent"
-                            ],
+                            "cred_id": credentials_by_reft[referent]["cred_info"]["referent"],
                             "revealed": revealed_flag,
                         }
                         revealed_flag = True
@@ -374,9 +364,7 @@ class AriesAgent(DemoAgent):
                 for referent in presentation_request["requested_predicates"]:
                     if referent in credentials_by_reft:
                         predicates[referent] = {
-                            "cred_id": credentials_by_reft[referent]["cred_info"][
-                                "referent"
-                            ]
+                            "cred_id": credentials_by_reft[referent]["cred_info"]["referent"]
                         }
 
                 if self.log_level == LogLevel.DEBUG:
@@ -390,10 +378,7 @@ class AriesAgent(DemoAgent):
                 if self.log_level == LogLevel.DEBUG:
                     log_status("#26 Send the proof to X")
                 await self.admin_POST(
-                    (
-                        "/present-proof/records/"
-                        f"{presentation_exchange_id}/send-presentation"
-                    ),
+                    ("/present-proof/records/" f"{presentation_exchange_id}/send-presentation"),
                     request,
                 )
             except ClientError:
@@ -463,9 +448,7 @@ class AriesAgent(DemoAgent):
                     for referent in pres_request_indy["requested_attributes"]:
                         if referent in creds_by_reft:
                             revealed[referent] = {
-                                "cred_id": creds_by_reft[referent]["cred_info"][
-                                    "referent"
-                                ],
+                                "cred_id": creds_by_reft[referent]["cred_info"]["referent"],
                                 "revealed": revealed_flag,
                             }
                             revealed_flag = True
@@ -475,9 +458,7 @@ class AriesAgent(DemoAgent):
                     for referent in pres_request_indy["requested_predicates"]:
                         if referent in creds_by_reft:
                             predicates[referent] = {
-                                "cred_id": creds_by_reft[referent]["cred_info"][
-                                    "referent"
-                                ]
+                                "cred_id": creds_by_reft[referent]["cred_info"]["referent"]
                             }
 
                     if self.log_level == LogLevel.DEBUG:
@@ -530,9 +511,7 @@ class AriesAgent(DemoAgent):
                                 input_descriptor_schema_uri, record
                             ):
                                 record_id = record["record_id"]
-                                dif_request["dif"]["record_ids"][
-                                    input_descriptor["id"]
-                                ] = [
+                                dif_request["dif"]["record_ids"][input_descriptor["id"]] = [
                                     record_id,
                                 ]
                                 break
@@ -644,11 +623,8 @@ class AriesAgent(DemoAgent):
                 log_msg("Waiting for connection...")
             await self.detect_connection()
 
-    async def create_schema_and_cred_def(
-        self, schema_name, schema_attrs, revocation, version=None
-    ):
+    async def create_schema_and_cred_def(self, schema_name, schema_attrs, revocation, version=None):
         with log_timer("Publish schema/cred def duration:"):
-            log_status("#3/4 Create a new schema/cred def on the ledger")
             if self.log_level == LogLevel.DEBUG:
                 log_status("#3/4 Create a new schema/cred def on the ledger")
             if not version:
@@ -660,10 +636,7 @@ class AriesAgent(DemoAgent):
                         random.randint(1, 101),
                     )
                 )
-            (
-                _,
-                cred_def_id,
-            ) = await self.register_schema_and_creddef(  # schema id
+            (_, cred_def_id,) = await self.register_schema_and_creddef(  # schema id
                 schema_name,
                 version,
                 schema_attrs,
@@ -672,9 +645,7 @@ class AriesAgent(DemoAgent):
             )
             return cred_def_id
 
-    def check_input_descriptor_record_id(
-        self, input_descriptor_schema_uri, record
-    ) -> bool:
+    def check_input_descriptor_record_id(self, input_descriptor_schema_uri, record) -> bool:
         result = False
         for uri in input_descriptor_schema_uri:
             for record_type in record["type"]:
@@ -808,9 +779,7 @@ class AgentContainer:
                 raise Exception("Endorser agent returns None :-(")
 
             # set the endorser invite so the agent can auto-connect
-            self.agent.endorser_invite = (
-                self.endorser_agent.endorser_multi_invitation_url
-            )
+            self.agent.endorser_invite = self.endorser_agent.endorser_multi_invitation_url
             self.agent.endorser_did = self.endorser_agent.endorser_public_did
         else:
             self.endorser_agent = None
@@ -848,25 +817,17 @@ class AgentContainer:
             if self.mediation:
                 # we need to pre-connect the agent to its mediator
                 self.agent.log("Connect wallet to mediator ...")
-                if not await connect_wallet_to_mediator(
-                    self.agent, self.mediator_agent
-                ):
+                if not await connect_wallet_to_mediator(self.agent, self.mediator_agent):
                     raise Exception("Mediation setup FAILED :-(")
             if self.endorser_agent:
                 self.agent.log("Connect wallet to endorser ...")
-                if not await connect_wallet_to_endorser(
-                    self.agent, self.endorser_agent
-                ):
+                if not await connect_wallet_to_endorser(self.agent, self.endorser_agent):
                     raise Exception("Endorser setup FAILED :-(")
         if self.taa_accept:
             await self.agent.taa_accept()
 
         # if we are an author, create our public DID here ...
-        if (
-            self.endorser_role
-            and self.endorser_role == "author"
-            and self.endorser_agent
-        ):
+        if self.endorser_role and self.endorser_role == "author" and self.endorser_agent:
             if self.public_did and self.cred_type != CRED_FORMAT_JSON_LD:
                 new_did = await self.agent.admin_POST("/wallet/did/create")
                 self.agent.did = new_did["result"]["did"]
@@ -887,9 +848,7 @@ class AgentContainer:
 
         if schema_name and schema_attrs:
             # Create a schema/cred def
-            self.cred_def_id = await self.create_schema_and_cred_def(
-                schema_name, schema_attrs
-            )
+            self.cred_def_id = await self.create_schema_and_cred_def(schema_name, schema_attrs)
 
     async def create_schema_and_cred_def(
         self,
@@ -983,12 +942,8 @@ class AgentContainer:
 
         if self.cred_type == CRED_FORMAT_INDY:
             indy_proof_request = {
-                "name": proof_request["name"]
-                if "name" in proof_request
-                else "Proof of stuff",
-                "version": proof_request["version"]
-                if "version" in proof_request
-                else "1.0",
+                "name": proof_request["name"] if "name" in proof_request else "Proof of stuff",
+                "version": proof_request["version"] if "version" in proof_request else "1.0",
                 "requested_attributes": proof_request["requested_attributes"],
                 "requested_predicates": proof_request["requested_predicates"],
             }
@@ -1188,9 +1143,7 @@ class AgentContainer:
         text = True if the expected response is text, False if json data
         params = any additional parameters to pass with the request
         """
-        return await self.agent.agency_admin_POST(
-            path, data=data, text=text, params=params
-        )
+        return await self.agent.agency_admin_POST(path, data=data, text=text, params=params)
 
 
 def arg_parser(ident: str = None, port: int = 8020):
@@ -1199,9 +1152,7 @@ def arg_parser(ident: str = None, port: int = 8020):
 
     "ident", if specified, refers to one of the standard demo personas - alice, faber, acme or performance.
     """
-    parser = argparse.ArgumentParser(
-        description="Runs a " + (ident or "aries") + " demo agent."
-    )
+    parser = argparse.ArgumentParser(description="Runs a " + (ident or "aries") + " demo agent.")
     if not ident:
         parser.add_argument(
             "--ident",
@@ -1233,9 +1184,7 @@ def arg_parser(ident: str = None, port: int = 8020):
             action="store_true",
             help="Use DID-Exchange protocol for connections",
         )
-    parser.add_argument(
-        "--revocation", action="store_true", help="Enable credential revocation"
-    )
+    parser.add_argument("--revocation", action="store_true", help="Enable credential revocation")
     parser.add_argument(
         "--anoncreds-legacy-revocation",
         type=str,
@@ -1263,15 +1212,9 @@ def arg_parser(ident: str = None, port: int = 8020):
         metavar=("<api>"),
         help="API level (10 or 20 (default))",
     )
-    parser.add_argument(
-        "--timing", action="store_true", help="Enable timing information"
-    )
-    parser.add_argument(
-        "--multitenant", action="store_true", help="Enable multitenancy options"
-    )
-    parser.add_argument(
-        "--mediation", action="store_true", help="Enable mediation functionality"
-    )
+    parser.add_argument("--timing", action="store_true", help="Enable timing information")
+    parser.add_argument("--multitenant", action="store_true", help="Enable multitenancy options")
+    parser.add_argument("--mediation", action="store_true", help="Enable mediation functionality")
     parser.add_argument(
         "--multi-ledger",
         action="store_true",
@@ -1334,16 +1277,12 @@ async def create_agent_with_args_list(in_args: list):
 
 async def create_agent_with_args(args, ident: str = None):
     if ("did_exchange" in args and args.did_exchange) and args.mediation:
-        raise Exception(
-            "DID-Exchange connection protocol is not (yet) compatible with mediation"
-        )
+        raise Exception("DID-Exchange connection protocol is not (yet) compatible with mediation")
 
     check_requires(args)
 
     if "revocation" in args and args.revocation:
-        tails_server_base_url = args.tails_server_base_url or os.getenv(
-            "PUBLIC_TAILS_URL"
-        )
+        tails_server_base_url = args.tails_server_base_url or os.getenv("PUBLIC_TAILS_URL")
     else:
         tails_server_base_url = None
 
@@ -1361,9 +1300,7 @@ async def create_agent_with_args(args, ident: str = None):
         )
 
     if ("revocation" in args and args.revocation) and not tails_server_base_url:
-        raise Exception(
-            "If revocation is enabled, --tails-server-base-url must be provided"
-        )
+        raise Exception("If revocation is enabled, --tails-server-base-url must be provided")
 
     multi_ledger_config_path = None
     genesis = None
@@ -1546,9 +1483,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.did_exchange and args.mediation:
-        raise Exception(
-            "DID-Exchange connection protocol is not (yet) compatible with mediation"
-        )
+        raise Exception("DID-Exchange connection protocol is not (yet) compatible with mediation")
 
     ENABLE_PYDEVD_PYCHARM = os.getenv("ENABLE_PYDEVD_PYCHARM", "").lower()
     ENABLE_PYDEVD_PYCHARM = ENABLE_PYDEVD_PYCHARM and ENABLE_PYDEVD_PYCHARM not in (
@@ -1556,9 +1491,7 @@ if __name__ == "__main__":
         "0",
     )
     PYDEVD_PYCHARM_HOST = os.getenv("PYDEVD_PYCHARM_HOST", "localhost")
-    PYDEVD_PYCHARM_CONTROLLER_PORT = int(
-        os.getenv("PYDEVD_PYCHARM_CONTROLLER_PORT", 5001)
-    )
+    PYDEVD_PYCHARM_CONTROLLER_PORT = int(os.getenv("PYDEVD_PYCHARM_CONTROLLER_PORT", 5001))
 
     if ENABLE_PYDEVD_PYCHARM:
         try:
@@ -1583,9 +1516,7 @@ if __name__ == "__main__":
     tails_server_base_url = args.tails_server_base_url or os.getenv("PUBLIC_TAILS_URL")
 
     if args.revocation and not tails_server_base_url:
-        raise Exception(
-            "If revocation is enabled, --tails-server-base-url must be provided"
-        )
+        raise Exception("If revocation is enabled, --tails-server-base-url must be provided")
 
     try:
         asyncio.get_event_loop().run_until_complete(

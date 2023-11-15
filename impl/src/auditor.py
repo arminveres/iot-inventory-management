@@ -8,7 +8,7 @@ import sys
 from aiohttp import ClientSession
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
-from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
+from support.utils import log_msg, log_status, prompt_loop
 
 
 class Auditor:
@@ -53,15 +53,18 @@ async def main():
     auditor = Auditor()
     # simulated db to be checked
     db_to_check = "db1"
-    # response = await auditor.db_client.query_all("db1")
+    auditor.db_client.db_keys[db_to_check] = {}
 
     # value = await auditor.db_client.query_key(db_to_check, "controller_node_0.agent")
-    async for option in prompt_loop("Node to be checked: "):
-        value = await auditor.db_client.query_key(db_to_check, option.strip())
+    async for node in prompt_loop("Node to be checked: "):
+        if node is None or node == "":
+            log_msg("Aborting Node onboarding...")
+            continue
+        auditor.db_client.db_keys[db_to_check][node] = {}
+        value = await auditor.db_client.query_key(db_to_check, node.strip())
         # log_json(value)
-        marked_vulnerabilities = auditor.check_vulnerability(db_to_check, value["components"])
-        # do some magic, analysis and return with the marked vulnerable component send revoke request
-        # to issuer
+        # do some magic, analysis and return with the marked vulnerable component send revoke
+        # request to issuer
         marked_vulnerabilities = auditor.check_vulnerability(db_to_check, value["components"])
 
         if marked_vulnerabilities is not None:

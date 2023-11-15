@@ -94,9 +94,7 @@ async def default_genesis_txns():
                     genesis = await resp.text()
         elif RUN_MODE == "docker":
             async with ClientSession() as session:
-                async with session.get(
-                    f"http://{DEFAULT_EXTERNAL_HOST}:9000/genesis"
-                ) as resp:
+                async with session.get(f"http://{DEFAULT_EXTERNAL_HOST}:9000/genesis") as resp:
                     genesis = await resp.text()
         elif GENESIS_FILE:
             with open(GENESIS_FILE, "r") as genesis_file:
@@ -194,9 +192,7 @@ class DemoAgent:
             seed = "random"
         rand_name = str(random.randint(100_000, 999_999))
         self.seed = (
-            ("my_seed_000000000000000000000000" + rand_name)[-32:]
-            if seed == "random"
-            else seed
+            ("my_seed_000000000000000000000000" + rand_name)[-32:] if seed == "random" else seed
         )
         self.storage_type = params.get("storage_type")
         self.wallet_type = params.get("wallet_type") or "askar"
@@ -221,17 +217,13 @@ class DemoAgent:
             with open(self.genesis_txn_list, "r") as stream:
                 ledger_config_list = yaml.safe_load(stream)
             for config in ledger_config_list:
-                if "genesis_url" in config and "/$LEDGER_HOST:" in config.get(
-                    "genesis_url"
-                ):
+                if "genesis_url" in config and "/$LEDGER_HOST:" in config.get("genesis_url"):
                     config["genesis_url"] = config.get("genesis_url").replace(
                         "$LEDGER_HOST", str(self.external_host)
                     )
                 updated_config_list.append(config)
                 if "is_write" in config and config["is_write"]:
-                    self.multi_write_ledger_url = config["genesis_url"].replace(
-                        "/genesis", ""
-                    )
+                    self.multi_write_ledger_url = config["genesis_url"].replace("/genesis", "")
             with open(self.genesis_txn_list, "w") as file:
                 documents = yaml.dump(updated_config_list, file)
 
@@ -286,9 +278,7 @@ class DemoAgent:
             log_msg("Schema ID:", schema_id)
 
         # Create a cred def for the schema
-        cred_def_tag = (
-            tag if tag else (self.ident + "." + schema_name).replace(" ", "_")
-        )
+        cred_def_tag = tag if tag else (self.ident + "." + schema_name).replace(" ", "_")
         credential_definition_body = {
             "schema_id": schema_id,
             "support_revocation": support_revocation,
@@ -305,9 +295,7 @@ class DemoAgent:
         await asyncio.sleep(2.0)
         if "credential_definition_id" in credential_definition_response:
             # cred def is created directly
-            credential_definition_id = credential_definition_response[
-                "credential_definition_id"
-            ]
+            credential_definition_id = credential_definition_response["credential_definition_id"]
         else:
             # need to wait for the endorser process
             credential_definition_response = {"credential_definition_ids": []}
@@ -318,14 +306,12 @@ class DemoAgent:
                 credential_definition_response = await self.admin_GET(
                     "/credential-definitions/created"
                 )
-                if 0 == len(
-                    credential_definition_response["credential_definition_ids"]
-                ):
+                if 0 == len(credential_definition_response["credential_definition_ids"]):
                     await asyncio.sleep(1.0)
                     attempts = attempts - 1
-            credential_definition_id = credential_definition_response[
-                "credential_definition_ids"
-            ][0]
+            credential_definition_id = credential_definition_response["credential_definition_ids"][
+                0
+            ]
         if self.log_level == LogLevel.DEBUG:
             log_msg("Cred def ID:", credential_definition_id)
         return schema_id, credential_definition_id
@@ -774,14 +760,10 @@ class DemoAgent:
         return True
 
     async def get_id_and_token(self, wallet_name):
-        wallet = await self.agency_admin_GET(
-            f"/multitenancy/wallets?wallet_name={wallet_name}"
-        )
+        wallet = await self.agency_admin_GET(f"/multitenancy/wallets?wallet_name={wallet_name}")
         wallet_id = wallet["results"][0]["wallet_id"]
 
-        wallet = await self.agency_admin_POST(
-            f"/multitenancy/wallet/{wallet_id}/token", {}
-        )
+        wallet = await self.agency_admin_POST(f"/multitenancy/wallet/{wallet_id}/token", {})
         token = wallet["token"]
 
         return {"id": wallet_id, "token": token}
@@ -840,11 +822,7 @@ class DemoAgent:
         return proc
 
     def get_process_args(self):
-        return list(
-            flatten(
-                ([PYTHON, "-m", "aries_cloudagent", "start"], self.get_agent_args())
-            )
-        )
+        return list(flatten(([PYTHON, "-m", "aries_cloudagent", "start"], self.get_agent_args())))
 
     def get_provision_process_args(self):
         return list(
@@ -953,9 +931,7 @@ class DemoAgent:
         # add a service decorator
         did_url = "/wallet/did/public"
         agent_public_did = await self.admin_GET(did_url)
-        endpoint_url = (
-            "/wallet/get-did-endpoint" + "?did=" + agent_public_did["result"]["did"]
-        )
+        endpoint_url = "/wallet/get-did-endpoint" + "?did=" + agent_public_did["result"]["did"]
         agent_endpoint = await self.admin_GET(endpoint_url)
         decorator = {
             "recipientKeys": [agent_public_did["result"]["verkey"]],
@@ -1059,18 +1035,14 @@ class DemoAgent:
                     raise Exception(f"Error decoding JSON: {resp_text}") from e
             return resp_text
 
-    async def agency_admin_GET(
-        self, path, text=False, params=None, headers=None
-    ) -> ClientResponse:
+    async def agency_admin_GET(self, path, text=False, params=None, headers=None) -> ClientResponse:
         if not self.multitenant:
             raise Exception("Error can't call agency admin unless in multitenant mode")
         try:
             EVENT_LOGGER.debug("Controller GET %s request to Agent", path)
             if not headers:
                 headers = {}
-            response = await self.admin_request(
-                "GET", path, None, text, params, headers=headers
-            )
+            response = await self.admin_request("GET", path, None, text, params, headers=headers)
             EVENT_LOGGER.debug(
                 "Response from GET %s received: \n%s",
                 path,
@@ -1081,20 +1053,14 @@ class DemoAgent:
             self.log(f"Error during GET {path}: {str(e)}")
             raise
 
-    async def admin_GET(
-        self, path, text=False, params=None, headers=None
-    ) -> ClientResponse:
+    async def admin_GET(self, path, text=False, params=None, headers=None) -> ClientResponse:
         try:
             EVENT_LOGGER.debug("Controller GET %s request to Agent", path)
             if self.multitenant:
                 if not headers:
                     headers = {}
-                headers["Authorization"] = (
-                    "Bearer " + self.managed_wallet_params["token"]
-                )
-            response = await self.admin_request(
-                "GET", path, None, text, params, headers=headers
-            )
+                headers["Authorization"] = "Bearer " + self.managed_wallet_params["token"]
+            response = await self.admin_request("GET", path, None, text, params, headers=headers)
             EVENT_LOGGER.debug(
                 "Response from GET %s received: \n%s",
                 path,
@@ -1118,9 +1084,7 @@ class DemoAgent:
             )
             if not headers:
                 headers = {}
-            response = await self.admin_request(
-                "POST", path, data, text, params, headers=headers
-            )
+            response = await self.admin_request("POST", path, data, text, params, headers=headers)
             EVENT_LOGGER.debug(
                 "Response from POST %s received: \n%s",
                 path,
@@ -1143,12 +1107,8 @@ class DemoAgent:
             if self.multitenant:
                 if not headers:
                     headers = {}
-                headers["Authorization"] = (
-                    "Bearer " + self.managed_wallet_params["token"]
-                )
-            response = await self.admin_request(
-                "POST", path, data, text, params, headers=headers
-            )
+                headers["Authorization"] = "Bearer " + self.managed_wallet_params["token"]
+            response = await self.admin_request("POST", path, data, text, params, headers=headers)
             EVENT_LOGGER.debug(
                 "Response from POST %s received: \n%s",
                 path,
@@ -1166,12 +1126,8 @@ class DemoAgent:
             if self.multitenant:
                 if not headers:
                     headers = {}
-                headers["Authorization"] = (
-                    "Bearer " + self.managed_wallet_params["token"]
-                )
-            return await self.admin_request(
-                "PATCH", path, data, text, params, headers=headers
-            )
+                headers["Authorization"] = "Bearer " + self.managed_wallet_params["token"]
+            return await self.admin_request("PATCH", path, data, text, params, headers=headers)
         except ClientError as e:
             self.log(f"Error during PATCH {path}: {str(e)}")
             raise
@@ -1183,12 +1139,8 @@ class DemoAgent:
             if self.multitenant:
                 if not headers:
                     headers = {}
-                headers["Authorization"] = (
-                    "Bearer " + self.managed_wallet_params["token"]
-                )
-            return await self.admin_request(
-                "PUT", path, data, text, params, headers=headers
-            )
+                headers["Authorization"] = "Bearer " + self.managed_wallet_params["token"]
+            return await self.admin_request("PUT", path, data, text, params, headers=headers)
         except ClientError as e:
             self.log(f"Error during PUT {path}: {str(e)}")
             raise
@@ -1198,9 +1150,7 @@ class DemoAgent:
             if self.multitenant:
                 if not headers:
                     headers = {}
-                headers["Authorization"] = (
-                    "Bearer " + self.managed_wallet_params["token"]
-                )
+                headers["Authorization"] = "Bearer " + self.managed_wallet_params["token"]
             params = {k: v for (k, v) in (params or {}).items() if v is not None}
             resp = await self.client_session.request(
                 "GET", self.admin_url + path, params=params, headers=headers
@@ -1216,9 +1166,7 @@ class DemoAgent:
             if self.multitenant:
                 if not headers:
                     headers = {}
-                headers["Authorization"] = (
-                    "Bearer " + self.managed_wallet_params["token"]
-                )
+                headers["Authorization"] = "Bearer " + self.managed_wallet_params["token"]
             params = {k: v for (k, v) in (params or {}).items() if v is not None}
             resp = await self.client_session.request(
                 "PUT", url, params=params, data=files, headers=headers
@@ -1248,9 +1196,7 @@ class DemoAgent:
             return code, text
 
         status_url = self.admin_url + "/status"
-        status_code, status_text = await fetch_status(
-            status_url, START_TIMEOUT, headers=headers
-        )
+        status_code, status_text = await fetch_status(status_url, START_TIMEOUT, headers=headers)
 
         if not status_text:
             raise Exception(
@@ -1264,9 +1210,7 @@ class DemoAgent:
         except json.JSONDecodeError:
             pass
         if not ok:
-            raise Exception(
-                f"Unexpected response from agent process. Admin URL: {status_url}"
-            )
+            raise Exception(f"Unexpected response from agent process. Admin URL: {status_url}")
 
     async def fetch_timing(self):
         status = await self.admin_GET("/status")
@@ -1291,8 +1235,7 @@ class DemoAgent:
         )
         yield "=" * 96
         yield from (
-            "{:35} | {:12d} {:12.3f} {:10.3f} {:10.3f} {:10.3f}".format(*row)
-            for row in result
+            "{:35} | {:12d} {:12.3f} {:10.3f} {:10.3f} {:10.3f}".format(*row) for row in result
         )
         yield ""
 
@@ -1358,9 +1301,7 @@ class DemoAgent:
         if not self.wallet_stats:
             return
         tables = self._postgres_tables
-        yield ("{:30}" + " | {:>17}" * len(tables)).format(
-            f"{self.wallet_name} DB", *tables
-        )
+        yield ("{:30}" + " | {:>17}" * len(tables)).format(f"{self.wallet_name} DB", *tables)
         yield "=" * 90
         for ident, stats in self.wallet_stats:
             yield ("{:30}" + " | {:8d} {:>8}" * len(tables)).format(
@@ -1519,9 +1460,7 @@ class MediatorAgent(DemoAgent):
         self.log("Received message:", message["content"])
 
 
-async def start_mediator_agent(
-    start_port, genesis: str = None, genesis_txn_list: str = None
-):
+async def start_mediator_agent(start_port, genesis: str = None, genesis_txn_list: str = None):
     # start mediator agent
     mediator_agent = MediatorAgent(
         start_port,
@@ -1543,9 +1482,7 @@ async def connect_wallet_to_mediator(agent, mediator_agent):
     # Generate an invitation
     log_msg("Generate mediation invite ...")
     mediator_agent._connection_ready = asyncio.Future()
-    mediator_connection = await mediator_agent.admin_POST(
-        "/connections/create-invitation"
-    )
+    mediator_connection = await mediator_agent.admin_POST("/connections/create-invitation")
     mediator_agent.mediator_connection_id = mediator_connection["connection_id"]
 
     # accept the invitation
@@ -1570,9 +1507,7 @@ async def connect_wallet_to_mediator(agent, mediator_agent):
     count = 3
     while 0 < count:
         await asyncio.sleep(1.0)
-        mediation_status = await agent.admin_GET(
-            "/mediation/requests/" + agent.mediator_request_id
-        )
+        mediation_status = await agent.admin_GET("/mediation/requests/" + agent.mediator_request_id)
         if mediation_status["state"] == "granted":
             log_msg("Mediation setup successfully!", mediation_status)
             return mediator_agent
@@ -1629,9 +1564,7 @@ class EndorserAgent(DemoAgent):
                 # setup endorser meta-data on our connection
                 log_msg("Setup endorser agent meta-data ...")
                 await self.admin_POST(
-                    "/transactions/"
-                    + self.endorser_connection_id
-                    + "/set-endorser-role",
+                    "/transactions/" + self.endorser_connection_id + "/set-endorser-role",
                     params={"transaction_my_job": "TRANSACTION_ENDORSER"},
                 )
 

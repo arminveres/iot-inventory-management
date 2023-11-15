@@ -22,7 +22,7 @@ class OrionDB:
         self.__username = username
         self.__private_key_path = (
             private_key_path
-            if not private_key_path == ""
+            if private_key_path != ""
             else f"crypto/{self.__username}/{self.__username}.key"
         )
         self.__client_session = client_session
@@ -46,8 +46,11 @@ class OrionDB:
 
     async def query_key(self, db_name, key):
         """
-        https://labs.hyperledger.org/orion-server/docs/getting-started/transactions/curl/datatx#12-checking-the-existance-of-key1
+        Query a single key by 'key'
+        return: value of database entry as dict
         """
+        # More info under: https://labs.hyperledger.org/orion-server/docs/getting-started/transactions/curl/datatx#12-checking-the-existance-of-key1
+
         # keys need to be send as base64, in order for =/- characters to work.
         # WARN: (aver) watch out if padding = is used, then the request does not work anymore
         enc_key = base64.urlsafe_b64encode(bytes(key, encoding="utf-8")).decode().replace("=", "")
