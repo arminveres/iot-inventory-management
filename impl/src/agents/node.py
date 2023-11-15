@@ -6,6 +6,7 @@ import importlib
 import json
 import sys
 import os
+import time
 
 from agents.agent_container import (  # noqa:E402
     AgentContainer,
@@ -14,7 +15,7 @@ from agents.agent_container import (  # noqa:E402
     create_agent_with_args,
 )
 from support.agent import DEFAULT_EXTERNAL_HOST
-from support.utils import log_msg, prompt, prompt_loop, log_json, log_status
+from support.utils import log_msg, prompt, prompt_loop, log_json, LogLevel
 
 # Our custom software to be updated
 import shady_stuff
@@ -26,8 +27,16 @@ class NodeAgent(AriesAgent):
     TODO: Further differentiate between controller, function, edge nodes.
     """
 
-    def __init__(self, ident: str, http_port: int, admin_port: int, **kwargs):
-        super().__init__(ident=ident, http_port=http_port, admin_port=admin_port, **kwargs)
+    def __init__(
+        self, ident: str, http_port: int, admin_port: int, log_level=LogLevel.DEBUG, **kwargs
+    ):
+        super().__init__(
+            ident=ident,
+            http_port=http_port,
+            admin_port=admin_port,
+            log_level=LogLevel.DEBUG,
+            **kwargs,
+        )
         self.connection_id = None
         self._connection_ready = None
         # NOTE: (aver) We assume only one credential for the moment
@@ -40,16 +49,18 @@ class NodeAgent(AriesAgent):
         """
         Handle invitation received for connections
         """
-        self.log("Received invitation:", message["content"])
-        self.log("\n\ngot\n\n", message)
+        if self.log_level == LogLevel.DEBUG:
+            self.log("Received invitation:", message["content"])
+            self.log("\n\ngot\n\n", message)
 
     async def handle_revocation_notification(self, message):
         """
         Handles incoming revocation, perpetrated by the auditor and issued by Issuer
         """
-        self.log("Received revocation notification message:")
+        if self.log_level == LogLevel.DEBUG:
+            self.log("Received revocation notification message:")
+            self.log_json(message)
         message["comment"] = json.loads(message["comment"])
-        self.log_json(message)
         diff = await self.get_update(message)
         await self.notify_admin_of_update(diff)
 
@@ -126,7 +137,8 @@ class NodeAgent(AriesAgent):
         if not response.ok:
             log_msg(response)
             return
-        log_msg(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_msg(response)
         # response = await response.json()
         # log_json(response)
 

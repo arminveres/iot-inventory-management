@@ -13,7 +13,7 @@ from agents.agent_container import (
 )
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
-from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
+from support.utils import log_json, log_msg, log_status, prompt, prompt_loop, LogLevel
 from support.perf_analysis import log_time_to_file
 
 DB_NAME = "db1"
@@ -32,9 +32,14 @@ class IssuerAgent(AriesAgent):
         http_port: int,
         admin_port: int,
         orion_db_url=f"http://{DEFAULT_INTERNAL_HOST}:6001",
+        log_level=LogLevel.DEBUG,
         **kwargs,
     ):
-        super().__init__(ident=ident, http_port=http_port, admin_port=admin_port, **kwargs)
+        super().__init__(
+            ident=ident, http_port=http_port, admin_port=admin_port, log_level=log_level, **kwargs
+        )
+
+        self.log_level = log_level
 
         # TODO: (aver) find a better way to manage keys
         self.db_username = "admin"  # ident
@@ -43,6 +48,7 @@ class IssuerAgent(AriesAgent):
             orion_db_url=orion_db_url,
             username=self.db_username,
             client_session=self.client_session,
+            log_level=self.log_level,
         )
 
         # TODO: (aver) remove hardcoded self.connection_id
@@ -131,8 +137,9 @@ class IssuerAgent(AriesAgent):
         Handle vulnerabilities presented to the maintainer/admin/issuer
         """
         # FIXME: (aver) improve this 4 times nested loop !!!!
-        log_msg("Received vulnearbility:")
-        log_json(message)
+        if self.log_level == LogLevel.INFO or self.log_level == LogLevel.DEBUG:
+            log_msg("Received vulnearbility:")
+            log_json(message)
         # Go through each vulnerability
         for vuln_notif in message:
             vuln_db_name = vuln_notif["db_name"]
@@ -141,8 +148,9 @@ class IssuerAgent(AriesAgent):
             # mark devices to be revoked
             for device in self.db_client.db_keys[vuln_db_name]:
                 db_result = await self.db_client.query_key(vuln_db_name, device)
-                # log_json(db_result)
-                # log_json(vulnerability)
+                if self.log_level == LogLevel.DEBUG:
+                    log_json(db_result)
+                    log_json(vulnerability)
 
                 for component_key, component_value in db_result["components"].items():
                     for (
@@ -172,8 +180,9 @@ class IssuerAgent(AriesAgent):
         Handle when a node sends an notification about its update state
         """
         node_did = "did:sov:" + message["node_did"]
-        self.log(f"Node {node_did} was updated")
-        log_json(message)
+        if self.log_level == LogLevel.INFO or self.log_level == LogLevel.DEBUG:
+            self.log(f"Node {node_did} was updated")
+            log_json(message)
         # node_did = message["node_did"]
 
         for key, value in self.db_client.db_keys[DB_NAME].items():
@@ -265,12 +274,15 @@ class IssuerAgent(AriesAgent):
         self.db_client.db_keys[db_name][node_name]["recipient_key"] = recipient_key
 
         self._connection_ready = asyncio.Future()
-        log_msg("Waiting for connection...")
+        if self.log_level == LogLevel.DEBUG:
+            log_msg("Waiting for connection...")
         await self.detect_connection()
 
         # Set the connection id for each controller
         response = await self.admin_GET("/connections")
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_json(response)
+
         # TODO: (aver) remove hardcoded key_name and add logic for general key check
         # also remove hardcoded connection_id
         for conn in response["results"]:
@@ -282,7 +294,8 @@ class IssuerAgent(AriesAgent):
 
         self.reset_connection()
 
-        log_status(f"# Issuing credential offer to {node_name}")
+        if self.log_level == LogLevel.INFO or LogLevel.DEBUG:
+            log_status(f"# Issuing credential offer to {node_name}")
         self.cred_attrs[self.cred_def_id] = node_cred
         cred_preview = {
             "@type": CRED_PREVIEW_TYPE,
@@ -390,6 +403,7 @@ async def create_agent_container(args) -> AgentContainer:
         endorser_role=agent_container.endorser_role,
         seed=agent_container.seed,
         prefix=agent_container.prefix,
+        log_level=args.log_level,
     )
     await agent_container.initialize(
         the_agent=agent,
@@ -553,7 +567,6 @@ async def main():
                         for device in agent_container.agent.db_client.db_keys[DB_NAME]
                     ]
                 )
-                # log_json(await agent_container.agent.db_client.query_all(DB_NAME))
 
             elif option == "h":
                 print(

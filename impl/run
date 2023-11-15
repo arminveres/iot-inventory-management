@@ -158,6 +158,7 @@ else
         "--revocation"
         "--ident=$AGENT_NAME"
         "--port $PORT"
+        "--log-level=perf"
     )
     if [[ $MULTITENANT == 1 ]]; then
         ARIES_FLAGS+=("--multitenant")

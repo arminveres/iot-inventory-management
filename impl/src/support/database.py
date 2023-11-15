@@ -6,10 +6,9 @@ import json
 from uuid import uuid4
 
 from aiohttp import ClientSession
-from support.utils import log_json, log_msg, log_status, run_executable
+from support.utils import log_json, log_msg, log_status, run_executable, LogLevel
 
 
-# TODO: (aver) create class to hold database logic for less duplication
 class OrionDB:
     def __init__(
         self,
@@ -17,6 +16,7 @@ class OrionDB:
         username: str,
         client_session: ClientSession,
         private_key_path="",
+        log_level=LogLevel.DEBUG,
     ):
         self.__orion_db_url = orion_db_url
         self.__username = username
@@ -30,6 +30,7 @@ class OrionDB:
         self.databases = []
         self.db_keys = {}
         self.last_block_num = None
+        self.log_level = log_level
 
     def __sign_tx(self, payload):
         """
@@ -61,10 +62,12 @@ class OrionDB:
 
         if not response.ok:
             log_msg("\n\nERRROR HAPPENED\n\n")
+            log_msg(f"Returned with {response.status}")
+            log_status(response)
 
-        log_msg(f"Returned with {response.status}")
         response = await response.json()
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_json(response)
 
         enc_value = response["response"].get("value")
         if enc_value is None:
@@ -88,9 +91,12 @@ class OrionDB:
             print("\n\nERRROR HAPPENED\n\n")
             return False
 
-        log_msg(f"Returned with {response.status}")
+        status = response.status
         response = await response.json()
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_msg(f"Returned with {status}")
+            log_json(response)
+
         try:
             return response["response"]["exist"]
         except KeyError:
@@ -112,9 +118,12 @@ class OrionDB:
             log_msg("\n\nERRROR HAPPENED\n\n")
             return False
 
-        log_msg(f"Returned with {response.status}")
+        status = response.status
         response = await response.json()
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_msg(f"Returned with {status}")
+            log_json(response)
+
         try:
             return response["response"]["user"]["id"] == username
         except KeyError:
@@ -129,8 +138,9 @@ class OrionDB:
             self.db_keys[db_name] = {}
 
         if await self.db_exists(db_name):
-            log_status(f"{db_name}: Already exists")
-            log_status("Parsing entries to local dictionary...")
+            if self.log_level == LogLevel.DEBUG:
+                log_status(f"{db_name}: Already exists")
+                log_status("Parsing entries to local dictionary...")
             response = await self.query_all(db_name)
 
             # only proceed if we have a key-values
@@ -161,18 +171,22 @@ class OrionDB:
             print("\n\nERRROR HAPPENED\n\n")
             return
 
-        log_status(f"Returned with {response.status}")
+        status = response.status
         response = await response.json()
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_msg(f"Returned with {status}")
+            log_json(response)
+
         self.databases.append(db_name)
 
     async def create_user(self, username: str):
         """
         Creates a user with given `username` on request, if not already existing
         """
-        if await self.check_user(username):
-            log_status(f"{username}: Already exists")
-            # return
+        if self.log_level == LogLevel.DEBUG:
+            if await self.check_user(username):
+                log_status(f"{username}: Already exists")
+                # return
 
         with open(f"./crypto/{username}/{username}.pem", "r") as file:
             # skip begin and end line
@@ -212,14 +226,13 @@ class OrionDB:
             url=f"{self.__orion_db_url}/user/tx", json=data, headers=headers
         )
 
-        if response.ok:
-            log_status(f"Returned with {response.status}")
-            response = await response.json()
+        if not response.ok:
+            log_status("\n\n\tERRROR HAPPENED with user creation\n\n")
         else:
-            response = await response.json()
-            print("\n\n\tERRROR HAPPENED\n\n")
-        # log response in any case
-        log_json(response)
+            if self.log_level == LogLevel.DEBUG:
+                log_status(f"Returned with {response.status}")
+                response = await response.json()
+                log_json(response)
 
     async def record_key(self, db_name: str, key_name: str, value: dict):
         """
@@ -256,18 +269,21 @@ class OrionDB:
             url=f"{self.__orion_db_url}/data/tx", json=data, headers=headers
         )
         if response.ok:
-            log_status(f"Returned with {response.status}")
+            status = response.status
             response = await response.json()
-            log_json(response)
+            if self.log_level == LogLevel.DEBUG:
+                log_msg(f"Returned with {status}")
+                log_json(response)
             # we also record the keys, as a workaround to not being able to query all keys in the
             # database
             if key_name not in self.db_keys[db_name]:
                 # self.db_keys[db_name].append(key_name)
                 self.db_keys[db_name][key_name] = {}
-            else:
-                log_msg(f"ORION: Key {key_name}, already recorded (possible update of values)")
-            log_status("ORION: Added to local map")
-            log_json(self.db_keys[db_name])
+            elif self.log_level == LogLevel.DEBUG:
+                log_msg(f"ORION: Key {key_name} already recorded: UPDATE!")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("ORION: Added to local map")
+
         else:
             response = await response.json()
             log_status("\n\nERRROR HAPPENED\n\n")
@@ -300,9 +316,10 @@ class OrionDB:
         )
 
         if not response.ok:
-            log_msg("\n\nERRROR HAPPENED\n\n")
+            log_status("\n\nERRROR HAPPENED\n\n")
 
-        log_msg(f"Returned with {response.status}")
+        if self.log_level == LogLevel.DEBUG:
+            log_msg(f"Returned with {response.status}")
         try:
             response = await response.json()
             # log_json(response)
@@ -336,13 +353,17 @@ class OrionDB:
             url=f"{self.__orion_db_url}/data/tx", json=data, headers=headers
         )
         if response.ok:
-            log_status(f"Returned with {response.status}")
+            status = response.status
             response = await response.json()
-            log_json(response)
+            if self.log_level == LogLevel.DEBUG:
+                log_msg(f"Returned with {status}")
+                log_json(response)
+
             # we also record the keys, as a workaround to not being able to query all keys in the
             # database
             self.db_keys[db_name].pop(key_name)
-            log_status(f"ORION: Removed key: {key_name}!")
+            if self.log_level == LogLevel.DEBUG:
+                log_status(f"ORION: Removed key: {key_name}!")
         else:
             response = await response.json()
             log_status("\n\nERRROR HAPPENED\n\n")

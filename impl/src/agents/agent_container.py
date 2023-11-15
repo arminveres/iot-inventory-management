@@ -59,6 +59,7 @@ class AriesAgent(DemoAgent):
         endorser_role: str = None,
         revocation: bool = False,
         anoncreds_legacy_revocation: str = None,
+        log_level=LogLevel.DEBUG,
         **kwargs,
     ):
         extra_args = []
@@ -86,6 +87,7 @@ class AriesAgent(DemoAgent):
             endorser_role=endorser_role,
             revocation=revocation,
             extra_args=extra_args,
+            log_level=log_level,
             **kwargs,
         )
         self.connection_id = None
@@ -185,7 +187,8 @@ class AriesAgent(DemoAgent):
         )
 
         if state == "offer_received":
-            log_status("#15 After receiving credential offer, send credential request")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#15 After receiving credential offer, send credential request")
             await self.admin_POST(
                 f"/issue-credential/records/{credential_exchange_id}/send-request"
             )
@@ -193,19 +196,22 @@ class AriesAgent(DemoAgent):
         elif state == "credential_acked":
             cred_id = message["credential_id"]
             self.log(f"Stored credential {cred_id} in wallet")
-            log_status(f"#18.1 Stored credential {cred_id} in wallet")
+            if self.log_level == LogLevel.DEBUG:
+                log_status(f"#18.1 Stored credential {cred_id} in wallet")
             resp = await self.admin_GET(f"/credential/{cred_id}")
-            log_json(resp, label="Credential details:")
-            log_json(
-                message["credential_request_metadata"],
-                label="Credential request metadata:",
-            )
-            self.log("credential_id", message["credential_id"])
-            self.log("credential_definition_id", message["credential_definition_id"])
-            self.log("schema_id", message["schema_id"])
+            if self.log_level == LogLevel.DEBUG:
+                log_json(resp, label="Credential details:")
+                log_json(
+                    message["credential_request_metadata"],
+                    label="Credential request metadata:",
+                )
+                self.log("credential_id", message["credential_id"])
+                self.log("credential_definition_id", message["credential_definition_id"])
+                self.log("schema_id", message["schema_id"])
 
         elif state == "request_received":
-            log_status("#17 Issue credential to X")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#17 Issue credential to X")
             # issue credentials based on the credential_definition_id
             cred_attrs = self.cred_attrs[message["credential_definition_id"]]
             cred_preview = {
@@ -234,8 +240,9 @@ class AriesAgent(DemoAgent):
                 pass
 
         elif state == "abandoned":
-            log_status("Credential exchange abandoned")
-            self.log("Problem report message:", message.get("error_msg"))
+            if self.log_level == LogLevel.DEBUG:
+                log_status("Credential exchange abandoned")
+                self.log("Problem report message:", message.get("error_msg"))
 
     async def handle_issue_credential_v2_0(self, message):
         state = message.get("state")
@@ -248,7 +255,8 @@ class AriesAgent(DemoAgent):
         self.log(f"Credential: state = {state}, cred_ex_id = {cred_ex_id}")
 
         if state == "request-received":
-            log_status("#17 Issue credential to X")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#17 Issue credential to X")
             # issue credential based on offer preview in cred ex record
             await self.admin_POST(
                 f"/issue-credential-2.0/records/{cred_ex_id}/issue",
@@ -256,7 +264,8 @@ class AriesAgent(DemoAgent):
             )
 
         elif state == "offer-received":
-            log_status("#15 After receiving credential offer, send credential request")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#15 After receiving credential offer, send credential request")
             if message["by_format"]["cred_offer"].get("indy"):
                 await self.admin_POST(
                     f"/issue-credential-2.0/records/{cred_ex_id}/send-request"
@@ -276,8 +285,9 @@ class AriesAgent(DemoAgent):
             # Logic moved to detail record specific handler
 
         elif state == "abandoned":
-            log_status("Credential exchange abandoned")
-            self.log("Problem report message:", message.get("error_msg"))
+            if self.log_level == LogLevel.DEBUG:
+                log_status("Credential exchange abandoned")
+                self.log("Problem report message:", message.get("error_msg"))
 
     async def handle_issue_credential_v2_0_indy(self, message):
         rev_reg_id = message.get("rev_reg_id")
@@ -286,12 +296,14 @@ class AriesAgent(DemoAgent):
 
         if cred_id_stored:
             cred_id = message["cred_id_stored"]
-            log_status(f"#18.1 Stored credential {cred_id} in wallet")
+            if self.log_level == LogLevel.DEBUG:
+                log_status(f"#18.1 Stored credential {cred_id} in wallet")
             cred = await self.admin_GET(f"/credential/{cred_id}")
-            log_json(cred, label="Credential details:")
-            self.log("credential_id", cred_id)
-            self.log("cred_def_id", cred["cred_def_id"])
-            self.log("schema_id", cred["schema_id"])
+            if self.log_level == LogLevel.DEBUG:
+                log_json(cred, label="Credential details:")
+                self.log("credential_id", cred_id)
+                self.log("cred_def_id", cred["cred_def_id"])
+                self.log("schema_id", cred["schema_id"])
             # track last successfully received credential
             self.last_credential_received = cred
             log_time_to_file(
@@ -321,9 +333,8 @@ class AriesAgent(DemoAgent):
         )
 
         if state == "request_received":
-            log_status(
-                "#24 Query for credentials in the wallet that satisfy the proof request"
-            )
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#24 Query for credentials in the wallet that satisfy the proof request")
 
             # include self-attested attributes (not included in credentials)
             credentials_by_reft = {}
@@ -368,14 +379,16 @@ class AriesAgent(DemoAgent):
                             ]
                         }
 
-                log_status("#25 Generate the proof")
+                if self.log_level == LogLevel.DEBUG:
+                    log_status("#25 Generate the proof")
                 request = {
                     "requested_predicates": predicates,
                     "requested_attributes": revealed,
                     "self_attested_attributes": self_attested,
                 }
 
-                log_status("#26 Send the proof to X")
+                if self.log_level == LogLevel.DEBUG:
+                    log_status("#26 Send the proof to X")
                 await self.admin_POST(
                     (
                         "/present-proof/records/"
@@ -387,16 +400,19 @@ class AriesAgent(DemoAgent):
                 pass
 
         elif state == "presentation_received":
-            log_status("#27 Process the proof provided by X")
-            log_status("#28 Check if proof is valid")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#27 Process the proof provided by X")
+                log_status("#28 Check if proof is valid")
             proof = await self.admin_POST(
                 f"/present-proof/records/{presentation_exchange_id}/verify-presentation"
             )
-            self.log("Proof =", proof["verified"])
+            if self.log_level == LogLevel.DEBUG:
+                self.log("Proof =", proof["verified"])
 
         elif state == "abandoned":
-            log_status("Presentation exchange abandoned")
-            self.log("Problem report message:", message.get("error_msg"))
+            if self.log_level == LogLevel.DEBUG:
+                log_status("Presentation exchange abandoned")
+                self.log("Problem report message:", message.get("error_msg"))
 
     async def handle_present_proof_v2_0(self, message):
         state = message.get("state")
@@ -405,9 +421,8 @@ class AriesAgent(DemoAgent):
 
         if state == "request-received":
             # prover role
-            log_status(
-                "#24 Query for credentials in the wallet that satisfy the proof request"
-            )
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#24 Query for credentials in the wallet that satisfy the proof request")
             pres_request_indy = message["by_format"].get("pres_request", {}).get("indy")
             pres_request_dif = message["by_format"].get("pres_request", {}).get("dif")
             request = {}
@@ -465,7 +480,8 @@ class AriesAgent(DemoAgent):
                                 ]
                             }
 
-                    log_status("#25 Generate the indy proof")
+                    if self.log_level == LogLevel.DEBUG:
+                        log_status("#25 Generate the indy proof")
                     indy_request = {
                         "indy": {
                             "requested_predicates": predicates,
@@ -495,7 +511,8 @@ class AriesAgent(DemoAgent):
                     else:
                         records = []
 
-                    log_status("#25 Generate the dif proof")
+                    if self.log_level == LogLevel.DEBUG:
+                        log_status("#25 Generate the dif proof")
                     dif_request = {
                         "dif": {},
                     }
@@ -519,7 +536,8 @@ class AriesAgent(DemoAgent):
                                     record_id,
                                 ]
                                 break
-                    log_msg("presenting ld-presentation:", dif_request)
+                    if self.log_level == LogLevel.DEBUG:
+                        log_msg("presenting ld-presentation:", dif_request)
                     request.update(dif_request)
 
                     # NOTE that the holder/prover can also/or specify constraints by including the whole proof request
@@ -545,7 +563,8 @@ class AriesAgent(DemoAgent):
                 except ClientError:
                     pass
 
-            log_status("#26 Send the proof to X: " + json.dumps(request))
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#26 Send the proof to X: " + json.dumps(request))
             await self.admin_POST(
                 f"/present-proof-2.0/records/{pres_ex_id}/send-presentation",
                 request,
@@ -553,8 +572,9 @@ class AriesAgent(DemoAgent):
 
         elif state == "presentation-received":
             # verifier role
-            log_status("#27 Process the proof provided by X")
-            log_status("#28 Check if proof is valid")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#27 Process the proof provided by X")
+                log_status("#28 Check if proof is valid")
             proof = await self.admin_POST(
                 f"/present-proof-2.0/records/{pres_ex_id}/verify-presentation"
             )
@@ -562,8 +582,9 @@ class AriesAgent(DemoAgent):
             self.last_proof_received = proof
 
         elif state == "abandoned":
-            log_status("Presentation exchange abandoned")
-            self.log("Problem report message:", message.get("error_msg"))
+            if self.log_level == LogLevel.DEBUG:
+                log_status("Presentation exchange abandoned")
+                self.log("Problem report message:", message.get("error_msg"))
 
     async def handle_basicmessages(self, message):
         self.log("Received message:", message["content"])
@@ -585,9 +606,8 @@ class AriesAgent(DemoAgent):
         self._connection_ready = asyncio.Future()
         with log_timer("Generate invitation duration:"):
             # Generate an invitation
-            log_status(
-                "#7 Create a connection to alice and print out the invite details"
-            )
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#7 Create a connection to alice and print out the invite details")
             invi_rec = await self.get_invite(
                 use_did_exchange,
                 auto_accept=auto_accept,
@@ -597,17 +617,17 @@ class AriesAgent(DemoAgent):
         if display_qr:
             qr = QRCode(border=1)
             qr.add_data(invi_rec["invitation_url"])
-            log_msg(
-                "Use the following JSON to accept the invite from another demo agent."
-                " Or use the QR code to connect from a mobile agent."
-            )
-            log_msg(
-                json.dumps(invi_rec["invitation"]), label="Invitation Data:", color=None
-            )
+            if self.log_level == LogLevel.DEBUG:
+                log_msg(
+                    "Use the following JSON to accept the invite from another demo agent."
+                    " Or use the QR code to connect from a mobile agent."
+                )
+                log_msg(json.dumps(invi_rec["invitation"]), label="Invitation Data:", color=None)
             qr.print_ascii(invert=True)
 
         if wait:
-            log_msg("Waiting for connection...")
+            if self.log_level == LogLevel.DEBUG:
+                log_msg("Waiting for connection...")
             await self.detect_connection()
 
         return invi_rec
@@ -616,10 +636,12 @@ class AriesAgent(DemoAgent):
         self._connection_ready = asyncio.Future()
         with log_timer("Connect duration:"):
             connection = await self.receive_invite(invite_details)
-            log_json(connection, label="Invitation response:")
+            if self.log_level == LogLevel.DEBUG:
+                log_json(connection, label="Invitation response:")
 
         if wait:
-            log_msg("Waiting for connection...")
+            if self.log_level == LogLevel.DEBUG:
+                log_msg("Waiting for connection...")
             await self.detect_connection()
 
     async def create_schema_and_cred_def(
@@ -627,6 +649,8 @@ class AriesAgent(DemoAgent):
     ):
         with log_timer("Publish schema/cred def duration:"):
             log_status("#3/4 Create a new schema/cred def on the ledger")
+            if self.log_level == LogLevel.DEBUG:
+                log_status("#3/4 Create a new schema/cred def on the ledger")
             if not version:
                 version = format(
                     "%d.%d.%d"
@@ -893,7 +917,8 @@ class AgentContainer:
         cred_def_id: str,
         cred_attrs: list,
     ):
-        log_status("#13 Issue credential offer to X")
+        if self.log_level == LogLevel.DEBUG:
+            log_status("#13 Issue credential offer to X")
 
         if self.cred_type == CRED_FORMAT_INDY:
             cred_preview = {
@@ -953,7 +978,8 @@ class AgentContainer:
         return matched
 
     async def request_proof(self, proof_request, explicit_revoc_required: bool = False):
-        log_status("#20 Request proof of degree from alice")
+        if self.log_level == LogLevel.DEBUG:
+            log_status("#20 Request proof of degree from alice")
 
         if self.cred_type == CRED_FORMAT_INDY:
             indy_proof_request = {
@@ -1002,7 +1028,8 @@ class AgentContainer:
                     if "non_revoked" in proof_request["requested_predicates"][pred]:
                         del proof_request["requested_predicates"][pred]["non_revoked"]
 
-            log_status(f"  >>> asking for proof for request: {indy_proof_request}")
+            if self.log_level == LogLevel.DEBUG:
+                log_status(f"  >>> asking for proof for request: {indy_proof_request}")
 
             proof_request_web_request = {
                 "connection_id": self.agent.connection_id,
@@ -1369,9 +1396,7 @@ async def create_agent_with_args(args, ident: str = None):
         public_did = args.public_did if "public_did" in args else None
 
     cred_type = args.cred_type if "cred_type" in args else None
-    log_msg(
-        f"Initializing demo agent {agent_ident} with AIP {aip} and credential type {cred_type}"
-    )
+    log_msg(f"Initializing demo agent {agent_ident} with AIP {aip} and credential type {cred_type}")
 
     reuse_connections = "reuse_connections" in args and args.reuse_connections
     if reuse_connections and aip != 20:

@@ -22,7 +22,7 @@ from aiohttp import (
     ClientTimeout,
 )
 
-from .utils import flatten, log_json, log_msg, log_timer, output_reader
+from .utils import flatten, log_json, log_msg, log_timer, output_reader, LogLevel
 
 LOGGER = logging.getLogger(__name__)
 
@@ -138,6 +138,7 @@ class DemoAgent:
         arg_file: str = None,
         endorser_role: str = None,
         extra_args=None,
+        log_level=LogLevel.DEBUG,
         **params,
     ):
         self.ident = ident
@@ -169,14 +170,13 @@ class DemoAgent:
         self.mediator_request_id = None
         self.aip = aip
         self.arg_file = arg_file
+        self.log_level = log_level
 
         self.admin_url = f"http://{self.internal_host}:{admin_port}"
         if AGENT_ENDPOINT:
             self.endpoint = AGENT_ENDPOINT
         elif RUN_MODE == "pwd":
-            self.endpoint = f"http://{self.external_host}".replace(
-                "{PORT}", str(http_port)
-            )
+            self.endpoint = f"http://{self.external_host}".replace("{PORT}", str(http_port))
         else:
             self.endpoint = f"http://{self.external_host}:{http_port}"
 
@@ -266,7 +266,8 @@ class DemoAgent:
             "attributes": schema_attrs,
         }
         schema_response = await self.admin_POST("/schemas", schema_body)
-        log_json(json.dumps(schema_response), label="Schema:")
+        if self.log_level == LogLevel.DEBUG:
+            log_json(json.dumps(schema_response), label="Schema:")
         await asyncio.sleep(2.0)
         if "schema_id" in schema_response:
             # schema is created directly
@@ -281,7 +282,8 @@ class DemoAgent:
                     await asyncio.sleep(1.0)
                     attempts = attempts - 1
             schema_id = schema_response["schema_ids"][0]
-        log_msg("Schema ID:", schema_id)
+        if self.log_level == LogLevel.DEBUG:
+            log_msg("Schema ID:", schema_id)
 
         # Create a cred def for the schema
         cred_def_tag = (
@@ -324,7 +326,8 @@ class DemoAgent:
             credential_definition_id = credential_definition_response[
                 "credential_definition_ids"
             ][0]
-        log_msg("Cred def ID:", credential_definition_id)
+        if self.log_level == LogLevel.DEBUG:
+            log_msg("Cred def ID:", credential_definition_id)
         return schema_id, credential_definition_id
 
     def get_agent_args(self):
@@ -605,7 +608,8 @@ class DemoAgent:
     ):
         if cred_type == CRED_FORMAT_INDY:
             # if registering a did for issuing indy credentials, publish the did on the ledger
-            self.log(f"Registering {self.ident} ...")
+            if self.log_level == LogLevel.DEBUG:
+                self.log(f"Registering {self.ident} ...")
             if not ledger_url:
                 if self.multi_write_ledger_url:
                     ledger_url = self.multi_write_ledger_url
@@ -632,21 +636,20 @@ class DemoAgent:
                 await asyncio.sleep(3.0)
                 nym_info = data
             else:
-                log_msg("using ledger: " + ledger_url + "/register")
-                resp = await self.client_session.post(
-                    ledger_url + "/register", json=data
-                )
+                if self.log_level == LogLevel.DEBUG:
+                    log_msg("using ledger: " + ledger_url + "/register")
+                resp = await self.client_session.post(ledger_url + "/register", json=data)
                 if resp.status != 200:
-                    raise Exception(
-                        f"Error registering DID {data}, response code {resp.status}"
-                    )
+                    raise Exception(f"Error registering DID {data}, response code {resp.status}")
                 nym_info = await resp.json()
             self.did = nym_info["did"]
-            self.log(f"nym_info: {nym_info}")
+            if self.log_level == LogLevel.DEBUG:
+                self.log(f"nym_info: {nym_info}")
             if self.multitenant:
                 if not self.agency_wallet_did:
                     self.agency_wallet_did = self.did
-            self.log(f"Registered DID: {self.did}")
+            if self.log_level == LogLevel.DEBUG:
+                self.log(f"Registered DID: {self.did}")
         elif cred_type == CRED_FORMAT_JSON_LD:
             # TODO register a did:key with appropriate signature type
             pass
@@ -665,7 +668,8 @@ class DemoAgent:
     ):
         if webhook_port is not None:
             await self.listen_webhooks(webhook_port)
-        self.log(f"Register or switch to wallet {target_wallet_name}")
+        if self.log_level == LogLevel.DEBUG:
+            self.log(f"Register or switch to wallet {target_wallet_name}")
         if target_wallet_name == self.agency_wallet_name:
             self.ident = self.agency_ident
             self.wallet_name = self.agency_wallet_name
@@ -680,7 +684,8 @@ class DemoAgent:
             if taa_accept:
                 await self.taa_accept()
 
-            self.log(f"Switching to AGENCY wallet {target_wallet_name}")
+            if self.log_level == LogLevel.DEBUG:
+                self.log(f"Switching to AGENCY wallet {target_wallet_name}")
             return False
 
         # check if wallet exists already
@@ -702,7 +707,8 @@ class DemoAgent:
                 if taa_accept:
                     await self.taa_accept()
 
-                self.log(f"Switching to EXISTING wallet {target_wallet_name}")
+                if self.log_level == LogLevel.DEBUG:
+                    self.log(f"Switching to EXISTING wallet {target_wallet_name}")
                 return False
 
         # if not then create it
@@ -718,12 +724,14 @@ class DemoAgent:
         self.wallet_key = target_wallet_name
         self.ident = target_wallet_name
         new_wallet = await self.agency_admin_POST("/multitenancy/wallet", wallet_params)
-        self.log("New wallet params:", new_wallet)
+        if self.log_level == LogLevel.DEBUG:
+            self.log("New wallet params:", new_wallet)
         self.managed_wallet_params = new_wallet
 
         # if endorser, endorse the wallet ledger operations
         if endorser_agent:
-            self.log("Connect sub-wallet to endorser ...")
+            if self.log_level == LogLevel.DEBUG:
+                self.log("Connect sub-wallet to endorser ...")
             if not await connect_wallet_to_endorser(self, endorser_agent):
                 raise Exception("Endorser setup FAILED :-(")
         # if mediation, mediate the wallet connections
@@ -761,7 +769,8 @@ class DemoAgent:
                 # todo ignore for now
                 pass
 
-        self.log(f"Created NEW wallet {target_wallet_name}")
+        if self.log_level == LogLevel.DEBUG:
+            self.log(f"Created NEW wallet {target_wallet_name}")
         return True
 
     async def get_id_and_token(self, wallet_name):
@@ -1446,14 +1455,16 @@ class DemoAgent:
         # reuse_connections=node_agent.reuse_connections
         # )
         response = await self.admin_POST("/connections/create-invitation", {})
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_json(response)
         invite = response["invitation"]
         # take the first invitation key found, for later identification of connection
         recipient_key = invite["recipientKeys"][0]
 
         # resolve did for did_document
         response = await self.admin_GET(f"/resolver/resolve/{did}")
-        log_json(response)
+        if self.log_level == LogLevel.DEBUG:
+            log_json(response)
         node_url = response["did_document"]["service"][0]["serviceEndpoint"]
         node_url = node_url[:-1] + "1"  # fix url to admin point, BAD fix
         # print(node_url)
@@ -1465,8 +1476,9 @@ class DemoAgent:
             url=f"{node_url}/connections/receive-invitation",
             json=invite,
         )
-        resp = await response.json()
-        log_json(resp)
+        if self.log_level == LogLevel.DEBUG:
+            resp = await response.json()
+            log_json(resp)
         return recipient_key
 
 
