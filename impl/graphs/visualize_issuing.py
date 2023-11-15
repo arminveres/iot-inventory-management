@@ -28,7 +28,6 @@ prev_time = 0
 no_nodes = 0
 
 for entry in data:
-    print(entry)
     if entry["node"] != prev_node and entry["action"] == "ISSUING":
         prev_node = entry["node"]
         prev_time = entry["time"]
