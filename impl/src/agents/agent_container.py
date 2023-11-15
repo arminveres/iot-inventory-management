@@ -32,6 +32,7 @@ from support.utils import (  # noqa:E402
     log_msg,
     log_status,
     log_timer,
+    LogLevel,
 )
 
 from support.perf_analysis import log_time_to_file
@@ -1293,6 +1294,7 @@ def arg_parser(ident: str = None, port: int = 8020):
         action="store_true",
         help="Accept the ledger's TAA, if required",
     )
+    parser.add_argument("--log-level", choices=list(LogLevel), type=LogLevel.get_str)
     return parser
 
 

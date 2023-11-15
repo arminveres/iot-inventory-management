@@ -4,6 +4,7 @@ import os
 import sys
 from timeit import default_timer
 import subprocess
+import enum
 
 import prompt_toolkit
 from prompt_toolkit.application import run_in_terminal
@@ -267,3 +268,18 @@ def run_executable(args: tuple[str]):
     popen = subprocess.Popen(args, stdout=subprocess.PIPE)
     popen.wait()
     return popen.stdout.read().decode("utf-8")
+
+
+class LogLevel(enum.Enum):
+    DEBUG = 0  # most information
+    INFO = 1  # some nice to have infos
+    PERF = 2  # no infos except for erros
+
+    @staticmethod
+    def get_str(value):
+        if value == "debug":
+            return LogLevel.DEBUG
+        if value == "info":
+            return LogLevel.INFO
+        if value == "perf":
+            return LogLevel.PERF
