@@ -188,10 +188,7 @@ class IssuerAgent(AriesAgent):
         for key, value in self.db_client.db_keys[DB_NAME].items():
             # if the did value is missing get it!
             if value.get("controller_did") is None:
-                db_res = await self.db_client.query_key(DB_NAME, key)
-                self.db_client.db_keys[DB_NAME][key].update(db_res)
-                # self.log("Updated local db map...")
-                # log_json(self.db_client.db_keys[DB_NAME][key])
+                _ = await self.db_client.query_key(DB_NAME, key)
 
             if value.get("controller_did") == node_did:
                 node_name = key
@@ -214,6 +211,7 @@ class IssuerAgent(AriesAgent):
         db_entry = node_cred.copy()
         db_entry["controller_did"] = node_did
         db_entry["components"] = components
+        db_entry["valid"] = False
 
         await self.db_client.record_key(DB_NAME, node_name, db_entry)
         await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
@@ -241,6 +239,7 @@ class IssuerAgent(AriesAgent):
         await self.db_client.record_key(db_name, node_name, response)
 
         # FIXME: (aver) remove hard coded connection_id and retrieve or store in database
+        # TODO: (aver) fix for offline devices
         await self.admin_POST(
             "/revocation/revoke",
             {
@@ -312,7 +311,7 @@ class IssuerAgent(AriesAgent):
         _ = await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
         log_time_to_file("issue", f"ISSUING: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
-    async def onboard_node(self, domain: str, node_name: str, node_did: str):
+    async def onboard_node(self, db_name: str, node_name: str, node_did: str):
         """
         params:
             agent_container: AgentContainer,
@@ -343,8 +342,8 @@ class IssuerAgent(AriesAgent):
         db_entry["controller_did"] = node_did
         db_entry["components"] = components
 
-        await self.db_client.record_key(domain, node_name, db_entry)
-        await self.issue_credential(node_did, node_name, node_cred, domain)
+        await self.db_client.record_key(db_name, node_name, db_entry)
+        await self.issue_credential(node_did, node_name, node_cred, db_name)
 
     async def mass_onboard(self):
         """
@@ -382,6 +381,7 @@ async def create_agent_container(args) -> AgentContainer:
     agent_container = await create_agent_with_args(args)
     agent_container.seed = "Autho_00000000000000000000000000"
     agent_container.prefix = agent_container.ident
+
     agent = IssuerAgent(
         ident=agent_container.ident,
         http_port=agent_container.start_port,
@@ -504,6 +504,12 @@ async def main():
             prompt_options, "onboard", "  [3]: Onboard node with public DID\n"
         )
         prompt_options = add_option(prompt_options, "mass_onboard", "  [4]: Mass Onboard fleet\n")
+        prompt_options = add_option(
+            prompt_options, "db_qall", "  [5]: Query all nodes from Database\n"
+        )
+        prompt_options = add_option(
+            prompt_options, "db_qsingle", "  [6]: Query single node from Database\n"
+        )
 
         async for option in prompt_loop(get_prompt):
             if option is not None:
@@ -566,6 +572,14 @@ async def main():
                         await agent_container.agent.db_client.query_key(DB_NAME, device)
                         for device in agent_container.agent.db_client.db_keys[DB_NAME]
                     ]
+                )
+
+            elif option == "6":
+                if node_name is None or node_name == "":
+                    log_msg("Aborting search...")
+                    continue
+                log_json(
+                    await agent_container.agent.db_client.query_key(DB_NAME, node_name.strip())
                 )
 
             elif option == "h":

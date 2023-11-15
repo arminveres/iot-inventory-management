@@ -76,7 +76,11 @@ class OrionDB:
         if enc_value is None:
             return None
         self.last_block_num = response["response"].get("metadata").get("version").get("block_num")
-        return decode_data(enc_value)
+        decoded_value = decode_data(enc_value)
+        # not the most efficient way, but we store the keys locally, lazily, because we sometimes
+        # need to access them quickly
+        self.db_keys[db_name][key].update(decoded_value)
+        return decoded_value
 
     async def db_exists(self, db_name: str):
         """
@@ -284,9 +288,12 @@ class OrionDB:
                 self.db_keys[db_name][key_name] = {}
             elif self.log_level == LogLevel.DEBUG:
                 log_msg(f"ORION: Key {key_name} already recorded: UPDATE!")
+
+            # WARN: remove once debugged
+            self.db_keys[db_name][key_name].update(value)
             if self.log_level == LogLevel.DEBUG:
                 log_status("ORION: Added to local map")
-
+                log_json(self.db_keys[db_name][key_name])
         else:
             response = await response.json()
             log_status("\n\nERRROR HAPPENED\n\n")
@@ -304,17 +311,19 @@ class OrionDB:
         enc_end_key = (
             base64.urlsafe_b64encode(bytes(end_key, encoding="utf-8")).decode().replace("=", "")
         )
+        limit = str(1000)
 
         payload = {
             "user_id": self.__username,
             "db_name": db_name,
             "start_key": start_key,
             "end_key": end_key,
-            "limit": "100",
+            "limit": limit,
         }
         signature = self.__sign_tx(payload)
         response = await self.__client_session.get(
-            url=f"{self.__orion_db_url}/data/{db_name}?startkey={enc_start_key}&endkey={enc_end_key}&limit=100",
+            url=f"{self.__orion_db_url}/data/{db_name}\
+                  ?startkey={enc_start_key}&endkey={enc_end_key}&limit={limit}",
             headers={"UserID": self.__username, "Signature": signature},
         )
 
@@ -331,10 +340,10 @@ class OrionDB:
             log_msg(response)
 
     async def delete_key(self, db_name: str, key_name: str):
+        """
+        Remove an existing key from the database
+        """
         headers = {"TxTimeout": "2s"}
-
-        # value = await self.query_key(db_name, key_name)
-        # block_num = value["response"]["metadata"]["version"]["block_num"]
         _ = await self.query_key(db_name, key_name)
         payload = {
             "must_sign_user_ids": [self.__username],
