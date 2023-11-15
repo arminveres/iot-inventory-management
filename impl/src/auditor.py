@@ -8,7 +8,7 @@ import sys
 from aiohttp import ClientSession
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
-from support.utils import log_json, log_msg, log_status, prompt
+from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
 
 
 class Auditor:
@@ -56,17 +56,16 @@ async def main():
     # response = await auditor.db_client.query_all("db1")
 
     # value = await auditor.db_client.query_key(db_to_check, "controller_node_0.agent")
-    node_input = await prompt("Node to be checked: ")
-    value = await auditor.db_client.query_key(db_to_check, node_input.strip())
+    async for option in prompt_loop("Node to be checked: "):
+        value = await auditor.db_client.query_key(db_to_check, option.strip())
+        # log_json(value)
+        marked_vulnerabilities = auditor.check_vulnerability(db_to_check, value["components"])
+        # do some magic, analysis and return with the marked vulnerable component send revoke request
+        # to issuer
+        marked_vulnerabilities = auditor.check_vulnerability(db_to_check, value["components"])
 
-    log_json(value)
-
-    # do some magic, analysis and return with the marked vulnerable component send revoke request
-    # to issuer
-    marked_vulnerabilities = auditor.check_vulnerability(db_to_check, value["components"])
-
-    if marked_vulnerabilities is not None:
-        await auditor.notify_maintainer(db_to_check, marked_vulnerabilities)
+        if marked_vulnerabilities is not None:
+            await auditor.notify_maintainer(db_to_check, marked_vulnerabilities)
 
     # except Exception:
     await auditor.client_session.close()
