@@ -14,14 +14,9 @@ from agents.agent_container import (
 from support.agent import DEFAULT_INTERNAL_HOST
 from support.database import OrionDB
 from support.utils import log_json, log_msg, log_status, prompt, prompt_loop
+from support.perf_analysis import log_time_to_file
 
 DB_NAME = "db1"
-PERF_LOG = "./.agent_cache/time_log"
-
-
-def log_time_to_file(text):
-    with open(PERF_LOG, mode="a", encoding="utf-8") as perf_log:
-        perf_log.write(text)
 
 
 class IssuerAgent(AriesAgent):
@@ -213,7 +208,7 @@ class IssuerAgent(AriesAgent):
 
         await self.db_client.record_key(DB_NAME, node_name, db_entry)
         await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
-        log_time_to_file(f"UPDATE: time: {time.perf_counter_ns()}, node: {node_name}\n")
+        log_time_to_file("update", f"UPDATE: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
     # =============================================================================================
     # Additional methods
@@ -246,7 +241,9 @@ class IssuerAgent(AriesAgent):
                 "comment": json.dumps(revocation_reason),
             },
         )
-        log_time_to_file(f"REVOCATION: time: {time.perf_counter_ns()}, node: {node_name}\n")
+        log_time_to_file(
+            "revocation", f"REVOCATION: time: {time.perf_counter_ns()}, node: {node_name}\n"
+        )
 
     async def issue_credential(
         self,
@@ -300,7 +297,7 @@ class IssuerAgent(AriesAgent):
             "filter": {"indy": {"cred_def_id": self.cred_def_id}},
         }
         _ = await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
-        log_time_to_file(f"REISSUING: time: {time.perf_counter_ns()}, node: {node_name}\n")
+        log_time_to_file("issue", f"ISSUING: time: {time.perf_counter_ns()}, node: {node_name}\n")
 
     async def onboard_node(self, domain: str, node_name: str, node_did: str):
         """

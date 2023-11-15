@@ -34,6 +34,8 @@ from support.utils import (  # noqa:E402
     log_timer,
 )
 
+from support.perf_analysis import log_time_to_file
+
 
 CRED_PREVIEW_TYPE = "https://didcomm.org/issue-credential/2.0/credential-preview"
 SELF_ATTESTED = os.getenv("SELF_ATTESTED")
@@ -291,6 +293,9 @@ class AriesAgent(DemoAgent):
             self.log("schema_id", cred["schema_id"])
             # track last successfully received credential
             self.last_credential_received = cred
+            log_time_to_file(
+                "issue", f"CRED_RECEIVED: time: {time.perf_counter_ns()}, node: {self.ident}\n"
+            )
 
         if rev_reg_id and cred_rev_id:
             self.log(f"Revocation registry ID: {rev_reg_id}")
