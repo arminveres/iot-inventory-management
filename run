@@ -22,19 +22,21 @@ Usage:
                 Node: Agents handling IoT devices
                 Issuer: Agents handling admin side in Maintainer Domain
                 Verifier: Checks a given credential
-            REQUIRES: a 'port' and a 'name', 'multinenacy' optional for Node.
+            REQUIRES: a 'port' and a 'name', 'multitenancy' optional for Node.
         -p, --port [number]:
             port number at which to operate
         -n, --name [string]:
             Name of the Agent type to be run
         --multitenant:
-            Enables support for multinenacy, i.e., holding wallets for sub-agents.
+            Enables support for multitenancy, i.e., holding wallets for sub-agents.
 
     Indepedendent flags:
         -a, --auditor:
             Runs only the auditor and no Aries logic, can only be run in combination with the port flag.
         -u, --updater:
-            Runs only the updater and no Aries logic, use WITHOUT other flags.
+            Runs only the updater and no Aries logic, can only be run in combination with the port flag.
+        --background:
+            Docker related flag, run without attaching to the current terminal. Can be used with all instances.
         -h, --help:
             Print help/usage
 EOF
