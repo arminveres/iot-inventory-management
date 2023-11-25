@@ -1,12 +1,12 @@
 [submodule "impl/dependencies/aca-py"]
-	path = impl/dependencies/aca-py
+	path = dependencies/aca-py
 	url = https://github.com/hyperledger/aries-cloudagent-python/
 [submodule "impl/dependencies/von-network"]
-	path = impl/dependencies/von-network
+	path = dependencies/von-network
 	url = https://github.com/bcgov/von-network
 [submodule "impl/dependencies/orion-server"]
-	path = impl/dependencies/orion-server
+	path = dependencies/orion-server
 	url = https://github.com/hyperledger-labs/orion-server
 [submodule "impl/dependencies/indy-tails-server"]
-	path = impl/dependencies/indy-tails-server
+	path = dependencies/indy-tails-server
 	url = https://github.com/bcgov/indy-tails-server.git
