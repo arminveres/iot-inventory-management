@@ -38,18 +38,42 @@ The full repo including submodules needs to be cloned:
 
 In order to run the demo network `docker` is needed. (add other requirements)
 
-## Structure
+For local development, we offer to solutions for python environments.
+Either use `conda` and setup an environment using the `acapy-env.yml` and subsequently installing missing packages
+through pip with the `requirements.dev.txt` file or using Python virtual environment solely with
+`requirements.dev.noconda.txt`.
 
-### [Thesis](./thesis/)
+## Repository Structure
 
-Contains markdown documents for thesis content
+### [Archive](./.archive)
 
-### [Implementation](./impl/)
+Holds some experimentation with other frameworks than Aries/ACA-py
 
-Contains the implementation and its dependencies
+### [Cyrpto](./crypto)
 
-### [Notes](./notes/)
+Holds cryptographic information for connection to the Hyperledger Orion Database
 
-Contains personal notes, irrelevant for final submission.
+### [Dependencies](./dependencies)
 
-### [Presentation Slides](https://docs.google.com/presentation/d/1dhrsWy_iDS3d3HnWNr0E9MciqOHN4IZfDC7f3xYNjKo/edit?usp=sharing)
+Holds git submodules, that we depend on for running our framework.
+
+### [Docker](./docker/)
+
+Holds `Dockerfiles` for every type of agent we have.
+
+### [Graphs](./graphs)
+
+Holds some of the visualizations and the corresponding scripts used in evaluating the performance.
+
+### [Scripts](./scripts)
+
+Holds relevant scripts, that are either used in the `manage` or `run` scripts, or they are
+completely standalone, such as the `./scripts/setup-many-nodes.sh` and `./scripts/stop-nodes.sh`.
+
+### [Source](./src)
+
+Holds all the python source files used to implement our framework.
+
+### [Agent Cache](./.agent_cache) and [Logs](./logs)
+
+Both are used to hold temporary information while running the framework.
