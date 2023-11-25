@@ -3,7 +3,7 @@
 FROM python:3.9-slim-bookworm
 LABEL maintainer="Armin Veres"
 
-ADD ./requirements.txt .
+ADD ./requirements.docker.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # copy files over

@@ -10,7 +10,7 @@ ARG gozip=go${goversion}.linux-amd64.tar.gz
 # Enable some bash features such as pushd/popd
 SHELL ["bash", "-c"]
 
-ADD ./requirements.txt ./requirements.txt
+ADD ./requirements.docker.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir pyyaml
 

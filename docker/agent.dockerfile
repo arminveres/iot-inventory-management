@@ -16,7 +16,7 @@ RUN mkdir -p bin && curl -L -o bin/jq \
 
 RUN pip install --no-cache-dir aries-cloudagent
 
-ADD ./requirements.txt ./requirements.txt
+ADD ./requirements.docker.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # install orion dependencies
