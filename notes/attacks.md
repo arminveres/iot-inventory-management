@@ -1,5 +1,0 @@
-- zero-day vulnerability
-- cloning attack
-- gray hole attacks
-- replay attacks
-- DDoS attacks

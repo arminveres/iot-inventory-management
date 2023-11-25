@@ -1,1 +1,0 @@
-- Collins uses/plans to use [asvin](https://asvin.readthedocs.io/en/latest/) for ota updating
