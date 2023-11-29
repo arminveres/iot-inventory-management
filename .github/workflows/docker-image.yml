@@ -13,8 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build the Agent Docker image
-        run: docker build impl --file impl/docker/agent.dockerfile --tag ba-agent:$(date +%s)
+        run: docker build . --file docker/agent.dockerfile --tag ba-agent:$(date +%s)
       - name: Build the Auditor Docker image
-        run: docker build impl --file impl/docker/auditor.dockerfile --tag ba-auditor:$(date +%s)
+        run: docker build . --file docker/auditor.dockerfile --tag ba-auditor:$(date +%s)
       - name: Build the Updater Docker image
-        run: docker build impl --file impl/docker/updater.dockerfile --tag ba-updater:$(date +%s)
+        run: docker build . --file docker/updater.dockerfile --tag ba-updater:$(date +%s)
