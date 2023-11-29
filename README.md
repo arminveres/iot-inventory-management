@@ -1,34 +1,16 @@
 # Bachelor Thesis: Inventorying and Secure life-cycles of IoT Devices
 
-## This thesis will
+This framework was developed as part of a bachelor thesis at the University of Zürich, ath the
+Communication Systems Group (CSG), under supervision from Dr. Bruno Rodrigues and Katharina O. E.
+Müller.
 
-- Develop a **service to support security information** sharing between stakeholders
+This thesis developed a lifecycle encompassing framework by relying on decentralized identity
+management and configuration and management database (CMDB), based on Hyperledger Aries and
+Hyperledger Orion.
 
-- Consider Distributed Ledger Technology for sharing cybersecurity information
+<!-- ## Abstract -->
 
-- Throughout security monitoring activities vulnerabilities may be detected, that will be shared
-  with manufacturer, prompting mitigation and resolutions.
-
-- Devices deploying this methodology will be able to be reconfigured throughout whole life-cycle
-
-- Develop bootstrapping mechanism to **provide light-weight bootstrapping protocol**, supporting
-  different authentication methods, depending on the devices characteristics/key-management.
-
-- Device inventorying, keeping track of each (embedded) IoT device
-
-- Secure updating/patching, as close as possible to end device
-
-- Analysis of Bifröst/Interledger approaches to interconnect different blockchain implementations
-
-- Consider mitigation using Manufacturer Usage Description
-
-## Challenges
-
-- Using same pre-shared credential for every device is the easiest way, but not identifiable for
-  each device
-  - Clonability of DID credentials
-- Most proposals based on centralized models (client-server) -> use DLT to make it more efficient,
-  decentralized
+<!-- ## Challenges -->
 
 ## Setup
 
@@ -45,11 +27,11 @@ through pip with the `requirements.dev.txt` file or using Python virtual environ
 
 ## Repository Structure
 
-### [Archive](./.archive)
+> [!NOTE]
+> The `feat/portability` branch offers an experimental peek into deploying this framework on to
+> further devices with a Raspberry Pi 4B+ as an example.
 
-Holds some experimentation with other frameworks than Aries/ACA-py
-
-### [Cyrpto](./crypto)
+### [Crypto](./crypto)
 
 Holds cryptographic information for connection to the Hyperledger Orion Database
 
@@ -77,3 +59,7 @@ Holds all the python source files used to implement our framework.
 ### [Agent Cache](./.agent_cache) and [Logs](./logs)
 
 Both are used to hold temporary information while running the framework.
+
+### [Archive](./.archive)
+
+Holds experiments with other frameworks and unused artifacts.
