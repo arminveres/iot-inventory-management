@@ -6,3 +6,4 @@ __pycache__/
 agent.tar
 logs
 .agent_cache
+*.zip

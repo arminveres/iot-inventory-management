@@ -33,7 +33,8 @@ through pip with the `requirements.dev.txt` file or using Python virtual environ
 
 ### [Crypto](./crypto)
 
-Holds cryptographic information for connection to the Hyperledger Orion Database
+Holds cryptographic information for connection to the Hyperledger Orion Database. In a production
+environment, this folder should ideally stay a secret for plain plain security purpose.
 
 ### [Dependencies](./dependencies)
 
