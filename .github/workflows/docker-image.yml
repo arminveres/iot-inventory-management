@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   build:
@@ -12,9 +12,21 @@ jobs:
     # TODO: (aver) add private image push!
     steps:
       - uses: actions/checkout@v3
-      - name: Build the Agent Docker image
-        run: docker build . --file docker/agent.dockerfile --tag ba-agent:$(date +%s)
-      - name: Build the Auditor Docker image
-        run: docker build . --file docker/auditor.dockerfile --tag ba-auditor:$(date +%s)
-      - name: Build the Updater Docker image
-        run: docker build . --file docker/updater.dockerfile --tag ba-updater:$(date +%s)
+
+      - name: Login to ghcr.io
+        run: docker login --username arminveres --password ${{ secrets.GH_PAT }} ghcr.io
+
+      - name: Build and push the Agent Docker image
+        run: |
+          docker build . --file docker/agent.dockerfile --tag ghcr.io/arminveres/bachelor-thesis-23/node-agent:latest
+          docker push ghcr.io/arminveres/bachelor-thesis-23/node-agent:latest
+
+      - name: Build and Push the Auditor Docker image
+        run: |
+          docker build . --file docker/auditor.dockerfile --tag ghcr.io/arminveres/bachelor-thesis-23/auditor:latest
+          docker push ghcr.io/arminveres/bachelor-thesis-23/auditor:latest
+
+      - name: Build and Push the Updater Docker image
+        run: |
+          docker build . --file docker/updater.dockerfile --tag ghcr.io/arminveres/bachelor-thesis-23/updater:latest
+          docker push ghcr.io/arminveres/bachelor-thesis-23/updater:latest
