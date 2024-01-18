@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 100
+ignore = ["E501"]
+
+# we shouldn't have two formatters though.
+[tool.black]
+line-length = 100
+
+[tool.pyright]
+typeCheckingMode = "off"
+venv = "aries"

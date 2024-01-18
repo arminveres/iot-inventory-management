@@ -1,0 +1,9 @@
+.DS_Store
+*.bkp
+*.dtmp
+
+__pycache__/
+agent.tar
+logs
+.agent_cache
+*.zip

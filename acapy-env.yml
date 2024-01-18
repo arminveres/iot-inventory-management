@@ -1,0 +1,15 @@
+name: aries
+
+channel_priority: strict
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.9
+  - ipython
+  - asyncpg
+  - aiohttp
+  - prompt_toolkit
+  - web.py
+  - pygments
+  - qrcode
