@@ -48,6 +48,21 @@ Either use `conda` and setup an environment using the `acapy-env.yml` and subseq
 through pip with the `requirements.dev.txt` file or using Python virtual environment solely with
 `requirements.dev.noconda.txt`.
 
+### Maintainer
+
+Navigate to the `./dependencies/von-network` and create a local image, over which we will be running
+our Indy development network: `./manage build`
+
+Going back to the root of the repository, to setup the infrastructures run `./manage setup`
+
+### Physical Node
+
+Activate the Conda/Mamba environment to be able to run our setup, since it will run outside of
+Docker, directly through `python3`: `micromamba activate aries`, use your choice conda drop in
+command.
+At the root of the repository, to setup the infrastructures run `./manage setup node` and finally
+`./run_local_node`, optionally specifying a name, which by default will be 'raspi'.
+
 ## Repository Structure
 
 > [!NOTE]

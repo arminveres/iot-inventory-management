@@ -1,8 +1,8 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 set -e
 
 function get_zerotier_address {
-	if [[ $# -ne 1 ]]; then
+	if [[ $# -gt 1 ]]; then
 		echo "only 1 argument allowed, the network name"
 		exit 1
 	fi

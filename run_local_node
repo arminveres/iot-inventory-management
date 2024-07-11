@@ -1,15 +1,16 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 set -e
 
 ZRT_NETWORK=ba-arminveres-23
 
 # TODO: (aver) find a better way to handle this
 # Home Workstation ip address
-WORKSTATION=172.24.101.208
-# Laptop ip address
-# WORKSTATION=172.24.136.53
+WORKSTATION=172.24.254.31
 
-export DOCKERHOST=$(./scripts/get_zerotier_addr.sh $ZRT_NETWORK)
+if [[ -z "$DOCKERHOST" ]]; then
+	DOCKERHOST="$(./scripts/get_zerotier_addr.sh $ZRT_NETWORK)"
+	export DOCKERHOST
+fi
 export UPDATER_URL="http://$WORKSTATION:8080"
 export PUBLIC_TAILS_URL="http://$WORKSTATION:6543"
 export LEDGER_URL="http://$WORKSTATION:9000"
@@ -17,13 +18,19 @@ export GENESIS_URL="$LEDGER_URL/genesis"
 export POSTGRES=1
 export RUNMODE=pwd
 
-NODE_NAME=node_raspi
+NODE_NAME="${1:-node_raspi}"
 
 cp ./_updating/_old_file.py ./src/shady_stuff.py
 mkdir -p src/.agent_cache
 
 pushd src
-python3 -m agents.node --wallet-type askar --did-exchange --reuse-connections --revocation --ident $NODE_NAME --port 8000
+python3 -m agents.node \
+	--wallet-type askar \
+	--did-exchange \
+	--reuse-connections \
+	--revocation \
+	--ident "$NODE_NAME" \
+	--port 8000
 popd
 
 rm ./src/shady_stuff.py

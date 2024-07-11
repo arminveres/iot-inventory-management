@@ -3,7 +3,7 @@
 set -eo pipefail
 
 function print_usage {
-    cat <<EOF
+	cat <<EOF
 Manage infrastructure for the Identity Management framework.
 Instantiates Orion Database Node, VON-network for Indy nodes and PostgreSQL storage for individual nodes.
 
@@ -24,40 +24,45 @@ Usage:
 EOF
 }
 
+ZRT_NETWORK=ba-arminveres-23
+
 cmd=$1
 option=$2
-export DOCKERHOST=172.24.101.208
-# export DOCKERHOST=172.24.136.53
+# export DOCKERHOST=172.24.254.31
+if [[ -z "$DOCKERHOST" ]]; then
+	DOCKERHOST="$(./scripts/get_zerotier_addr.sh $ZRT_NETWORK)"
+	export DOCKERHOST
+fi
 
 if [[ -n $option && $option != 'node' ]]; then
-    echo "Unknown sub-option $option"
-    echo
-    print_usage
-    exit 1
+	echo "Unknown sub-option $option"
+	echo
+	print_usage
+	exit 1
 fi
 
 case $cmd in
-    setup)
-        ./scripts/setup.sh "$option"
-        ;;
-    teardown)
-        ./scripts/teardown.sh "$option"
-        ;;
-    restart)
-        ./scripts/teardown.sh "$option" && ./scripts/setup.sh "$option"
-        ;;
-    clean)
-        printf "Cleaning Docker ...\n\n"
-        printf "ATTENTION: This invokes docker system prune, running system wide cleaning\n\n"
-        docker system prune
-        ;;
-    help)
-        print_usage
-        ;;
-    *)
-        echo "Unknown Option $cmd"
-        echo
-        print_usage
-        exit 1
-        ;;
+setup)
+	./scripts/setup.sh "$option"
+	;;
+teardown)
+	./scripts/teardown.sh "$option"
+	;;
+restart)
+	./scripts/teardown.sh "$option" && ./scripts/setup.sh "$option"
+	;;
+clean)
+	printf "Cleaning Docker ...\n\n"
+	printf "ATTENTION: This invokes docker system prune, running system wide cleaning\n\n"
+	docker system prune
+	;;
+help)
+	print_usage
+	;;
+*)
+	echo "Unknown Option $cmd"
+	echo
+	print_usage
+	exit 1
+	;;
 esac
