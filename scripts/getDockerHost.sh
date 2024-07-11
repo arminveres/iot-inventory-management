@@ -19,16 +19,16 @@
 # to the `docker run` command in order for it to work.
 # --------------------------------------------------------------------
 function getDockerHost() {
-    (
-        local dockerHostAddress
-        unset dockerHostAddress
-        if [[ $(uname) == "Linux" ]]; then
-            dockerHostAddress=$(docker run --rm --net=host eclipse/che-ip)
-        else
-            dockerHostAddress=host.docker.internal
-        fi
-        echo "${DOCKERHOST:-${APPLICATION_URL:-${dockerHostAddress}}}"
-    )
+	(
+		local dockerHostAddress
+		unset dockerHostAddress
+		if [[ $(uname) == "Linux" ]]; then
+			dockerHostAddress=$(docker run --rm --net=host eclipse/che-ip)
+		else
+			dockerHostAddress=host.docker.internal
+		fi
+		echo "${DOCKERHOST:-${APPLICATION_URL:-${dockerHostAddress}}}"
+	)
 }
 # ====================================================================
 

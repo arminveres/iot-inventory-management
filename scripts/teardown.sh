@@ -1,18 +1,18 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 set -e
 set -o pipefail
 
 # on Windows, docker run needs to be prefixed by winpty
 if [ "$OSTYPE" == "msys" ]; then
-    DOCKER="winpty docker"
+	DOCKER="winpty docker"
 else
-    DOCKER=${DOCKER:-docker}
+	DOCKER=${DOCKER:-docker}
 fi
 
 $DOCKER stop indy-demo-postgres &>/dev/null && echo "Stopped previous postgres container" || true
 
 if [[ $1 == 'node' ]]; then
-    exit 0
+	exit 0
 fi
 
 echo "Running from Directory:  $(pwd)"

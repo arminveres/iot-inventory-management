@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 # Script based off of https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/run_demo
 
 set -e
@@ -7,13 +7,13 @@ set -o pipefail
 
 # on Windows, docker run needs to be prefixed by winpty
 if [ "$OSTYPE" == "msys" ]; then
-    DOCKER="winpty docker"
+	DOCKER="winpty docker"
 else
-    DOCKER=${DOCKER:-docker}
+	DOCKER=${DOCKER:-docker}
 fi
 
 function print_usage {
-    cat <<EOF
+	cat <<EOF
 Run an Aries agent with below options.
 Usage:
     Agent related flags:
@@ -56,121 +56,121 @@ LEDGER_URL="http://$DOCKERHOST:9000"
 GENESIS_URL="$LEDGER_URL/genesis"
 
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        -p | --port)
-            PORT=$2
-            # We define a portrange of +9 for each agent
-            PORTRANGE="$2-$((PORT + 9))"
-            shift
-            shift
-            ;;
-        -a | --auditor)
-            AUDITOR=1
-            shift
-            ;;
-        -u | --updater)
-            UPDATER=1
-            shift
-            ;;
-        -t | --type)
-            AGENT_TYPE=$2
-            shift
-            shift
-            ;;
-        -n | --name)
-            AGENT_NAME=$2
-            shift
-            shift
-            ;;
-        --multitenant)
-            MULTITENANT=1
-            shift
-            ;;
-        --background)
-            BACKGROUND=1
-            shift
-            ;;
-        -h | --help)
-            print_usage
-            exit 1
-            ;;
-        -*)
-            echo "Unknown option $1"
-            usage
-            exit 1
-            ;;
-    esac
+	case $1 in
+	-p | --port)
+		PORT=$2
+		# We define a portrange of +9 for each agent
+		PORTRANGE="$2-$((PORT + 9))"
+		shift
+		shift
+		;;
+	-a | --auditor)
+		AUDITOR=1
+		shift
+		;;
+	-u | --updater)
+		UPDATER=1
+		shift
+		;;
+	-t | --type)
+		AGENT_TYPE=$2
+		shift
+		shift
+		;;
+	-n | --name)
+		AGENT_NAME=$2
+		shift
+		shift
+		;;
+	--multitenant)
+		MULTITENANT=1
+		shift
+		;;
+	--background)
+		BACKGROUND=1
+		shift
+		;;
+	-h | --help)
+		print_usage
+		exit 1
+		;;
+	-*)
+		echo "Unknown option $1"
+		usage
+		exit 1
+		;;
+	esac
 done
 
 # Catch incompatible flags
 if [[ $MULTITENANT == 1 ]]; then
-    if [[ $AUDITOR == 1 || $UPDATER == 1 ]]; then
-        printf "Invalid combination, only Agents can have multitenancy activated!\n\n"
-        print_usage
-        exit 1
-    fi
+	if [[ $AUDITOR == 1 || $UPDATER == 1 ]]; then
+		printf "Invalid combination, only Agents can have multitenancy activated!\n\n"
+		print_usage
+		exit 1
+	fi
 elif [[ $AUDITOR == 1 && $UPDATER == 1 ]]; then
-    printf "Invalid combination, cannot be auditor and updater at same time!\n\n"
-    print_usage
-    exit 1
+	printf "Invalid combination, cannot be auditor and updater at same time!\n\n"
+	print_usage
+	exit 1
 fi
 
 DOCKER_FLAGS=(
-    "--network=$DOCKER_NETWORK"
-    "-e DOCKERHOST=$DOCKERHOST"
-    "-e RUNMODE=$RUN_MODE"
-    "-it"
+	"--network=$DOCKER_NETWORK"
+	"-e DOCKERHOST=$DOCKERHOST"
+	"-e RUNMODE=$RUN_MODE"
+	"-it"
 )
 
 if [[ $BACKGROUND == 1 ]]; then
-    DOCKER_FLAGS+=("-d")
+	DOCKER_FLAGS+=("-d")
 fi
 
 if [[ $AUDITOR == 1 ]]; then
-    # in case we have an auditor, we skip a lot of the default environments for the aries agents
-    AGENT_NAME=auditor
-    AGENT_FILE="$AGENT_NAME"
-    DOCKER_IMAGE_NAME=auditor
-    DOCKER_FLAGS+=(
-        "-p 0.0.0.0:$PORT:$PORT"
-    )
+	# in case we have an auditor, we skip a lot of the default environments for the aries agents
+	AGENT_NAME=auditor
+	AGENT_FILE="$AGENT_NAME"
+	DOCKER_IMAGE_NAME=auditor
+	DOCKER_FLAGS+=(
+		"-p 0.0.0.0:$PORT:$PORT"
+	)
 elif [[ $UPDATER == 1 ]]; then
-    AGENT_NAME=updater
-    AGENT_FILE="$AGENT_NAME"
-    DOCKER_IMAGE_NAME=updater
-    DOCKER_FLAGS+=(
-        "-p 0.0.0.0:$PORT:$PORT"
-    )
+	AGENT_NAME=updater
+	AGENT_FILE="$AGENT_NAME"
+	DOCKER_IMAGE_NAME=updater
+	DOCKER_FLAGS+=(
+		"-p 0.0.0.0:$PORT:$PORT"
+	)
 else
-    mkdir -p .agent_cache
-    DOCKER_IMAGE_NAME="agent"
-    AGENT_FILE="agents.$AGENT_TYPE"
-    DOCKER_FLAGS+=(
-        "--name $AGENT_NAME"
-        "-e LEDGER_URL=$LEDGER_URL"
-        "-e GENESIS_URL=$GENESIS_URL"
-        "-e POSTGRES=1"
-        "-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
-        "-v ./.agent_cache/:/home/aries/.agent_cache/"
-    )
-    ARIES_FLAGS=(
-        "--wallet-type askar"
-        "--did-exchange"
-        "--reuse-connections"
-        "--revocation"
-        "--ident=$AGENT_NAME"
-        "--port $PORT"
-        "--log-level=perf"
-    )
-    if [[ $MULTITENANT == 1 ]]; then
-        ARIES_FLAGS+=("--multitenant")
-    fi
+	mkdir -p .agent_cache
+	DOCKER_IMAGE_NAME="agent"
+	AGENT_FILE="agents.$AGENT_TYPE"
+	DOCKER_FLAGS+=(
+		"--name $AGENT_NAME"
+		"-e LEDGER_URL=$LEDGER_URL"
+		"-e GENESIS_URL=$GENESIS_URL"
+		"-e POSTGRES=1"
+		"-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
+		"-v ./.agent_cache/:/home/aries/.agent_cache/"
+	)
+	ARIES_FLAGS=(
+		"--wallet-type askar"
+		"--did-exchange"
+		"--reuse-connections"
+		"--revocation"
+		"--ident=$AGENT_NAME"
+		"--port $PORT"
+		"--log-level=perf"
+	)
+	if [[ $MULTITENANT == 1 ]]; then
+		ARIES_FLAGS+=("--multitenant")
+	fi
 fi
 # we need to build each time, so changed files get copied over
 $DOCKER build -t $DOCKER_IMAGE_NAME -f docker/$DOCKER_IMAGE_NAME.dockerfile . || exit 1
 
 # shellcheck disable=SC2048,SC2086
 $DOCKER container run --rm \
-    ${DOCKER_FLAGS[*]} \
-    $DOCKER_IMAGE_NAME "$AGENT_FILE" \
-    ${ARIES_FLAGS[*]}
+	${DOCKER_FLAGS[*]} \
+	$DOCKER_IMAGE_NAME "$AGENT_FILE" \
+	${ARIES_FLAGS[*]}
