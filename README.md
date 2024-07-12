@@ -48,6 +48,9 @@ Either use `conda` and setup an environment using the `acapy-env.yml` and subseq
 through pip with the `requirements.dev.txt` file or using Python virtual environment solely with
 `requirements.dev.noconda.txt`.
 
+To use the deployed Software Defined Network (SDN) you need to install [ZeroTier](https://www.zerotier.com/), which
+requires `root` privileges.
+
 ### Maintainer
 
 Navigate to the `./dependencies/von-network` and create a local image, over which we will be running
@@ -57,17 +60,15 @@ Going back to the root of the repository, to setup the infrastructures run `./ma
 
 ### Physical Node
 
-Activate the Conda/Mamba environment to be able to run our setup, since it will run outside of
-Docker, directly through `python3`: `micromamba activate aries`, use your choice conda drop in
-command.
+The physical nodes we deployed were Raspberry Pi 4 based, which are `ARM64`, where the Docker based
+infrastructure does not run, wherefore we deploy natively.
+
+Activate the Conda/Mamba environment to be able to run our setup, directly through `python3`: `micromamba activate aries`,
+use your choice of `conda` drop in command.
 At the root of the repository, to setup the infrastructures run `./manage setup node` and finally
-`./run_local_node`, optionally specifying a name, which by default will be 'raspi'.
+`./run_local_node`, optionally specifying a name, which by default will be `node_raspi`.
 
 ## Repository Structure
-
-> [!NOTE]
-> The `feat/portability` branch offers an experimental peek into deploying this framework on to
-> further devices with a Raspberry Pi 4B+ as an example.
 
 ### [Crypto](./crypto)
 
