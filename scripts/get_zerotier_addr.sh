@@ -8,8 +8,6 @@ function get_zerotier_address {
 	fi
 	network=$1
 
-	printf "The usage of ZeroTier requires root privileges.\n"
-	printf "The user may now be asked for the root password: \n\n"
 
 	sudo zerotier-cli listnetworks | grep "$network" | awk '{print $9}' | sed 's/\/[0-9]*//g'
 }
