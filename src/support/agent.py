@@ -253,69 +253,82 @@ class DemoAgent:
         revocation_registry_size: int = None,
         tag=None,
     ):
-        # Create a schema
-        schema_body = {
-            "schema_name": schema_name,
-            "schema_version": version,
-            "attributes": schema_attrs,
-        }
-        schema_response = await self.admin_POST("/schemas", schema_body)
-        if self.log_level == LogLevel.DEBUG:
-            log_json(json.dumps(schema_response), label="Schema:")
-        await asyncio.sleep(2.0)
-        if "schema_id" in schema_response:
-            # schema is created directly
-            schema_id = schema_response["schema_id"]
-        else:
-            # need to wait for the endorser process
-            schema_response = {"schema_ids": []}
-            attempts = 3
-            while 0 < attempts and 0 == len(schema_response["schema_ids"]):
-                schema_response = await self.admin_GET("/schemas/created")
-                if 0 == len(schema_response["schema_ids"]):
-                    await asyncio.sleep(1.0)
-                    attempts = attempts - 1
-            schema_id = schema_response["schema_ids"][0]
-        if self.log_level == LogLevel.DEBUG:
-            log_msg("Schema ID:", schema_id)
 
-        # Create a cred def for the schema
-        cred_def_tag = tag if tag else (self.ident + "." + schema_name).replace(" ", "_")
-        credential_definition_body = {
-            "schema_id": schema_id,
-            "support_revocation": support_revocation,
-            **{
-                "revocation_registry_size": revocation_registry_size
-                for _ in [""]
-                if support_revocation
-            },
-            "tag": cred_def_tag,
-        }
-        credential_definition_response = await self.admin_POST(
-            "/credential-definitions", credential_definition_body
-        )
-        await asyncio.sleep(2.0)
-        if "credential_definition_id" in credential_definition_response:
-            # cred def is created directly
-            credential_definition_id = credential_definition_response["credential_definition_id"]
+        # check for existing schemas
+        created_schemas = await self.admin_GET("/schemas/created")
+        if len(created_schemas) > 0:
+            schema_id = created_schemas["schema_ids"][0]
         else:
-            # need to wait for the endorser process
-            credential_definition_response = {"credential_definition_ids": []}
-            attempts = 3
-            while 0 < attempts and 0 == len(
-                credential_definition_response["credential_definition_ids"]
-            ):
-                credential_definition_response = await self.admin_GET(
-                    "/credential-definitions/created"
-                )
-                if 0 == len(credential_definition_response["credential_definition_ids"]):
-                    await asyncio.sleep(1.0)
-                    attempts = attempts - 1
-            credential_definition_id = credential_definition_response["credential_definition_ids"][
-                0
-            ]
-        if self.log_level == LogLevel.DEBUG:
-            log_msg("Cred def ID:", credential_definition_id)
+            # Create a schema
+            schema_body = {
+                "schema_name": schema_name,
+                "schema_version": version,
+                "attributes": schema_attrs,
+            }
+
+            schema_response = await self.admin_POST("/schemas", schema_body)
+            if self.log_level == LogLevel.DEBUG:
+                log_json(json.dumps(schema_response), label="Schema:")
+            await asyncio.sleep(2.0)
+            if "schema_id" in schema_response:
+                # schema is created directly
+                schema_id = schema_response["schema_id"]
+            else:
+                # need to wait for the endorser process
+                schema_response = {"schema_ids": []}
+                attempts = 3
+                while 0 < attempts and 0 == len(schema_response["schema_ids"]):
+                    schema_response = await self.admin_GET("/schemas/created")
+                    if 0 == len(schema_response["schema_ids"]):
+                        await asyncio.sleep(1.0)
+                        attempts = attempts - 1
+                schema_id = schema_response["schema_ids"][0]
+            if self.log_level == LogLevel.DEBUG:
+                log_msg("Schema ID:", schema_id)
+
+        created_cred_defs = await self.admin_GET("/credential-definitions/created")
+        if len(created_cred_defs) > 0:
+            credential_definition_id = created_cred_defs["credential_definition_ids"][0]
+        else:
+            # Create a cred def for the schema
+            cred_def_tag = tag if tag else (self.ident + "." + schema_name).replace(" ", "_")
+            credential_definition_body = {
+                "schema_id": schema_id,
+                "support_revocation": support_revocation,
+                **{
+                    "revocation_registry_size": revocation_registry_size
+                    for _ in [""]
+                    if support_revocation
+                },
+                "tag": cred_def_tag,
+            }
+            credential_definition_response = await self.admin_POST(
+                "/credential-definitions", credential_definition_body
+            )
+            await asyncio.sleep(2.0)
+            if "credential_definition_id" in credential_definition_response:
+                # cred def is created directly
+                credential_definition_id = credential_definition_response[
+                    "credential_definition_id"
+                ]
+            else:
+                # need to wait for the endorser process
+                credential_definition_response = {"credential_definition_ids": []}
+                attempts = 3
+                while 0 < attempts and 0 == len(
+                    credential_definition_response["credential_definition_ids"]
+                ):
+                    credential_definition_response = await self.admin_GET(
+                        "/credential-definitions/created"
+                    )
+                    if 0 == len(credential_definition_response["credential_definition_ids"]):
+                        await asyncio.sleep(1.0)
+                        attempts = attempts - 1
+                credential_definition_id = credential_definition_response[
+                    "credential_definition_ids"
+                ][0]
+            if self.log_level == LogLevel.DEBUG:
+                log_msg("Cred def ID:", credential_definition_id)
         return schema_id, credential_definition_id
 
     def get_agent_args(self):
