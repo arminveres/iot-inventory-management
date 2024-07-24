@@ -2,8 +2,8 @@
 # Script based off of https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/run_demo
 
 set -e
-# set -v # verbosity for debugging
 set -o pipefail
+# set -v # verbosity for debugging
 
 # on Windows, docker run needs to be prefixed by winpty
 if [ "$OSTYPE" == "msys" ]; then
@@ -139,8 +139,9 @@ elif [[ $UPDATER == 1 ]]; then
 	AGENT_NAME=updater
 	AGENT_FILE="$AGENT_NAME"
 	DOCKER_IMAGE_NAME=updater
+	# forward the interl 8080 port to the specified outer port
 	DOCKER_FLAGS+=(
-		"-p 0.0.0.0:$PORT:$PORT"
+		"-p 0.0.0.0:$PORT:8080"
 	)
 else
 	mkdir -p .agent_cache
