@@ -117,7 +117,11 @@ class NodeAgent(AriesAgent):
         issuer_url = response["did_document"]["service"][0]["serviceEndpoint"]
         issuer_url = issuer_url[:-1] + "2"
 
-        payload = {"node_did": self.did, "diff": changes}
+        payload = {
+            "node_name": self.ident.replace(".agent", ""),
+            "node_did": self.did,
+            "diff": changes
+        }
         response = await self.client_session.post(
             url=f"{issuer_url}/webhooks/topic/node_updated/",
             json=payload,
@@ -146,6 +150,9 @@ class NodeAgent(AriesAgent):
         Prints and returns the current credential state (true if revoked, or false for valid)
         """
         cred = await self._update_to_newest_cred()
+        if cred is None:
+            return
+
         self.log("The following credential:")
         log_json(cred)
         self.log("Status:")
