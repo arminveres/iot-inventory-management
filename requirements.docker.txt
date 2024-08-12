@@ -3,6 +3,6 @@ prompt_toolkit~=2.0.9
 web.py~=0.62
 pygments~=2.10
 qrcode[pil]~=6.1
-aiohttp~=3.8.6
+aiohttp~=3.10
 
 # vim: ft=requirements

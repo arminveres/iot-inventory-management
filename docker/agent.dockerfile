@@ -3,7 +3,7 @@
 #
 # FIXME: (aver) create local folder to run from, not from root!
 
-ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.10.4
+ARG from_image=ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.10.5
 FROM ${from_image}
 LABEL maintainer="Armin Veres"
 
