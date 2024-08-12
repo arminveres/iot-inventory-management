@@ -70,6 +70,11 @@ class NodeAgent(AriesAgent):
 
         message["comment"] = json.loads(message["comment"])
 
+        # TODO(aver): improve this handling
+        # early exit in case of manual revocation, no need to update
+        if message["comment"]["reason"] == "manually revoked by maintainer":
+            return
+
         diff = await self.get_update(message)
         await self.notify_admin_of_update(diff)
 

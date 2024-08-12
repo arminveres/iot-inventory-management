@@ -21,6 +21,7 @@ from aiohttp import (
     ClientError,
     ClientTimeout,
 )
+from aiohttp.client_exceptions import ClientConnectionError
 
 from .utils import flatten, log_json, log_msg, log_timer, output_reader, LogLevel
 
@@ -256,7 +257,7 @@ class DemoAgent:
 
         # check for existing schemas
         created_schemas = await self.admin_GET("/schemas/created")
-        if len(created_schemas) > 0:
+        if len(created_schemas["schema_ids"]) > 0:
             schema_id = created_schemas["schema_ids"][0]
         else:
             # Create a schema
@@ -287,7 +288,7 @@ class DemoAgent:
                 log_msg("Schema ID:", schema_id)
 
         created_cred_defs = await self.admin_GET("/credential-definitions/created")
-        if len(created_cred_defs) > 0:
+        if len(created_cred_defs["credential_definition_ids"]) > 0:
             credential_definition_id = created_cred_defs["credential_definition_ids"][0]
         else:
             # Create a cred def for the schema
@@ -1428,14 +1429,20 @@ class DemoAgent:
         # =========================================================================================
         # Send invitation
         # =========================================================================================
-        response = await self.client_session.post(
-            url=f"{node_url}/connections/receive-invitation",
-            json=invite,
-        )
-        if self.log_level == LogLevel.DEBUG:
-            resp = await response.json()
-            log_json(resp)
-        return recipient_key
+        try:
+            response = await self.client_session.post(
+                url=f"{node_url}/connections/receive-invitation",
+                json=invite,
+            )
+            if self.log_level == LogLevel.DEBUG:
+                resp = await response.json()
+                log_json(resp)
+            return recipient_key
+        # NOTE(aver): handle the case where a device is offline
+        # TODO(aver): Implement propagated handling of said error
+        except ClientConnectionError as e:
+            self.log(f"Unsuccesfull invitation with {e}...")
+            return ClientConnectionError
 
 
 class MediatorAgent(DemoAgent):

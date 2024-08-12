@@ -3,6 +3,7 @@ import json
 import sys
 from datetime import date
 import time
+from aiohttp.client_exceptions import ClientConnectionError
 
 from agents.agent_container import (
     CRED_PREVIEW_TYPE,
@@ -136,10 +137,11 @@ class IssuerAgent(AriesAgent):
         """
         Handle vulnerabilities presented to the maintainer/admin/issuer
         """
-        # FIXME: (aver) improve this 4 times nested loop !!!!
+        # FIXME(aver): improve this 4 times nested loop !!!!
         if self.log_level == LogLevel.INFO or self.log_level == LogLevel.DEBUG:
             log_msg("Received vulnearbility:")
             log_json(message)
+
         # Go through each vulnerability
         for vuln_notif in message:
             vuln_db_name = vuln_notif["db_name"]
@@ -180,11 +182,13 @@ class IssuerAgent(AriesAgent):
         Handle when a node sends an notification about its update state
         """
         node_did = "did:sov:" + message["node_did"]
+        node_name = message["node_name"]
+
         if self.log_level == LogLevel.INFO or self.log_level == LogLevel.DEBUG:
             self.log(f"Node {node_did} was updated")
             log_json(message)
-        # node_did = message["node_did"]
 
+        """
         for key, value in self.db_client.db_keys[DB_NAME].items():
             # if the did value is missing get it!
             if value.get("controller_did") is None:
@@ -194,8 +198,9 @@ class IssuerAgent(AriesAgent):
                 node_name = key
                 self.log(f"Found node: {node_name}")
                 break
+        """
 
-        # TODO: (aver) make components and node_cred pluggable
+        # TODO(aver): make components and node_cred pluggable
         components = {
             "software": {"python3": 3.9, "indy": 1.16, "shady_stuff": 0.2},
             "firmware": {},
@@ -232,17 +237,20 @@ class IssuerAgent(AriesAgent):
         """
         # we hereby fix, if restarted Maintainer, or generally disconnected devices
         if self.db_client.db_keys[db_name][node_name].get("connection_id") is None:
-            await self.establish_connection(db_name, node_name)
+            result = await self.establish_connection(db_name, node_name)
+            if result is ClientConnectionError:
+                self.log("Couldn't revoke credential, device OFFLINE")
+                return ClientConnectionError
 
         response = await self.db_client.query_key(db_name, node_name)
         cred_ex_id = response.get("cred_ex_id")
 
-        if cred_ex_id is None:
-            raise Exception("Cred Ex must not be None, major error happened.")
+        if cred_ex_id == "":
+            # raise Exception("Cred Ex must not be None, major error happened.")
+            self.log("cred_ex_id was empty in local database, fetching from aca-py")
 
-        # TODO: (aver) fix for offline devices
-        # currently aiohttp tries for an indefinite time and as soon as it could connect it updates
-        # the device!
+        # TODO(aver): fix for offline devices. Currently aiohttp tries for an indefinite time and as
+        # soon as it could connect it updates the device!
         try:
             await self.admin_POST(
                 "/revocation/revoke",
@@ -259,10 +267,10 @@ class IssuerAgent(AriesAgent):
             # update database with removed credential id, only after successful revocation
             response["cred_ex_id"] = ""
             response["valid"] = False
-            await self.db_client.record_key(db_name, node_name, response)
+            await self.db_client.record_key(DB_NAME, node_name, response)
         except KeyError as e:
             log_status(f"ERROR: Key {e} not found, device assumed to offline")
-            return
+            return KeyError
 
     async def establish_connection(self, db_name, node_name):
         """
@@ -272,6 +280,10 @@ class IssuerAgent(AriesAgent):
         recipient_key = await self.send_invitation(
             self.db_client.db_keys[db_name][node_name]["controller_did"]
         )
+        if recipient_key is ClientConnectionError:
+            self.log("Couldnt establish connection, device OFFLINE")
+            return ClientConnectionError
+
         self.db_client.db_keys[db_name][node_name]["recipient_key"] = recipient_key
         self._connection_ready = asyncio.Future()
         if self.log_level == LogLevel.DEBUG:
@@ -309,6 +321,7 @@ class IssuerAgent(AriesAgent):
 
         if self.log_level == LogLevel.INFO or LogLevel.DEBUG:
             log_status(f"# Issuing credential offer to {node_name}")
+
         self.cred_attrs[self.cred_def_id] = node_cred
         cred_preview = {
             "@type": CRED_PREVIEW_TYPE,
@@ -322,10 +335,10 @@ class IssuerAgent(AriesAgent):
             "credential_preview": cred_preview,
             "filter": {"indy": {"cred_def_id": self.cred_def_id}},
         }
-        _ = await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
         log_time_to_file("issue", f"ISSUING: time: {time.time_ns()}, node: {node_name}\n")
+        await self.admin_POST("/issue-credential-2.0/send-offer", offer_request)
 
-    async def onboard_node(self, db_name: str, node_name: str, node_did: str):
+    async def onboard_node(self, node_name: str, node_did: str):
         """
         params:
             agent_container: AgentContainer,
@@ -339,6 +352,7 @@ class IssuerAgent(AriesAgent):
             "firmware": {},
             "hardware": {"raspberry-pi": "4B"},
         }
+        print(f"DEBUGPRINT[1]: issuer.py:359: node_name={node_name}")
         node_cred = {
             "controller_id": node_name,
             "date": date.isoformat(date.today()),
@@ -346,7 +360,7 @@ class IssuerAgent(AriesAgent):
             "security_level": "low",
         }
 
-        # WARN: (aver) the did has to be amended with the method for the resolver to work
+        # WARN(aver): The did has to be amended with the method for the resolver to work
         node_did = "did:sov:" + node_did
 
         # we extend the credential with components so that the auditor can register them
@@ -356,8 +370,8 @@ class IssuerAgent(AriesAgent):
         db_entry["controller_did"] = node_did
         db_entry["components"] = components
 
-        await self.db_client.record_key(db_name, node_name, db_entry)
-        await self.issue_credential(node_did, node_name, node_cred, db_name)
+        await self.db_client.record_key(DB_NAME, node_name, db_entry)
+        await self.issue_credential(node_did, node_name, node_cred, DB_NAME)
 
     async def mass_onboard(self):
         """
@@ -373,17 +387,28 @@ class IssuerAgent(AriesAgent):
                     devices.append(device)
                     device = {}
         for node in devices:
-            await self.onboard_node(DB_NAME, node["name"], node["did"])
+            await self.onboard_node(node["name"], node["did"])
 
     async def remove_device(self, node_name: str):
-        # db_result = await self.db_client.query_key(DB_NAME, node_name)
-        await self.revoke_credential(
-            "",
-            DB_NAME,
-            node_name,
-            {"reason": "manually revoked by maintainer"},
-        )
-        _ = await self.db_client.delete_key(DB_NAME, node_name)
+        db_result = await self.db_client.query_key(DB_NAME, node_name)
+        if db_result is None:
+            self.log(f"Unrecorded Device: {node_name}. Consider onboarding.")
+            return
+        # if the credential exchange id is already empty, it means the credentials was revoked and
+        # we can proveed to removing it from the database
+        cred_ex_id = db_result.get("cred_ex_id")
+        if cred_ex_id is not None and cred_ex_id != "":
+            status = await self.revoke_credential(
+                cred_ex_id,
+                DB_NAME,
+                node_name,
+                {"reason": "manually revoked by maintainer"},
+            )
+            if status is ClientConnectionError:
+                self.log("Unable to remove device, assumed to be OFFLINE")
+                return
+
+        await self.db_client.delete_key(DB_NAME, node_name)
         self.log(f"Successfully removed node: {node_name}")
 
 
@@ -531,20 +556,22 @@ async def main():
             if option is None or option == "":
                 log_msg("Please give an option")
 
+            """
             # run options
-            # if option == "1":
-            #     if not prompt_options.get("setup_db"):
-            #         log_msg(f"invalid option, {option}")
-            #         continue
-            #     await setup_database(agent_container, DB_NAME)
-            #     prompt_options.pop("setup_db")
-            #     # add onboarding option and update order by values
-            #     prompt_options = add_option(
-            #         prompt_options, "onboard", "  [3]: Onboard node with public DID\n"
-            #     )
-            #     prompt_options = add_option(
-            #         prompt_options, "mass_onboard", "  [4]: Onboard fleet with public DID\n"
-            #     )
+            if option == "1":
+                if not prompt_options.get("setup_db"):
+                    log_msg(f"invalid option, {option}")
+                    continue
+                await setup_database(agent_container, DB_NAME)
+                prompt_options.pop("setup_db")
+                # add onboarding option and update order by values
+                prompt_options = add_option(
+                    prompt_options, "onboard", "  [3]: Onboard node with public DID\n"
+                )
+                prompt_options = add_option(
+                    prompt_options, "mass_onboard", "  [4]: Onboard fleet with public DID\n"
+                )
+            """
 
             if option == "2":
                 node_name = await prompt("Enter Node Name: ")
@@ -571,7 +598,6 @@ async def main():
                 node_did = node_did.strip()
 
                 await agent_container.agent.onboard_node(
-                    db_name=DB_NAME,
                     node_did=node_did,
                     node_name=node_name,
                 )
