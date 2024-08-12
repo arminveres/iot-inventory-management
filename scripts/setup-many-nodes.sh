@@ -5,6 +5,7 @@ NUMBER_NODES=$1
 START_PORT=8100
 END_PORT=$((START_PORT + NUMBER_NODES * 10))
 NAME_PREFIX="controller_node_"
+export UPDATER_PORT=8090
 
 mkdir -p logs .agent_cache
 for ((i = START_PORT; i < END_PORT; i += 10)); do

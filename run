@@ -151,6 +151,7 @@ else
 		"--name $AGENT_NAME"
 		"-e LEDGER_URL=$LEDGER_URL"
 		"-e GENESIS_URL=$GENESIS_URL"
+		"-e UPDATER_PORT=$UPDATER_PORT"
 		"-e POSTGRES=1"
 		"-p 0.0.0.0:$PORTRANGE:$PORTRANGE"
 		"-v ./.agent_cache/:/home/aries/.agent_cache/"

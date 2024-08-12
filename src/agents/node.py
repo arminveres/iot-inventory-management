@@ -1,6 +1,7 @@
 """
 This modules holds the logic for Controller Nodes
 """
+
 import asyncio
 import importlib
 import json
@@ -66,7 +67,9 @@ class NodeAgent(AriesAgent):
         if self.log_level == LogLevel.DEBUG:
             self.log("Received revocation notification message:")
             self.log_json(message)
+
         message["comment"] = json.loads(message["comment"])
+
         diff = await self.get_update(message)
         await self.notify_admin_of_update(diff)
 
@@ -77,7 +80,9 @@ class NodeAgent(AriesAgent):
         """
         Demonstrative method to provide update to node.
         """
-        UPDATER_URL = os.getenv("UPDATER_URL") or f"http://{DEFAULT_EXTERNAL_HOST}:8080/"
+        UPDATER_PORT = os.getenv("UPDATER_PORT") or 8080
+        UPDATER_URL = os.getenv("UPDATER_URL") or f"http://{DEFAULT_EXTERNAL_HOST}:{UPDATER_PORT}/"
+
         async with self.client_session.get(UPDATER_URL) as resp:
             # we are overwriting the existing file as update
             with open("shady_stuff.py", "wb") as fd:
@@ -120,7 +125,7 @@ class NodeAgent(AriesAgent):
         payload = {
             "node_name": self.ident.replace(".agent", ""),
             "node_did": self.did,
-            "diff": changes
+            "diff": changes,
         }
         response = await self.client_session.post(
             url=f"{issuer_url}/webhooks/topic/node_updated/",
@@ -284,7 +289,7 @@ async def main():
             else:
                 log_msg("Unknown option: " + option)
 
-    # WARN: (aver) We discovered that running in non-interactive mode creates an exception
+    # WARN(aver): We discovered that running in non-interactive mode creates an exception
     # because of the prompt toolkit. We therefore expect it and assume it is because of
     # non-interactiveness
     except PermissionError:

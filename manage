@@ -8,10 +8,10 @@ Manage infrastructure for the Identity Management framework.
 Instantiates Orion Database Node, VON-network for Indy nodes and PostgreSQL storage for individual nodes.
 
 Usage:
-    setup:
+    [set]up:
         Instantiate all infrastructure related services.
         sub-option: 'node' when passed, runs only node specific setup
-    teardown:
+    [tear]down:
         Stop all infrastructure related services.
         sub-option: 'node' when passed, runs only node specific teardown
     restart:
@@ -42,10 +42,10 @@ if [[ -n $option && $option != 'node' ]]; then
 fi
 
 case $cmd in
-setup)
+setup | up)
 	./scripts/setup.sh "$option"
 	;;
-teardown)
+teardown | down)
 	./scripts/teardown.sh "$option"
 	;;
 restart)
